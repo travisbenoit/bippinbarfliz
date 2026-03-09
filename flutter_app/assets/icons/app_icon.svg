@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E91E63"/>
+      <stop offset="100%" style="stop-color:#FF6B6B"/>
+    </linearGradient>
+    <linearGradient id="glassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#F0F0F0;stop-opacity:0.9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="512" cy="512" r="512" fill="url(#bgGradient)"/>
+
+  <!-- Cocktail Glass -->
+  <g transform="translate(256, 180)">
+    <!-- Glass Bowl -->
+    <path d="M50 50 L462 50 L310 380 L202 380 Z"
+          fill="url(#glassGradient)"
+          stroke="#FFFFFF"
+          stroke-width="8"
+          stroke-linejoin="round"/>
+
+    <!-- Liquid -->
+    <path d="M100 150 L412 150 L300 350 L212 350 Z"
+          fill="#FFB74D"
+          opacity="0.8"/>
+
+    <!-- Stem -->
+    <rect x="230" y="380" width="52" height="120"
+          fill="url(#glassGradient)"
+          stroke="#FFFFFF"
+          stroke-width="8"/>
+
+    <!-- Base -->
+    <ellipse cx="256" cy="520" rx="100" ry="25"
+             fill="url(#glassGradient)"
+             stroke="#FFFFFF"
+             stroke-width="8"/>
+
+    <!-- Garnish (Citrus) -->
+    <circle cx="380" cy="100" r="50" fill="#FFD54F" stroke="#FFFFFF" stroke-width="6"/>
+    <circle cx="380" cy="100" r="30" fill="#FFEB3B" opacity="0.8"/>
+
+    <!-- Bubbles -->
+    <circle cx="200" cy="250" r="15" fill="#FFFFFF" opacity="0.6"/>
+    <circle cx="280" cy="200" r="10" fill="#FFFFFF" opacity="0.5"/>
+    <circle cx="320" cy="280" r="12" fill="#FFFFFF" opacity="0.4"/>
+    <circle cx="240" cy="180" r="8" fill="#FFFFFF" opacity="0.5"/>
+  </g>
+
+  <!-- Sparkles -->
+  <g fill="#FFFFFF" opacity="0.8">
+    <polygon points="180,200 190,220 180,240 170,220" transform="rotate(15, 180, 220)"/>
+    <polygon points="820,300 830,320 820,340 810,320" transform="rotate(-10, 820, 320)"/>
+    <polygon points="150,700 160,720 150,740 140,720"/>
+    <polygon points="850,650 860,670 850,690 840,670" transform="rotate(20, 850, 670)"/>
+  </g>
+</svg>

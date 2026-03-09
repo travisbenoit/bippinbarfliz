@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 80">
+  <defs>
+    <style>
+      .brand-text {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 48px;
+        font-weight: 700;
+        fill: #FFFFFF;
+        letter-spacing: 2px;
+      }
+      .tagline {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        fill: #FFFFFF;
+        opacity: 0.8;
+        letter-spacing: 1px;
+      }
+    </style>
+  </defs>
+
+  <text x="200" y="45" text-anchor="middle" class="brand-text">Barfliz</text>
+  <text x="200" y="70" text-anchor="middle" class="tagline">Find Your Drinking Partners</text>
+</svg>

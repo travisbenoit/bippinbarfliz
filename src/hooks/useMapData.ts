@@ -1,0 +1,190 @@
+import { useState, useEffect, useRef } from 'react';
+import { supabase } from '../lib/supabase';
+import locationService, { RealTimeUser, RealTimeVenue } from '../services/locationService';
+import type { VibeTag } from '../data/dummyData';
+
+export interface MapSwarm {
+  id: string;
+  name: string;
+  venueId: string;
+  venueName: string;
+  lat: number;
+  lng: number;
+  vibes: VibeTag[];
+  memberCount: number;
+  maxSize: number;
+  hostId: string;
+  hostName: string;
+  startTime: string;
+  description: string;
+  isPublic: boolean;
+}
+
+export interface MapUserProfile extends RealTimeUser {
+  avatar_url?: string;
+}
+
+export function useMapData(userLocation: { lat: number; lng: number } | null, distanceFilter: number) {
+  const [swarms, setSwarms] = useState<MapSwarm[]>([]);
+  const [users, setUsers] = useState<MapUserProfile[]>([]);
+  const [venues, setVenues] = useState<RealTimeVenue[]>([]);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+
+  const enrichUserProfiles = async (rawUsers: RealTimeUser[]): Promise<MapUserProfile[]> => {
+    const userIds = rawUsers.map(u => u.id);
+    if (userIds.length === 0) return [];
+
+    const { data: profiles } = await supabase
+      .from('users')
+      .select('id, avatar_url')
+      .in('id', userIds);
+
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+    return rawUsers.map(user => ({
+      ...user,
+      avatar_url: profileMap.get(user.id)?.avatar_url,
+    }));
+  };
+
+  const fetchSwarms = async () => {
+    try {
+      const { data } = await supabase
+        .from('swarms')
+        .select(`
+          id,
+          title,
+          description,
+          vibe_tags,
+          start_time,
+          end_time,
+          max_attendees,
+          join_mode,
+          status,
+          host_user_id,
+          venue_id,
+          host:users!swarms_host_user_id_fkey(name),
+          venue:venues!swarms_venue_id_fkey(name, lat, lng),
+          swarm_members(count)
+        `)
+        .eq('status', 'active');
+
+      if (data) {
+        const now = new Date();
+        const expiredIds: string[] = [];
+
+        const mapped: MapSwarm[] = data
+          .filter((s: Record<string, unknown>) => {
+            const endTime = s.end_time ? new Date(s.end_time as string) : null;
+            if (endTime && endTime < now) {
+              expiredIds.push(s.id as string);
+              return false;
+            }
+            return true;
+          })
+          .map((s: Record<string, unknown>) => {
+            const venue = s.venue as { name?: string; lat?: number; lng?: number } | null;
+            const host = s.host as { name?: string } | null;
+            const startDate = s.start_time ? new Date(s.start_time as string) : null;
+            const timeStr = startDate
+              ? startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+              : 'Tonight';
+            const membersArr = s.swarm_members as { count: number }[] | null;
+            const memberCount = membersArr?.[0]?.count ?? 1;
+            return {
+              id: s.id as string,
+              name: s.title as string,
+              venueId: (s.venue_id as string) || '',
+              venueName: venue?.name || 'Unknown Venue',
+              lat: venue?.lat || 0,
+              lng: venue?.lng || 0,
+              vibes: (s.vibe_tags as VibeTag[]) || [],
+              memberCount,
+              maxSize: (s.max_attendees as number) || 8,
+              hostId: s.host_user_id as string,
+              hostName: host?.name || 'Anonymous',
+              startTime: timeStr,
+              description: (s.description as string) || '',
+              isPublic: s.join_mode === 'open',
+            };
+          });
+
+        if (expiredIds.length > 0) {
+          supabase
+            .from('swarms')
+            .update({ status: 'completed' })
+            .in('id', expiredIds)
+            .then(() => {});
+        }
+
+        setSwarms(mapped);
+      }
+    } catch (err) {
+      console.error('Error fetching swarms:', err);
+    }
+  };
+
+  const fetchVenuesAndUsers = async () => {
+    try {
+      if (userLocation) {
+        const countryCode = localStorage.getItem('userCountryCode') || 'US';
+        const nearbyVenues = await locationService.fetchNearbyVenues(userLocation.lat, userLocation.lng, distanceFilter, countryCode);
+        setVenues(nearbyVenues);
+      }
+
+      const [venueUsers, nearbyUsers] = await Promise.all([
+        locationService.fetchUsersAtVenues(),
+        userLocation
+          ? locationService.fetchNearbyUsers(userLocation.lat, userLocation.lng, distanceFilter)
+          : Promise.resolve([]),
+      ]);
+
+      const venueUserIds = new Set(venueUsers.map(u => u.id));
+      const merged = [
+        ...venueUsers,
+        ...nearbyUsers.filter(u => !venueUserIds.has(u.id)),
+      ];
+
+      const enriched = await enrichUserProfiles(merged);
+      setUsers(enriched);
+    } catch (err) {
+      console.error('Error fetching venues and users:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSwarms();
+
+    const unsubscribePresence = locationService.subscribeToVenuePresence(async (venueUsers) => {
+      const nearbyUsers = userLocation
+        ? await locationService.fetchNearbyUsers(userLocation.lat, userLocation.lng, distanceFilter)
+        : [];
+      const venueUserIds = new Set(venueUsers.map(u => u.id));
+      const merged = [...venueUsers, ...nearbyUsers.filter(u => !venueUserIds.has(u.id))];
+      const enriched = await enrichUserProfiles(merged);
+      setUsers(enriched);
+    });
+
+    const unsubscribeLocation = locationService.subscribeToUserLocation((location) => {
+      if (location) {
+        const countryCode = localStorage.getItem('userCountryCode') || 'US';
+        locationService.fetchNearbyVenues(location.lat, location.lng, distanceFilter, countryCode).then(setVenues);
+      }
+    });
+
+    unsubscribeRef.current = () => {
+      unsubscribePresence();
+      unsubscribeLocation();
+    };
+
+    return () => { unsubscribeRef.current?.(); };
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(fetchVenuesAndUsers, 30000);
+    fetchVenuesAndUsers();
+    return () => clearInterval(interval);
+  }, [userLocation, distanceFilter]);
+
+  return { swarms, users, venues };
+}

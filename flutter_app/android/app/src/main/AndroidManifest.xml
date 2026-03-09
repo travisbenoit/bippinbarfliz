@@ -1,0 +1,152 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ─── Network ─────────────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- ─── Location ────────────────────────────────────────────────── -->
+    <!-- Fine + Coarse required by geolocator and flutter_radar -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- Background location for Radar geofencing (user prompted separately) -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <!-- FOREGROUND_SERVICE required to keep location alive when app is minimised -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+
+    <!-- ─── Notifications ────────────────────────────────────────────── -->
+    <!-- POST_NOTIFICATIONS required on Android 13+ (API 33+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <!-- ─── Camera / Storage (image_picker + mobile_scanner) ─────────── -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- READ_MEDIA_* replaces READ_EXTERNAL_STORAGE on API 33+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- Legacy storage permission kept for API < 33 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29"/>
+
+    <!-- ─── Feature declarations ────────────────────────────────────── -->
+    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
+
+    <application
+        android:label="Barfliz"
+        android:name="${applicationName}"
+        android:icon="@mipmap/launcher_icon"
+        android:roundIcon="@mipmap/launcher_icon_round"
+        android:requestLegacyExternalStorage="false"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
+        android:hardwareAccelerated="true">
+
+        <!-- ─── Main Activity ────────────────────────────────────────── -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+
+            <!-- Flutter native splash — switches to NormalTheme once Flutter draws first frame -->
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme"/>
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <!-- Deep-link scheme: barfliz:// -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="barfliz"/>
+            </intent-filter>
+        </activity>
+
+        <!-- ─── Flutter engine metadata ──────────────────────────────── -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2"/>
+
+        <!-- ─── Google Maps ──────────────────────────────────────────── -->
+        <!--
+            Set GOOGLE_MAPS_API_KEY in android/local.properties (not committed):
+                GOOGLE_MAPS_API_KEY=AIzaSy...
+            Then reference it in android/app/build.gradle:
+                manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProperties.getProperty("GOOGLE_MAPS_API_KEY", "")
+        -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${GOOGLE_MAPS_API_KEY}"/>
+
+        <!-- ─── Firebase Cloud Messaging ─────────────────────────────── -->
+        <service
+            android:name="com.google.firebase.messaging.FirebaseMessagingService"
+            android:exported="false">
+            <intent-filter android:priority="1">
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <!-- High-priority FCM delivery channel -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="barfliz_high"/>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/launcher_icon"/>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_color"/>
+
+        <!-- ─── Radar SDK ─────────────────────────────────────────────── -->
+        <!--
+            Set RADAR_PUBLISHABLE_KEY in android/local.properties:
+                RADAR_PUBLISHABLE_KEY=prj_live_pk_...
+        -->
+        <meta-data
+            android:name="io.radar.sdk.PublishableKey"
+            android:value="${RADAR_PUBLISHABLE_KEY}"/>
+
+        <!-- Radar foreground-service notification -->
+        <service
+            android:name="io.radar.sdk.RadarForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="location"/>
+
+        <!-- ─── Stripe ────────────────────────────────────────────────── -->
+        <!-- No manifest entry needed; key is passed at runtime via FlutterStripe.init() -->
+
+        <!-- ─── flutter_local_notifications ────────────────────────────── -->
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
+            android:exported="false"/>
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

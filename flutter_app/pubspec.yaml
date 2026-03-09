@@ -1,0 +1,131 @@
+name: barfliz
+description: Social drinking app to find drinking partners
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Supabase
+  supabase_flutter: ^2.12.0
+
+  # State Management
+  flutter_riverpod: ^3.2.1
+
+  # Routing
+  go_router: ^17.1.0
+
+  # UI Components
+  cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.9
+  cached_network_image: ^3.3.0
+  shimmer: ^3.0.0
+
+  # Swipe Cards
+  flutter_card_swiper: ^7.0.0
+
+  # Maps & Location
+  google_maps_flutter: ^2.14.0
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  flutter_radar: ^3.11.0
+
+  # Payments
+  flutter_stripe: ^12.2.0
+
+  # Notifications
+  firebase_core: ^2.24.0
+  firebase_messaging: ^16.1.1
+  flutter_local_notifications: ^16.3.0
+
+  # Image Picker
+  image_picker: ^1.2.1
+
+  # URL Launcher
+  url_launcher: ^6.3.2
+
+  # Permissions
+  permission_handler: ^12.0.1
+
+  # Date/Time
+  intl: ^0.18.1
+  timeago: ^3.6.0
+
+  # HTTP
+  http: ^1.1.2
+
+  # Storage
+  shared_preferences: ^2.2.2
+
+  # Icons
+  flutter_iconpicker: ^3.2.4
+
+  # Animation
+  lottie: ^2.7.0
+
+  # QR Code
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.8
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#E91E63"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+  web:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+  windows:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+  macos:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+
+flutter_native_splash:
+  color: "#E91E63"
+  color_dark: "#B0003A"
+  image: assets/icons/splash_logo.png
+  branding: assets/icons/splash_branding.png
+  branding_mode: bottom
+  android_12:
+    color: "#E91E63"
+    color_dark: "#B0003A"
+    icon_background_color: "#E91E63"
+    icon_background_color_dark: "#B0003A"
+    image: assets/icons/splash_logo.png
+  ios: true
+  android: true
+  web: true
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700

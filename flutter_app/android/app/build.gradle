@@ -1,0 +1,70 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}
+
+android {
+    namespace = "com.barfliz.app"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17
+    }
+
+    defaultConfig {
+        applicationId = "com.barfliz.app"
+        minSdk = 21
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+
+        multiDexEnabled true
+
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] =
+            localProperties.getProperty("GOOGLE_MAPS_API_KEY", "")
+        manifestPlaceholders["RADAR_PUBLISHABLE_KEY"] =
+            localProperties.getProperty("RADAR_PUBLISHABLE_KEY", "")
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring "com.android.tools.build:desugaring:2.1.3"
+    implementation platform("com.google.firebase:firebase-bom:33.7.0")
+    implementation "com.google.firebase:firebase-messaging"
+    implementation "com.google.firebase:firebase-analytics"
+}

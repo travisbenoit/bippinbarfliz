@@ -1,0 +1,8 @@
+# Copy this file to ios/Flutter/Debug.xcconfig and fill in your keys.
+# Include the Flutter-generated config first, then add your own overrides.
+# DO NOT commit files containing real API keys.
+
+#include "Generated.xcconfig"
+
+GOOGLE_MAPS_API_KEY = AIzaSy_YOUR_KEY_HERE
+RADAR_PUBLISHABLE_KEY = prj_live_pk_YOUR_KEY_HERE

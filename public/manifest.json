@@ -1,0 +1,76 @@
+{
+  "name": "Barfliz",
+  "short_name": "Barfliz",
+  "description": "Map-based social drinking app to find friends at venues and connect",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1f2937",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/app-icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon-96-maskable.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["social", "navigation"],
+  "shortcuts": [
+    {
+      "name": "Open Map",
+      "short_name": "Map",
+      "description": "View nearby venues on the map",
+      "url": "/map?utm_source=pwa_shortcut",
+      "icons": [
+        {
+          "src": "/app-icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "short_name": "Chat",
+      "description": "Chat with friends",
+      "url": "/messages?utm_source=pwa_shortcut",
+      "icons": [
+        {
+          "src": "/app-icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

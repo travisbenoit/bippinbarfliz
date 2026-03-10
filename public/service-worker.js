@@ -97,3 +97,43 @@ async function staleWhileRevalidate(request) {
 
   return cached || fetchPromise || new Response('Offline', { status: 503 });
 }
+
+// ── Push Notifications ────────────────────────────────────────────────────────
+
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data?.json() ?? {};
+  } catch {
+    data = { title: 'Barfliz', body: event.data?.text() ?? '' };
+  }
+
+  const title = data.title || 'Barfliz';
+  const options = {
+    body: data.body || '',
+    icon: '/app-icon-192.png',
+    badge: '/app-icon-96.png',
+    tag: data.tag || 'barfliz',
+    data: { url: data.url || '/' },
+    vibrate: [100, 50, 100],
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
+  );
+});

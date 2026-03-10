@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
+import { sendPushToUser } from './pushService';
 
 type Message = Database['public']['Tables']['messages']['Row'];
 type MessageInsert = Database['public']['Tables']['messages']['Insert'];
@@ -13,8 +14,8 @@ export const messagesService = {
       .from('user_blocks')
       .select('*', { count: 'exact', head: true })
       .or(
-        `and(blocked_user_id.eq.${user.id},blocking_user_id.eq.${otherUserId}),` +
-        `and(blocked_user_id.eq.${otherUserId},blocking_user_id.eq.${user.id})`
+        `and(blocked_id.eq.${user.id},blocker_id.eq.${otherUserId}),` +
+        `and(blocked_id.eq.${otherUserId},blocker_id.eq.${user.id})`
       );
 
     if (error) {
@@ -53,6 +54,21 @@ export const messagesService = {
       .single();
 
     if (error) throw error;
+
+    // Fire push notification to recipient (non-blocking)
+    const { data: senderProfile } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', user.id)
+      .maybeSingle();
+    const senderName = senderProfile?.name || 'Someone';
+    sendPushToUser(recipientId, {
+      title: senderName,
+      body: body.length > 100 ? body.slice(0, 97) + '…' : body,
+      url: '/messages',
+      tag: `dm-${user.id}`,
+    }).catch(() => null);
+
     return data;
   },
 

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ArrowRight } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { subscribeToPush } from '../../services/pushService';
 
 export default function NotificationsPermission() {
   const navigate = useNavigate();
@@ -11,7 +13,15 @@ export default function NotificationsPermission() {
     try {
       if ('Notification' in window && typeof Notification.requestPermission === 'function') {
         const permission = await Notification.requestPermission();
-        localStorage.setItem('notification_permission', permission === 'granted' ? 'granted' : 'skipped');
+        if (permission === 'granted') {
+          localStorage.setItem('notification_permission', 'granted');
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            subscribeToPush(user.id).catch(() => null);
+          }
+        } else {
+          localStorage.setItem('notification_permission', 'skipped');
+        }
       } else {
         localStorage.setItem('notification_permission', 'skipped');
       }

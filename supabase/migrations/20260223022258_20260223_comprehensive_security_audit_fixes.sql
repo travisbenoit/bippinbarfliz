@@ -108,8 +108,8 @@ CREATE POLICY "Users can send messages"
         conversation_type = 'dm'
         AND NOT EXISTS (
           SELECT 1 FROM public.user_blocks ub
-          WHERE (ub.blocking_user_id = dm_user_a AND ub.blocked_user_id = dm_user_b)
-             OR (ub.blocking_user_id = dm_user_b AND ub.blocked_user_id = dm_user_a)
+          WHERE (ub.blocker_id = dm_user_a AND ub.blocked_id = dm_user_b)
+             OR (ub.blocker_id = dm_user_b AND ub.blocked_id = dm_user_a)
         )
       )
     )
@@ -187,12 +187,14 @@ CREATE POLICY "Users can join swarms"
 -- 6. Add authenticated INSERT policy for user_venue_presence
 --    So users can manually check in (not just via service_role webhook).
 -- =============================================================
+DROP POLICY IF EXISTS "Users can insert own presence" ON public.user_venue_presence;
 CREATE POLICY "Users can insert own presence"
   ON public.user_venue_presence
   FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own presence" ON public.user_venue_presence;
 CREATE POLICY "Users can update own presence"
   ON public.user_venue_presence
   FOR UPDATE
@@ -219,7 +221,7 @@ CREATE POLICY "Authenticated users can view accessible swarms"
   FOR SELECT
   TO authenticated
   USING (
-    is_public = true
+    join_mode = 'open'
     OR host_user_id = auth.uid()
     OR EXISTS (
       SELECT 1 FROM public.swarm_members sm

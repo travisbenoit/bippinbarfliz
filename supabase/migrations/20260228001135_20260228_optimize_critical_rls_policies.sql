@@ -138,17 +138,17 @@ BEGIN
     DROP POLICY IF EXISTS "Users can view their own blocks" ON user_blocks;
     CREATE POLICY "Users can view their own blocks"
       ON user_blocks FOR SELECT TO authenticated
-      USING ((SELECT auth.uid()) = blocking_user_id OR (SELECT auth.uid()) = blocked_user_id);
-    
+      USING ((SELECT auth.uid()) = blocker_id OR (SELECT auth.uid()) = blocked_id);
+
     DROP POLICY IF EXISTS "Users can block others" ON user_blocks;
     CREATE POLICY "Users can block others"
       ON user_blocks FOR INSERT TO authenticated
-      WITH CHECK ((SELECT auth.uid()) = blocking_user_id);
-    
+      WITH CHECK ((SELECT auth.uid()) = blocker_id);
+
     DROP POLICY IF EXISTS "Users can unblock others" ON user_blocks;
     CREATE POLICY "Users can unblock others"
       ON user_blocks FOR DELETE TO authenticated
-      USING ((SELECT auth.uid()) = blocking_user_id);
+      USING ((SELECT auth.uid()) = blocker_id);
   END IF;
 END $$;
 

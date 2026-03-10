@@ -41,6 +41,31 @@ BEGIN
   END IF;
 END $$;
 
+-- Create payment_transactions table if it doesn't exist
+CREATE TABLE IF NOT EXISTS payment_transactions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  from_user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  to_user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  amount numeric NOT NULL,
+  currency text DEFAULT 'USD',
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
+  provider_ref text,
+  swarm_id uuid REFERENCES swarms(id) ON DELETE SET NULL,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE payment_transactions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own transactions"
+  ON payment_transactions FOR SELECT
+  TO authenticated
+  USING (auth.uid() = from_user_id OR auth.uid() = to_user_id);
+
+CREATE POLICY "Users can create transactions"
+  ON payment_transactions FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = from_user_id);
+
 -- Add transaction details to payment_transactions table
 DO $$
 BEGIN

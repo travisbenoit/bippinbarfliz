@@ -88,11 +88,13 @@ CREATE INDEX IF NOT EXISTS idx_clusters_active ON venue_clusters (is_active) WHE
 ALTER TABLE user_venue_presence ENABLE ROW LEVEL SECURITY;
 ALTER TABLE venue_clusters ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own presence" ON user_venue_presence;
 CREATE POLICY "Users can view own presence"
   ON user_venue_presence FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view presence of mutual friends and swarm members" ON user_venue_presence;
 CREATE POLICY "Users can view presence of mutual friends and swarm members"
   ON user_venue_presence FOR SELECT
   TO authenticated
@@ -123,22 +125,26 @@ CREATE POLICY "Users can view presence of mutual friends and swarm members"
     )
   );
 
+DROP POLICY IF EXISTS "Service role can insert presence" ON user_venue_presence;
 CREATE POLICY "Service role can insert presence"
   ON user_venue_presence FOR INSERT
   TO service_role
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Service role can update presence" ON user_venue_presence;
 CREATE POLICY "Service role can update presence"
   ON user_venue_presence FOR UPDATE
   TO service_role
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can view active clusters" ON venue_clusters;
 CREATE POLICY "Users can view active clusters"
   ON venue_clusters FOR SELECT
   TO authenticated
   USING (is_active = true);
 
+DROP POLICY IF EXISTS "Service role can manage clusters" ON venue_clusters;
 CREATE POLICY "Service role can manage clusters"
   ON venue_clusters FOR ALL
   TO service_role

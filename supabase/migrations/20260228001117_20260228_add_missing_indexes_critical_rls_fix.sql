@@ -33,7 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_swarms_venue_id ON swarms(venue_id);
 CREATE INDEX IF NOT EXISTS idx_translations_language_id ON translations(language_id);
 CREATE INDEX IF NOT EXISTS idx_user_activity_history_related_user_id ON user_activity_history(related_user_id);
 CREATE INDEX IF NOT EXISTS idx_user_activity_history_venue_id ON user_activity_history(venue_id);
-CREATE INDEX IF NOT EXISTS idx_user_blocks_blocked_user_id ON user_blocks(blocked_user_id);
+CREATE INDEX IF NOT EXISTS idx_user_blocks_blocked_id ON user_blocks(blocked_id);
 CREATE INDEX IF NOT EXISTS idx_user_gifts_item_id ON user_gifts(item_id);
 CREATE INDEX IF NOT EXISTS idx_user_inventory_item_id ON user_inventory(item_id);
 CREATE INDEX IF NOT EXISTS idx_user_language_preferences_language_id ON user_language_preferences(language_id);

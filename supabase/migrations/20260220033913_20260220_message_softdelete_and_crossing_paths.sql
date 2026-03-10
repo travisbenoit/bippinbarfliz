@@ -54,7 +54,7 @@ BEGIN
     CREATE POLICY "Blocked users can see they are blocked"
       ON user_blocks FOR SELECT
       TO authenticated
-      USING (auth.uid() = blocking_user_id OR auth.uid() = blocked_user_id);
+      USING (auth.uid() = blocker_id OR auth.uid() = blocked_id);
   END IF;
 END $$;
 

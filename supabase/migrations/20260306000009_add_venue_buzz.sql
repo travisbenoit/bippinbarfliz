@@ -1,7 +1,7 @@
 -- Migration 000009: Venue Buzz (ephemeral venue chat rooms)
 -- Messages auto-expire after 4 hours. Cleanup via pg_cron or Edge Function.
 
-CREATE TABLE venue_buzz (
+CREATE TABLE IF NOT EXISTS venue_buzz (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venue_id      uuid NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
   user_id       uuid NOT NULL REFERENCES auth.users(id),
@@ -11,28 +11,39 @@ CREATE TABLE venue_buzz (
   expires_at    timestamptz DEFAULT (now() + interval '4 hours')
 );
 
-CREATE INDEX idx_venue_buzz_venue
+CREATE INDEX IF NOT EXISTS idx_venue_buzz_venue
   ON venue_buzz (venue_id, created_at DESC)
   WHERE report_count < 3;
 
-CREATE INDEX idx_venue_buzz_cleanup
-  ON venue_buzz (expires_at)
-  WHERE expires_at < now();
+CREATE INDEX IF NOT EXISTS idx_venue_buzz_cleanup
+  ON venue_buzz (expires_at);
 
 -- RLS
 ALTER TABLE venue_buzz ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can read non-reported buzz"
-  ON venue_buzz FOR SELECT
-  USING (auth.role() = 'authenticated' AND report_count < 3);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'venue_buzz' AND policyname = 'Authenticated users can read non-reported buzz') THEN
+    CREATE POLICY "Authenticated users can read non-reported buzz"
+      ON venue_buzz FOR SELECT
+      USING (auth.role() = 'authenticated' AND report_count < 3);
+  END IF;
+END $$;
 
-CREATE POLICY "Users can post buzz"
-  ON venue_buzz FOR INSERT
-  WITH CHECK (user_id = auth.uid());
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'venue_buzz' AND policyname = 'Users can post buzz') THEN
+    CREATE POLICY "Users can post buzz"
+      ON venue_buzz FOR INSERT
+      WITH CHECK (user_id = auth.uid());
+  END IF;
+END $$;
 
-CREATE POLICY "Users can delete own buzz"
-  ON venue_buzz FOR DELETE
-  USING (user_id = auth.uid());
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'venue_buzz' AND policyname = 'Users can delete own buzz') THEN
+    CREATE POLICY "Users can delete own buzz"
+      ON venue_buzz FOR DELETE
+      USING (user_id = auth.uid());
+  END IF;
+END $$;
 
 -- RPC to report a message (increment report_count)
 CREATE OR REPLACE FUNCTION report_buzz(buzz_id uuid)

@@ -48,6 +48,17 @@ CREATE TABLE IF NOT EXISTS location_events (
   created_at timestamptz DEFAULT now()
 );
 
+-- Add venue_id column if it doesn't exist (table may have been created by an earlier migration)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'location_events' AND column_name = 'venue_id'
+  ) THEN
+    ALTER TABLE location_events ADD COLUMN venue_id uuid REFERENCES venues(id) ON DELETE SET NULL;
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_location_events_user_occurred ON location_events(user_id, occurred_at DESC);
 CREATE INDEX IF NOT EXISTS idx_location_events_venue_occurred ON location_events(venue_id, occurred_at DESC);
 CREATE INDEX IF NOT EXISTS idx_location_events_radar_place ON location_events(radar_place_id);
@@ -55,18 +66,23 @@ CREATE INDEX IF NOT EXISTS idx_location_events_type_occurred ON location_events(
 
 ALTER TABLE location_events ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own location events"
-  ON location_events FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'location_events' AND policyname = 'Users can view own location events') THEN
+    CREATE POLICY "Users can view own location events"
+      ON location_events FOR SELECT TO authenticated USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
-CREATE POLICY "Service role full access to location_events"
-  ON location_events FOR INSERT
-  TO service_role
-  WITH CHECK (true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'location_events' AND policyname = 'Service role full access to location_events') THEN
+    CREATE POLICY "Service role full access to location_events"
+      ON location_events FOR INSERT TO service_role WITH CHECK (true);
+  END IF;
+END $$;
 
-CREATE POLICY "Service role can update location_events"
-  ON location_events FOR UPDATE
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'location_events' AND policyname = 'Service role can update location_events') THEN
+    CREATE POLICY "Service role can update location_events"
+      ON location_events FOR UPDATE TO service_role USING (true) WITH CHECK (true);
+  END IF;
+END $$;

@@ -18,8 +18,8 @@ CREATE OR REPLACE FUNCTION is_blocked(p_user_id uuid, p_other_user_id uuid)
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM user_blocks
-    WHERE (blocking_user_id = p_user_id AND blocked_user_id = p_other_user_id)
-       OR (blocking_user_id = p_other_user_id AND blocked_user_id = p_user_id)
+    WHERE (blocker_id = p_user_id AND blocked_id = p_other_user_id)
+       OR (blocker_id = p_other_user_id AND blocked_id = p_user_id)
   );
 END;
 $$ LANGUAGE plpgsql STABLE;

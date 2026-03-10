@@ -76,7 +76,7 @@ INSERT INTO public.users (
   'Demo User',
   '1995-06-15',
   true,
-  '[]'::jsonb,
+  ARRAY[]::text[],
   'Hey there! I love exploring new bars and meeting cool people. Always down for a good time.',
   ARRAY['Chill Vibes', 'Live Music', 'Rooftop Scene'],
   ARRAY['Old Fashioned', 'IPA', 'Margarita'],

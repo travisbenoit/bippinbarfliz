@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useGeofencing } from './useGeofencing';
 import { activityService } from '../services/activityService';
+import { xpService } from '../services/xpService';
 import { supabase } from '../lib/supabase';
 import type {
   Coordinates,
@@ -186,6 +187,7 @@ export function GeofenceProvider({
           .select('current_streak, longest_streak, total_checkins, last_checkin_date')
           .eq('user_id', user.id)
           .maybeSingle();
+        // Sync check_in_streaks table (legacy)
         if (!existing || existing.last_checkin_date !== today) {
           const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
           const streak = existing?.last_checkin_date === yesterday ? (existing.current_streak || 0) + 1 : 1;
@@ -198,6 +200,20 @@ export function GeofenceProvider({
             total_checkins: (existing?.total_checkins || 0) + 1,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
+        }
+
+        // XP, coins, badges, challenges
+        try {
+          const result = await xpService.recordCheckin(
+            user.id,
+            event.venue.id,
+            (event.venue as any).category
+          );
+
+          // Dispatch custom event so UI can show toasts without prop-drilling
+          window.dispatchEvent(new CustomEvent('barfliz:checkin', { detail: result }));
+        } catch {
+          // Non-critical — don't block the check-in flow
         }
       } else if (event.type === 'EXIT' && event.venue) {
         await activityService.logActivity('venue_leave', {

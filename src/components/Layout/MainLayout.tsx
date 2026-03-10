@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Home, MapPin, MessageCircle, User, Settings, Gift, Users, DollarSign, Music, Shield, Bell, LogOut } from 'lucide-react';
+import { Menu, X, Home, MapPin, MessageCircle, User, Settings, Gift, Users, DollarSign, Music, Shield, Bell, LogOut, Trophy } from 'lucide-react';
 import BottomNav from './BottomNav';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -18,6 +18,7 @@ const menuItems: MenuItem[] = [
   { icon: MessageCircle, label: 'Messages', path: '/messages', color: 'text-green-600' },
   { icon: Gift, label: 'Gifts', path: '/gifts', color: 'text-pink-600' },
   { icon: Music, label: 'Music Sharing', path: '/home', color: 'text-orange-600' },
+  { icon: Trophy, label: 'Leaderboard', path: '/leaderboard', color: 'text-yellow-600' },
   { icon: DollarSign, label: 'Payments', path: '/payments', color: 'text-emerald-600' },
   { icon: User, label: 'Profile', path: '/profile', color: 'text-indigo-600' },
   { icon: Settings, label: 'Settings', path: '/settings', color: 'text-gray-600' },

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Trophy, Flame, Target } from 'lucide-react';
+import { Trophy, Flame, Target, Medal } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { xpService, UserStats, Badge, Challenge } from '../../services/xpService';
 import { supabase } from '../../lib/supabase';
 
@@ -8,6 +9,7 @@ interface XPProfileProps {
 }
 
 export function XPProfile({ userId: propUserId }: XPProfileProps) {
+  const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(propUserId || null);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -71,7 +73,16 @@ export function XPProfile({ userId: propUserId }: XPProfileProps) {
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">Nightlife XP</h2>
-          <span className="text-3xl font-bold">{stats.total_xp} XP</span>
+          <div className="flex items-center gap-3">
+            <span className="text-3xl font-bold">{stats.total_xp} XP</span>
+            <button
+              onClick={() => navigate('/leaderboard')}
+              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+              title="Leaderboard"
+            >
+              <Medal className="w-5 h-5 text-white" />
+            </button>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -101,7 +112,7 @@ export function XPProfile({ userId: propUserId }: XPProfileProps) {
               {stats.current_streak}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              {stats.current_streak > 1 ? 'weekends' : 'weekend'}
+              {stats.current_streak === 1 ? 'night' : 'nights'}
             </p>
           </div>
 
@@ -182,8 +193,8 @@ export function XPProfile({ userId: propUserId }: XPProfileProps) {
                 <ul className="text-sm text-gray-700 space-y-2">
                   <li>✓ You've checked in {stats.total_checkins} times</li>
                   <li>✓ You've visited {stats.unique_venues} unique venues</li>
-                  <li>✓ Current streak: {stats.current_streak} weekends</li>
-                  <li>✓ Best streak ever: {stats.longest_streak} weekends</li>
+                  <li>✓ Current streak: {stats.current_streak} {stats.current_streak === 1 ? 'night' : 'nights'}</li>
+                  <li>✓ Best streak ever: {stats.longest_streak} {stats.longest_streak === 1 ? 'night' : 'nights'}</li>
                 </ul>
               </div>
             </div>

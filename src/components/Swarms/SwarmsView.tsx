@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Plus, Clock, Sparkles, X, Trash2, MessageCircle, Share2, Receipt } from 'lucide-react';
+import { Plus, Clock, Sparkles, X, Trash2, MessageCircle, Share2, Receipt, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { xpService } from '../../services/xpService';
 import type { Database } from '../../lib/database.types';
 import SwarmDateFilter, { DateFilterOption, filterSwarmsByDate } from './SwarmDateFilter';
 import { GroupSplit } from '../Payments/GroupSplit';
+import EditSwarm from './EditSwarm';
 
 type Swarm = Database['public']['Tables']['swarms']['Row'];
 
@@ -20,6 +22,7 @@ export default function SwarmsView() {
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('all');
   const [selectedSwarm, setSelectedSwarm] = useState<Swarm | null>(null);
   const [showManageModal, setShowManageModal] = useState(false);
+  const [showEditSwarm, setShowEditSwarm] = useState(false);
   const [showSplit, setShowSplit] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
@@ -130,7 +133,8 @@ export default function SwarmsView() {
           throw error;
         }
       } else {
-        showSuccess(`Joined "${swarm.title}"!`);
+        showSuccess(`Joined "${swarm.title}"! +5 🪙`);
+        if (user) xpService.onSwarmJoined(user.id).catch(() => null);
       }
     } catch {
       showError('Could not join swarm. Please try again.');
@@ -337,6 +341,14 @@ export default function SwarmsView() {
               </div>
 
               <button
+                onClick={() => { setShowManageModal(false); setShowEditSwarm(true); }}
+                className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+              >
+                <Pencil size={20} className="text-[#E91E63]" />
+                <span className="font-medium text-gray-900">Edit Swarm</span>
+              </button>
+
+              <button
                 onClick={() => navigate('/messages')}
                 className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
               >
@@ -373,6 +385,14 @@ export default function SwarmsView() {
             </div>
           </div>
         </div>
+      )}
+
+      {showEditSwarm && selectedSwarm && (
+        <EditSwarm
+          swarm={selectedSwarm}
+          onClose={() => setShowEditSwarm(false)}
+          onSaved={() => { setShowEditSwarm(false); setSelectedSwarm(null); loadSwarms(); }}
+        />
       )}
 
       <GroupSplit

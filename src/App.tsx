@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import MainLayout from './components/Layout/MainLayout';
 import AgeGate from './components/Auth/AgeGate';
 import { GeofenceProvider } from './geolocation/GeofenceProvider';
+import { CheckinRewardToast } from './components/Gamification/CheckinRewardToast';
 
 const Onboarding = lazy(() => import('./components/Onboarding'));
 const SignIn = lazy(() => import('./components/Auth/SignIn'));
@@ -37,6 +38,8 @@ const VenmoSetup = lazy(() => import('./components/Payments/VenmoSetup').then(m 
 const SendPayment = lazy(() => import('./components/Payments/SendPayment').then(m => ({ default: m.SendPayment })));
 const ReceivePayment = lazy(() => import('./components/Payments/ReceivePayment').then(m => ({ default: m.ReceivePayment })));
 const GiftsInbox = lazy(() => import('./components/Gifts/GiftsInbox').then(m => ({ default: m.GiftsInbox })));
+const LushCoinPage = lazy(() => import('./components/Payments/LushCoinPage').then(m => ({ default: m.LushCoinPage })));
+const LeaderboardView = lazy(() => import('./components/Community/LeaderboardView').then(m => ({ default: m.LeaderboardView })));
 const Home = lazy(() => import('./components/Home/Home'));
 const FriendsView = lazy(() => import('./components/Friends/FriendsView'));
 const HistoryView = lazy(() => import('./components/History/HistoryView'));
@@ -157,6 +160,7 @@ function AppRouter() {
     const locationAlreadyGranted = localStorage.getItem('location_permission') === 'granted';
     return (
       <GeofenceProvider autoStart={locationAlreadyGranted} ghostMode={ghostMode}>
+      <CheckinRewardToast />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route element={<MainLayout />}>
@@ -187,6 +191,9 @@ function AppRouter() {
           <Route path="/payments/setup" element={<VenmoSetup />} />
           <Route path="/payments/send" element={<SendPayment />} />
           <Route path="/payments/receive" element={<ReceivePayment />} />
+          <Route path="/payments/lush-coin" element={<LushCoinPage />} />
+          <Route path="/payments/venmo-manage" element={<VenmoSetup />} />
+          <Route path="/leaderboard" element={<LeaderboardView />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Settings, Edit3, MapPin, Heart, LogOut, DollarSign } from 'lucide-react';
+import { Settings, Edit3, MapPin, Heart, LogOut, DollarSign, Trophy, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { xpService, UserStats } from '../../services/xpService';
 import TonightStatusModal from '../TonightStatus/TonightStatusModal';
+import { XPProfile } from '../Community/XPProfile';
 import type { Database } from '../../lib/database.types';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
@@ -20,9 +22,17 @@ export default function ProfileView() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<TonightStatus>(null);
   const [currentVenue, setCurrentVenue] = useState<string | null>(null);
+  const [showXPProfile, setShowXPProfile] = useState(false);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [coinBalance, setCoinBalance] = useState(0);
 
   useEffect(() => {
     loadProfile();
+    if (user) {
+      xpService.getUserStats(user.id).then(setUserStats).catch(() => null);
+      xpService.getCoinBalance(user.id).then(setCoinBalance).catch(() => null);
+      xpService.autoAssignChallenges(user.id).catch(() => null);
+    }
   }, [user]);
 
   const loadProfile = async () => {
@@ -396,6 +406,51 @@ export default function ProfileView() {
                 </div>
               </a>
             )}
+          </div>
+        )}
+
+        {/* XP & Lush Coin card */}
+        <button
+          onClick={() => setShowXPProfile(true)}
+          className="w-full bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl p-6 shadow-md text-left hover:shadow-lg transition-shadow"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Trophy size={20} className="text-yellow-300" />
+              <span className="font-bold text-white text-lg">Nightlife XP</span>
+            </div>
+            <span className="text-purple-200 text-sm">View all →</span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white/10 rounded-xl p-3 text-center">
+              <p className="text-2xl font-black text-white">{userStats?.total_xp ?? 0}</p>
+              <p className="text-xs text-purple-200 mt-0.5">Total XP</p>
+            </div>
+            <div className="bg-white/10 rounded-xl p-3 text-center">
+              <div className="flex items-center justify-center gap-1">
+                <Flame size={14} className="text-orange-300" />
+                <p className="text-2xl font-black text-white">{userStats?.current_streak ?? 0}</p>
+              </div>
+              <p className="text-xs text-purple-200 mt-0.5">Streak</p>
+            </div>
+            <div className="bg-white/10 rounded-xl p-3 text-center">
+              <p className="text-2xl font-black text-yellow-300">{coinBalance}</p>
+              <p className="text-xs text-purple-200 mt-0.5">🪙 Coins</p>
+            </div>
+          </div>
+        </button>
+
+        {showXPProfile && (
+          <div className="fixed inset-0 z-50 bg-gray-50 overflow-y-auto">
+            <div className="p-4">
+              <button
+                onClick={() => setShowXPProfile(false)}
+                className="mb-4 flex items-center gap-2 text-gray-600 font-medium hover:text-gray-900"
+              >
+                ← Back to Profile
+              </button>
+              <XPProfile userId={user?.id} />
+            </div>
           </div>
         )}
 

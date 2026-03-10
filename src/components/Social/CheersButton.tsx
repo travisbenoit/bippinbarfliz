@@ -3,6 +3,7 @@ import { Wine } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { activityService } from '../../services/activityService';
+import { xpService } from '../../services/xpService';
 
 interface Props {
   recipientId: string;
@@ -34,6 +35,7 @@ export function CheersButton({ recipientId, recipientName, venueId, venueName, c
         { venueId }
       );
       setSent(true);
+      xpService.onCheerSent(user.id).catch(() => null);
     } catch {
       // silent fail
     } finally {

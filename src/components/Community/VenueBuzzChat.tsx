@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Send, Trash2, Flag } from 'lucide-react';
 import { buzzService, BuzzMessage } from '../../services/buzzService';
 import { supabase } from '../../lib/supabase';
+import { xpService } from '../../services/xpService';
 
 interface VenueBuzzChatProps {
   venueId: string;
@@ -60,6 +61,9 @@ export function VenueBuzzChat({ venueId, venueTitle }: VenueBuzzChatProps) {
     try {
       await buzzService.postBuzz(venueId, newMessage.trim());
       setNewMessage('');
+      if (currentUserId) {
+        xpService.updateChallengeProgress(currentUserId, 'buzz_creator', 1).catch(() => null);
+      }
     } catch (error) {
       console.error('Failed to post buzz:', error);
     } finally {

@@ -40,7 +40,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
-    include: ['leaflet', 'react-leaflet'],
+    include: ['leaflet'],
   },
   build: {
     rollupOptions: {

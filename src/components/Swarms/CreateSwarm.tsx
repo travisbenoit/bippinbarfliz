@@ -3,6 +3,7 @@ import { ArrowLeft, MapPin, Clock, Search, ChevronRight, X, UserPlus } from 'luc
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { xpService } from '../../services/xpService';
 import { VIBE_TAGS, type VibeTag } from '../../data/dummyData';
 import TimePicker from './TimePicker';
 
@@ -204,6 +205,10 @@ export default function CreateSwarm() {
           }))
         );
       }
+
+      // Award XP/coins for creating swarm; auto-assign challenges if needed
+      xpService.onSwarmCreated(user!.id, invitedUsers.length + 1).catch(() => null);
+      xpService.autoAssignChallenges(user!.id).catch(() => null);
 
       navigate('/swarms');
     } catch (err: any) {

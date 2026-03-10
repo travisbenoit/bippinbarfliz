@@ -1,6 +1,6 @@
-import { MapPin, Users, Building2, Sparkles, User as UserIcon, Clock, Flame } from 'lucide-react';
+import { MapPin, Users, Building2, Sparkles, User as UserIcon, Clock, Flame, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Database } from '../../lib/database.types';
 import WeatherCard from '../Weather/WeatherCard';
 import RadiusControl from '../Map/RadiusControl';
@@ -12,6 +12,7 @@ import { SafeArrivalButton, FriendSafeArrivals } from '../Safety/SafeArrival';
 import { SwarmSuggestion } from '../Social/SwarmSuggestion';
 import { TrendingVenues } from '../Venues/TrendingVenues';
 import { NightRoutePlanner } from '../Social/NightRoutePlanner';
+import { xpService, UserStats } from '../../services/xpService';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -52,6 +53,12 @@ export default function HomeDashboardTab({
 }: Props) {
   const navigate = useNavigate();
   const [showPlanner, setShowPlanner] = useState(false);
+  const [xpStats, setXpStats] = useState<UserStats | null>(null);
+
+  useEffect(() => {
+    if (!userProfile?.id) return;
+    xpService.getUserStats(userProfile.id).then(setXpStats).catch(() => null);
+  }, [userProfile?.id]);
 
   return (
     <div className="p-4 space-y-4 pb-24">
@@ -101,6 +108,27 @@ export default function HomeDashboardTab({
             </div>
           </div>
         </div>
+      )}
+
+      {xpStats && (
+        <button
+          onClick={() => navigate('/leaderboard')}
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-4 text-white shadow-lg text-left hover:opacity-90 transition-opacity"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Trophy size={24} className="text-yellow-300" />
+              <div>
+                <p className="font-bold text-base">{xpStats.total_xp} XP</p>
+                <p className="text-white/80 text-xs">
+                  {xpStats.current_streak > 0 ? `🔥 ${xpStats.current_streak}-night streak · ` : ''}
+                  {xpStats.total_checkins} check-ins
+                </p>
+              </div>
+            </div>
+            <div className="text-white/70 text-sm font-medium">Leaderboard →</div>
+          </div>
+        </button>
       )}
 
       <SafeArrivalButton />

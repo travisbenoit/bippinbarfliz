@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Users, Wine } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, Wine, UserPlus, UserCheck, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import locationService from '../../services/locationService';
 import type { RealTimeUser } from '../../services/locationService';
 import UserProfileModal from '../Profile/UserProfileModal';
 import { supabase } from '../../lib/supabase';
+import { friendsService } from '../../services/friendsService';
+import { useToast } from '../../contexts/ToastContext';
 import type { Database } from '../../lib/database.types';
 
 type UserProfileDB = Database['public']['Tables']['users']['Row'];
@@ -17,11 +19,14 @@ interface UserProfile extends RealTimeUser {
 export default function PeopleNearbyView() {
   const navigate = useNavigate();
   const { userProfile } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [nearbyPeople, setNearbyPeople] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserProfileDB | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [searchRadius, setSearchRadius] = useState(5);
+  const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'accepted'>>({});
+  const [addingFriend, setAddingFriend] = useState<string | null>(null);
 
   useEffect(() => {
     loadNearbyPeople();
@@ -58,12 +63,36 @@ export default function PeopleNearbyView() {
       }));
 
       setNearbyPeople(enriched);
+
+      // Load friendship status for each nearby person
+      const statuses: Record<string, 'none' | 'pending' | 'accepted'> = {};
+      await Promise.all(
+        enriched.map(async (person) => {
+          const status = await friendsService.getFriendshipStatus(person.id).catch(() => null);
+          statuses[person.id] = (status as any) || 'none';
+        })
+      );
+      setFriendStatuses(statuses);
     } catch (error) {
       console.error('Error loading nearby people:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleAddFriend = useCallback(async (e: React.MouseEvent, userId: string) => {
+    e.stopPropagation();
+    setAddingFriend(userId);
+    try {
+      await friendsService.sendFriendRequest(userId);
+      setFriendStatuses(prev => ({ ...prev, [userId]: 'pending' }));
+      showSuccess('Friend request sent!');
+    } catch {
+      showError('Could not send friend request.');
+    } finally {
+      setAddingFriend(null);
+    }
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -193,9 +222,33 @@ export default function PeopleNearbyView() {
                           {getStatusLabel(person.tonightStatus)}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1 text-gray-600 text-sm">
-                        <MapPin size={14} />
-                        <span>{distance.toFixed(1)}km</span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 text-gray-500 text-sm">
+                          <MapPin size={14} />
+                          <span>{distance.toFixed(1)}km</span>
+                        </div>
+                        {person.id !== userProfile?.id && (
+                          friendStatuses[person.id] === 'accepted' ? (
+                            <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                              <UserCheck size={12} /> Friends
+                            </span>
+                          ) : friendStatuses[person.id] === 'pending' ? (
+                            <span className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-medium">
+                              Pending
+                            </span>
+                          ) : (
+                            <button
+                              onClick={(e) => handleAddFriend(e, person.id)}
+                              disabled={addingFriend === person.id}
+                              className="flex items-center gap-1 px-2 py-1 bg-[#E91E63] text-white rounded-full text-xs font-medium hover:bg-[#C2185B] transition-colors disabled:opacity-50"
+                            >
+                              {addingFriend === person.id
+                                ? <RefreshCw size={12} className="animate-spin" />
+                                : <UserPlus size={12} />}
+                              Add
+                            </button>
+                          )
+                        )}
                       </div>
                     </div>
 

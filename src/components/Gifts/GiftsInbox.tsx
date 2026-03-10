@@ -49,7 +49,13 @@ export function GiftsInbox() {
 
       if (activeTab === 'received') {
         const dbGifts = await giftsService.getReceivedGifts();
-        setReceivedGifts(dbGifts.map((g: any) => mapGift(g, 'from_user')));
+        const mapped = dbGifts.map((g: any) => mapGift(g, 'from_user'));
+        setReceivedGifts(mapped);
+        // Mark unviewed gifts as viewed now that the user has opened the inbox
+        const unviewed = mapped.filter(g => g.status === 'sent');
+        unviewed.forEach(g => {
+          giftsService.updateGiftStatus(g.id, 'viewed').catch(() => null);
+        });
       } else if (activeTab === 'sent') {
         const dbGifts = await giftsService.getSentGifts();
         setSentGifts(dbGifts.map((g: any) => mapGift(g, 'to_user')));

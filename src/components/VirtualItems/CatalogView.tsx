@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Sparkles, TrendingUp, Package, Gift } from 'lucide-react';
+import { Search, Filter, Sparkles, TrendingUp, Package, Gift, Coins } from 'lucide-react';
 import { getRarityColor, getCategoryLabel } from '../../data/virtualItems';
 import { supabase } from '../../lib/supabase';
+import { xpService, RARITY_COIN_COST } from '../../services/xpService';
 import type { Database } from '../../lib/database.types';
 
 type VirtualItem = Database['public']['Tables']['virtual_items']['Row'];
+
+function getItemCost(item: VirtualItem): number {
+  if (item.price && item.price > 0) return item.price;
+  return RARITY_COIN_COST[item.rarity] ?? 10;
+}
 
 export function CatalogView() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,6 +18,13 @@ export function CatalogView() {
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'rarity' | 'name'>('rarity');
   const [items, setItems] = useState<VirtualItem[]>([]);
+  const [coinBalance, setCoinBalance] = useState(0);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) xpService.getCoinBalance(user.id).then(setCoinBalance);
+    });
+  }, []);
 
   const categories = ['all', 'emoji', 'drink', 'gift', 'celebration', 'sticker'];
   const rarities = ['all', 'common', 'rare', 'epic', 'legendary'];
@@ -55,15 +68,21 @@ export function CatalogView() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Virtual Gifts</h1>
-            <p className="text-white/80 text-sm">All gifts are free to send</p>
+            <p className="text-white/80 text-sm">Send gifts using Lush Coins</p>
           </div>
         </div>
 
-        <div className="mt-3 flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3">
-          <Sparkles className="w-5 h-5 text-white/90" />
-          <p className="text-sm text-white font-medium">
-            Send any gift to anyone, completely free — no coins needed!
-          </p>
+        <div className="mt-3 flex items-center justify-between gap-2 bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-white/90" />
+            <p className="text-sm text-white font-medium">
+              Earn coins by checking in, streaks &amp; challenges
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 rounded-full">
+            <Coins className="w-4 h-4 text-yellow-300" />
+            <span className="text-sm font-bold text-white">{coinBalance} LC</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-4 gap-3 mt-5">
@@ -169,10 +188,15 @@ export function CatalogView() {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          {filteredItems.map(item => (
+          {filteredItems.map(item => {
+            const cost = getItemCost(item);
+            const canAfford = coinBalance >= cost;
+            return (
             <div
               key={item.id}
-              className="bg-white rounded-2xl shadow-md overflow-hidden border-2 border-gray-100 transition-all hover:scale-105 hover:shadow-xl"
+              className={`bg-white rounded-2xl shadow-md overflow-hidden border-2 transition-all hover:scale-105 hover:shadow-xl ${
+                canAfford ? 'border-gray-100' : 'border-gray-100 opacity-60'
+              }`}
             >
               <div className={`bg-gradient-to-br ${getRarityColor(item.rarity)} p-4 text-white text-center relative`}>
                 <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
@@ -188,11 +212,15 @@ export function CatalogView() {
                 <p className="text-xs text-gray-600 mb-3 line-clamp-2">{item.description}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500 capitalize">{item.category}</span>
-                  <span className="text-sm font-bold text-[#E91E63]">Free</span>
+                  <div className={`flex items-center gap-0.5 text-sm font-bold ${canAfford ? 'text-purple-600' : 'text-gray-400'}`}>
+                    <span>🪙</span>
+                    <span>{cost}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {filteredItems.length === 0 && (

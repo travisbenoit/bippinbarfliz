@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MapPin, Users, Clock, ChevronDown, ChevronUp, UserPlus, UserCheck, History, Building2 } from 'lucide-react';
+import { MapPin, Users, Clock, ChevronDown, ChevronUp, UserPlus, UserCheck, History, Building2, Flame, Zap } from 'lucide-react';
 import { friendsService, VenueHistory, CrossingPath, FriendshipStatus } from '../../services/friendsService';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import UserProfileModal from '../Profile/UserProfileModal';
 import { supabase } from '../../lib/supabase';
+import { xpService, UserStats } from '../../services/xpService';
 import type { Database } from '../../lib/database.types';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
@@ -267,10 +268,12 @@ export default function HistoryView() {
   const [history, setHistory] = useState<VenueHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
+  const [xpStats, setXpStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
     loadHistory();
-  }, []);
+    if (user) xpService.getUserStats(user.id).then(setXpStats).catch(() => null);
+  }, [user]);
 
   const loadHistory = async () => {
     setLoading(true);
@@ -290,7 +293,7 @@ export default function HistoryView() {
   return (
     <div className="h-full flex flex-col bg-[#FFF5F0]">
       <div className="bg-white shadow-sm p-5">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-[#E91E63]/10 flex items-center justify-center">
             <History size={20} className="text-[#E91E63]" />
           </div>
@@ -299,6 +302,31 @@ export default function HistoryView() {
             <p className="text-sm text-gray-500">Your venues over the last 7 days</p>
           </div>
         </div>
+        {xpStats && (
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-purple-50 rounded-xl p-3 text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Zap size={14} className="text-purple-600" />
+                <span className="text-lg font-bold text-purple-700">{xpStats.total_xp}</span>
+              </div>
+              <p className="text-xs text-purple-500">Total XP</p>
+            </div>
+            <div className="bg-orange-50 rounded-xl p-3 text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Flame size={14} className="text-orange-500" />
+                <span className="text-lg font-bold text-orange-600">{xpStats.current_streak}</span>
+              </div>
+              <p className="text-xs text-orange-400">Night Streak</p>
+            </div>
+            <div className="bg-blue-50 rounded-xl p-3 text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <MapPin size={14} className="text-blue-500" />
+                <span className="text-lg font-bold text-blue-600">{xpStats.total_checkins}</span>
+              </div>
+              <p className="text-xs text-blue-400">Check-ins</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto">

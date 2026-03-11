@@ -15,7 +15,7 @@ Stack: **Vite + React + TypeScript** | **Supabase (Postgres, Auth, Storage, Real
 ## CURRENT VERSION
 
 ```
-v1.2.0  —  March 10, 2026
+v1.3.0  —  March 10, 2026
 Branch: main
 DB: Production (yfucglycufjwmcuadace.supabase.co)
 ```
@@ -52,46 +52,62 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 
 ---
 
-## WHAT WAS JUST SHIPPED — v1.2.0
+## WHAT WAS JUST SHIPPED — v1.3.0
 
-### Web Push Notifications
-- `push_subscriptions` table — stores PushSubscription per user per device
-- Service worker updated — `push` event listener + `notificationclick` handler
-- `pushService.ts` — subscribe, unsubscribe, send helpers
-- `send-push-notification` Edge Function — VAPID-signed push, no external libs, stale subscription auto-cleanup
-- DM sends now fire a push to the recipient automatically
-- NotificationsPermission screen subscribes to push after browser permission is granted
+### Push for all event types
+- Gifts: push to recipient on `sendGift` — "Someone sent you a gift 🎁"
+- Friend requests: push to recipient on `sendFriendRequest` — "X wants to be friends"
+- Swarm invites: push to each invitee on create and edit — "X invited you to a Swarm"
+- Friend nearby: push to all friends on geofence ENTER — "X is out tonight 📍 at [venue]"
+- Swarm push URLs include `?id=` param for direct deep-link to the right swarm
+- Fix `friendsService` `user_blocks` column names (`blocker_id`/`blocked_id`)
 
-**One manual step required** — set these 3 secrets in Supabase Dashboard → Settings → Edge Functions:
+### Story-style Moments viewer (The Room)
+- Story strip at top of Moments tab — avatar circles, one per moment
+- Tap any circle or card to open fullscreen story viewer
+- Auto-advances every 5s with animated progress bars
+- Left/right tap zones to navigate, like/delete/report from inside
+
+### Image compression on avatar upload
+- Client-side Canvas compression before upload — max 800px, JPEG 85%
+- Raw file size limit raised to 10MB (compressed before sending)
+- Faster uploads, lower storage cost
+
+### Venue check-in leaderboard (The Room — Regulars tab)
+- New 5th tab in TheRoom: Regulars
+- Shows top users by visit count at that specific venue
+- Gold/silver/bronze podium + ranked list with "you" highlighted
+
+### The Room UI polish
+- WhoIsHere Gift button now actually sends a beer to the user instantly (was a dead button)
+- Regulars tab added to TheRoom tab bar
+
+### Deep-link routing from push tap
+- Swarm invite notifications open `/swarms?id={swarm-id}`
+- `SwarmsView` reads `?id=` on mount and auto-opens the correct swarm modal
+- DM push taps open `/messages`, gift push opens `/gifts`, friend request opens `/friends`
+
+### Admin: Venue analytics
+- New page at `/settings/admin/venue-analytics`
+- Check-in count, buzz message count, vibe vote count per venue
+- Sortable by any metric, searchable, activity proportion bar per row
+- Admin-gated (`is_admin` check on users table)
+
+### v1.2.0 — Web Push Infrastructure
+- `push_subscriptions` table, service worker push+click handlers, `pushService.ts`
+- `send-push-notification` Edge Function (VAPID, no external deps), deployed
+
+**VAPID secrets still needed in Supabase Dashboard → Settings → Edge Functions:**
 ```
 VAPID_PUBLIC_KEY  = BB5LYqFhfJo3M8LwrCTYEmh_WAH3yy2bAs9v7j-pOMlwKFceFDJ3fz-NyisU-1Mw7KPuwLo5IB5naP4LS7v2low
 VAPID_PRIVATE_KEY = q2e1jvb_ssiEqQJhQuOOivjEKnYeJMyWcPYXlPyBpp0
 VAPID_SUBJECT     = mailto:hello@barfliz.com
 ```
 
-### Gamification System (shipped v1.1.0)
-- XP service — check-in XP, streak bonuses, event XP, coin earning
-- Night streaks — consecutive night tracking, 7/30-day streak badges
-- Lush Coins — earn on check-ins and streaks, spend on virtual gifts
-- `increment_lush_coins` SQL RPC — atomic balance updates
-- Badges system — 12+ badge types with unlock conditions
-- Daily challenges — randomized per user, refresh at midnight
-- Leaderboard — weekly XP rankings
-- CheckinRewardToast — animated reward on venue entry
-- CatalogView — live coin balance, affordability dimming per item
-
-### Swarm Post-Creation Editing (shipped v1.1.0)
-- Hosts can edit title, description, start/end time, venue, vibe tags after creation
-- Add/remove invited members from an active swarm
-- Accessible from SwarmDetailsModal via Edit button (host only)
-
-### Security + DB Fixes (shipped v1.1.0)
-- Fixed `user_blocks` column names across 4 migrations and messagesService (`blocking_user_id` → `blocker_id`)
-- Fixed swarms RLS `is_public = true` → `join_mode = 'open'`
-- Made all new migrations fully idempotent (safe to re-run on prod)
-- Block enforcement moved to DB level for DM inserts
-- Notifications INSERT locked to actor only (no fake notifications)
-- Swarm join policy checks `join_mode` before allowing self-insert
+### v1.1.0 — Gamification, Swarm Editing, Security
+- XP, streaks, Lush Coins, badges, daily challenges, leaderboard
+- Swarm post-creation editing for hosts
+- Comprehensive security audit: block enforcement at DB, notifications locked to actor, swarm join_mode policy
 
 ---
 
@@ -190,23 +206,22 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-## NEXT — v1.3.0
+## NEXT — v1.4.0
 
 | Feature | Priority | Notes |
 |---|---|---|
 | Twilio OTP (phone auth) | 🔴 High | Blocked on API key |
-| Push for all event types | 🔴 High | Currently DM only. Add: swarm invite, gift received, friend nearby |
-| Swarm invite push notification | 🟡 Medium | Wire swarm invite flow to pushService |
-| Story-style Moments viewer | 🟡 Medium | The Room moments as swipeable story UI |
-| Image compression on avatar upload | 🟡 Medium | Client-side before upload |
-| Venue check-in leaderboard | 🟡 Medium | Per-venue regular rankings |
-| The Room UI polish | 🟡 Medium | Vibe tab, moments tab, full chat experience |
-| Deep-link routing from push tap | 🟢 Low | `/messages`, `/swarms/:id` from notification `data.url` |
-| Admin: venue analytics | 🟢 Low | Check-in counts, vibe votes, buzz volume per venue |
+| Photo/video posting in Moments | 🟡 Medium | DB schema ready, UI form is text-only |
+| Notification preferences persist to DB | 🟡 Medium | Currently localStorage only |
+| Swarm chat from inside swarm push | 🟡 Medium | `/swarms?id=&tab=chat` deep-link |
+| Room Moments photo upload | 🟡 Medium | Add file picker to moment post form |
+| The Room VibeTab redesign | 🟡 Medium | More visual, less list-like |
+| Group splits in swarm context | 🟢 Low | Beem/Venmo integration from swarm detail |
+| Admin OSMImport auth guard | 🟢 Low | Currently no admin check |
 
 ---
 
-## v1.4.0 — HORIZON
+## v1.5.0 — HORIZON
 
 - Public venue profiles (shareable links)
 - Promoter / venue owner portal
@@ -232,4 +247,4 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-*Last updated: March 10, 2026 — v1.2.0*
+*Last updated: March 10, 2026 — v1.3.0*

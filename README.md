@@ -15,7 +15,7 @@ Stack: **Vite + React + TypeScript** | **Supabase (Postgres, Auth, Storage, Real
 ## CURRENT VERSION
 
 ```
-v1.4.1  —  March 10, 2026
+v1.4.2  —  March 11, 2026
 Branch: main
 DB: Production (yfucglycufjwmcuadace.supabase.co)
 ```
@@ -49,6 +49,15 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 | i18n / translation infrastructure | ✅ Live |
 | Twilio OTP (phone verify) | ⚠️ Deployed, no API key yet |
 | Admin panel (venues, geofences) | ✅ Live (internal only) |
+
+---
+
+## WHAT WAS JUST SHIPPED — v1.4.2
+
+### Remove push notifications
+- Stripped all push notification code — imports, call sites, and service logic removed from friendsService, giftsService, messagesService, GeofenceProvider, CreateSwarm, EditSwarm, NotificationsPermission, and capacitorService
+- `pushService.ts` left in place but unused (safe to delete later)
+- Push can be re-added cleanly when ready (Flutter-native, Pushy, or direct APNS)
 
 ---
 

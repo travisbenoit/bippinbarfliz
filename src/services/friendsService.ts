@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase';
-import { sendPushToUser } from './pushService';
 
 export type FriendshipStatus = 'pending' | 'accepted' | 'declined' | 'blocked';
 
@@ -167,15 +166,7 @@ export const friendsService = {
 
     if (error) throw error;
 
-    // Push to recipient (non-blocking)
-    supabase.from('users').select('name').eq('id', user.id).maybeSingle().then(({ data: sender }) => {
-      sendPushToUser(toUserId, {
-        title: `${sender?.name || 'Someone'} wants to be friends`,
-        body: 'Tap to accept their friend request',
-        url: '/friends',
-        tag: `friend-req-${user.id}`,
-      }).catch(() => null);
-    });
+
   },
 
   async acceptFriendRequest(friendshipId: string): Promise<void> {

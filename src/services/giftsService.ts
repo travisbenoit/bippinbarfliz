@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
-import { sendPushToUser } from './pushService';
 
 type UserGift = Database['public']['Tables']['user_gifts']['Row'];
 type UserGiftInsert = Database['public']['Tables']['user_gifts']['Insert'];
@@ -32,15 +31,7 @@ export const giftsService = {
 
     if (error) throw error;
 
-    // Push to recipient (non-blocking)
-    supabase.from('users').select('name').eq('id', user.id).maybeSingle().then(({ data: sender }) => {
-      sendPushToUser(toUserId, {
-        title: `${sender?.name || 'Someone'} sent you a gift 🎁`,
-        body: message || 'You received a virtual gift!',
-        url: '/gifts',
-        tag: `gift-${user.id}`,
-      }).catch(() => null);
-    });
+
 
     return data;
   },

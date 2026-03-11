@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { xpService } from '../../services/xpService';
-import { sendPushToUser } from '../../services/pushService';
+
 import { VIBE_TAGS, type VibeTag } from '../../data/dummyData';
 import TimePicker from './TimePicker';
 
@@ -205,20 +205,6 @@ export default function CreateSwarm() {
             rsvp: 'invited',
           }))
         );
-      }
-
-      // Push invites (non-blocking)
-      if (invitedUsers.length > 0) {
-        const { data: hostProfile } = await supabase.from('users').select('name').eq('id', user!.id).maybeSingle();
-        const hostName = hostProfile?.name || 'Someone';
-        invitedUsers.forEach(friend => {
-          sendPushToUser(friend.id, {
-            title: `${hostName} invited you to a Swarm`,
-            body: (swarm as any).title || 'Join the swarm tonight!',
-            url: `/swarms?id=${(swarm as any).id}`,
-            tag: `swarm-invite-${(swarm as any).id}`,
-          }).catch(() => null);
-        });
       }
 
       // Award XP/coins for creating swarm; auto-assign challenges if needed

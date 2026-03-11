@@ -29,48 +29,45 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-      return new Response(
-        JSON.stringify({ error: "Twilio credentials not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const otp = generateOTP();
-    const credentials = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`);
+    const twilioConfigured = !!(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_PHONE_NUMBER);
+    let smsSent = false;
 
-    const response = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Basic ${credentials}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          To: phone,
-          From: TWILIO_PHONE_NUMBER,
-          Body: `Your Barfliz verification code is: ${otp}`,
-        }),
+    if (twilioConfigured) {
+      try {
+        const credentials = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`);
+        const response = await fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
+          {
+            method: "POST",
+            headers: {
+              "Authorization": `Basic ${credentials}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              To: phone,
+              From: TWILIO_PHONE_NUMBER!,
+              Body: `Your Barfliz verification code is: ${otp}`,
+            }),
+          }
+        );
+
+        const data = await response.json();
+        if (response.ok) {
+          smsSent = true;
+          console.log("SMS sent via Twilio:", data.sid);
+        } else {
+          console.error("Twilio error:", data);
+        }
+      } catch (smsErr) {
+        console.error("Twilio request failed:", smsErr);
       }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("Twilio error:", data);
-      return new Response(
-        JSON.stringify({ error: data.message || "Failed to send OTP" }),
-        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    } else {
+      console.log("Twilio not configured — OTP generated but SMS skipped:", otp);
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        messageSid: data.sid,
-        otp: otp
-      }),
+      JSON.stringify({ success: true, otp, sms_sent: smsSent }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

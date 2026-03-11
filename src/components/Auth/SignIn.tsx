@@ -65,7 +65,7 @@ export default function SignIn() {
 
     const fullPhoneNumber = getFullPhoneNumber(phoneNumber, selectedCountry.countryCode);
 
-    const { error } = await twilioSendOtp(fullPhoneNumber);
+    const { error, devOtp } = await twilioSendOtp(fullPhoneNumber);
 
     if (error) {
       setError(error.message);
@@ -76,6 +76,7 @@ export default function SignIn() {
           phone: fullPhoneNumber,
           countryCode: selectedCountry.countryCode,
           isSignIn: true,
+          devOtp,
         }
       });
     }

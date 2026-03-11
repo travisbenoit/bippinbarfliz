@@ -71,13 +71,13 @@ export default function SignUp() {
 
     const fullPhoneNumber = getFullPhoneNumber(phoneNumber, selectedCountry.countryCode);
 
-    const { error } = await twilioSendOtp(fullPhoneNumber);
+    const { error, devOtp } = await twilioSendOtp(fullPhoneNumber);
 
     if (error) {
       setError(error.message);
       setLoading(false);
     } else {
-      navigate('/verify-phone', { state: { phone: fullPhoneNumber, countryCode: selectedCountry.countryCode } });
+      navigate('/verify-phone', { state: { phone: fullPhoneNumber, countryCode: selectedCountry.countryCode, devOtp } });
     }
   };
 

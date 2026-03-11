@@ -13,12 +13,14 @@ export default function PhoneVerification() {
   const phone = location.state?.phone || '';
   const countryCode = location.state?.countryCode || localStorage.getItem('userCountryCode') || 'US';
   const isSignIn = location.state?.isSignIn || false;
+  const initialDevOtp = location.state?.devOtp || null;
   const isDemo = phone === DEMO_PHONE || phone === DEMO_AU_PHONE;
   const [otp, setOtp] = useState(isDemo ? ['0', '0', '0', '1'] : ['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState('');
   const [resendTimer, setResendTimer] = useState(13);
+  const [devOtp, setDevOtp] = useState<string | null>(initialDevOtp);
   const inputRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -108,13 +110,14 @@ export default function PhoneVerification() {
     setError('');
     setResending(true);
 
-    const { error } = await twilioSendOtp(phone);
+    const { error, devOtp: newDevOtp } = await twilioSendOtp(phone);
 
     if (error) {
       setError(error.message);
     } else {
       setResendTimer(13);
       setOtp(['', '', '', '']);
+      setDevOtp(newDevOtp || null);
       inputRefs[0].current?.focus();
     }
 
@@ -148,6 +151,14 @@ export default function PhoneVerification() {
               <div className="bg-amber-50 border border-amber-300 text-amber-800 px-4 py-3 rounded-xl text-sm text-center">
                 <p className="font-semibold">Demo Mode Active</p>
                 <p className="text-xs mt-1">Code pre-filled — tap Continue to explore {phone === DEMO_AU_PHONE ? 'Darwin, NT' : 'Weston, FL'}</p>
+              </div>
+            )}
+            {devOtp && !isDemo && (
+              <div className="bg-blue-50 border border-blue-300 text-blue-800 px-4 py-4 rounded-xl text-center">
+                <p className="text-xs font-semibold uppercase tracking-wide mb-1 text-blue-500">SMS not configured</p>
+                <p className="text-sm mb-2">Your verification code is:</p>
+                <p className="text-4xl font-black tracking-[0.3em] text-blue-700">{devOtp}</p>
+                <p className="text-xs text-blue-500 mt-2">Enter this code below to continue</p>
               </div>
             )}
             {error && (

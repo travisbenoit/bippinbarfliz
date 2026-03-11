@@ -12,7 +12,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signInWithPhone: (phone: string) => Promise<{ error: any }>;
   verifyOtp: (phone: string, token: string) => Promise<{ data: any; error: any }>;
-  twilioSendOtp: (phone: string) => Promise<{ error: any }>;
+  twilioSendOtp: (phone: string) => Promise<{ error: any; devOtp?: string }>;
   twilioVerifyOtp: (phone: string, code: string, isSignIn?: boolean) => Promise<{ data: any; error: any }>;
   signOut: () => Promise<void>;
 }
@@ -116,6 +116,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.error) throw new Error(data.error);
 
       localStorage.setItem('pending_otp', data.otp);
+
+      // If Twilio isn't configured, return the OTP so UI can show it on-screen
+      if (!data.sms_sent) {
+        return { error: null, devOtp: data.otp };
+      }
       return { error: null };
     } catch (error: any) {
       return { error };

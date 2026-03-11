@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Users, UserCheck, Clock, UserPlus, X, Check, Trash2, MessageCircle, ShieldOff, Shield, ChevronRight, AlertTriangle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Users, UserCheck, Clock, UserPlus, X, Check, Trash2, MessageCircle, ShieldOff, Shield, ChevronRight, AlertTriangle, Search } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { friendsService, Friendship, FriendUser } from '../../services/friendsService';
@@ -51,6 +51,56 @@ export default function FriendsView() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmBlock, setConfirmBlock] = useState<{ friendship: Friendship; user: FriendUser } | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchSentIds, setSearchSentIds] = useState<Set<string>>(new Set());
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const friendIds = new Set([
+    ...friends.map(f => friendsService.getFriendProfile(f, user?.id || '')?.id).filter(Boolean),
+    ...pendingRequests.map(f => f.requester?.id).filter(Boolean),
+    ...sentRequests.map(f => friendsService.getFriendProfile(f, user?.id || '')?.id).filter(Boolean),
+  ]);
+
+  const runSearch = async (q: string) => {
+    if (!q.trim() || !user) { setSearchResults([]); setSearching(false); return; }
+    setSearching(true);
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('*')
+        .or(`name.ilike.%${q}%,username.ilike.%${q}%`)
+        .neq('id', user.id)
+        .limit(20);
+      setSearchResults((data || []).filter(u => !friendIds.has(u.id)));
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSearchChange = (q: string) => {
+    setSearchQuery(q);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (!q.trim()) { setSearchResults([]); setSearching(false); return; }
+    setSearching(true);
+    searchTimerRef.current = setTimeout(() => runSearch(q), 400);
+  };
+
+  const handleSearchAddFriend = async (targetId: string) => {
+    setActionLoading(targetId);
+    try {
+      await friendsService.sendFriendRequest(targetId);
+      setSearchSentIds(prev => new Set([...prev, targetId]));
+      showSuccess('Friend request sent!');
+    } catch {
+      showError('Could not send request.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const handleViewProfile = async (userId: string) => {
     try {
@@ -197,35 +247,118 @@ export default function FriendsView() {
           </div>
         </div>
 
-        <div className="flex border-b border-gray-100 overflow-x-auto">
-          {tabs.map((t) => (
+        {/* Search bar */}
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search by name or @username..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-9 py-2.5 text-sm focus:outline-none focus:border-[#E91E63] focus:bg-white transition-colors"
+          />
+          {searchQuery && (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`flex-shrink-0 flex-1 py-2.5 text-sm font-semibold transition-colors relative ${
-                tab === t.id ? 'text-[#E91E63]' : 'text-gray-500'
-              }`}
+              onClick={() => handleSearchChange('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              {t.label}
-              {t.count !== undefined && t.count > 0 && (
-                <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${
-                  t.id === 'requests' ? 'bg-[#E91E63] text-white' :
-                  t.id === 'blocked' ? 'bg-gray-500 text-white' :
-                  'bg-gray-200 text-gray-600'
-                }`}>
-                  {t.count}
-                </span>
-              )}
-              {tab === t.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E91E63] rounded-full" />
-              )}
+              <X size={15} />
             </button>
-          ))}
+          )}
         </div>
+
+        {!searchQuery && (
+          <div className="flex border-b border-gray-100 overflow-x-auto">
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`flex-shrink-0 flex-1 py-2.5 text-sm font-semibold transition-colors relative ${
+                  tab === t.id ? 'text-[#E91E63]' : 'text-gray-500'
+                }`}
+              >
+                {t.label}
+                {t.count !== undefined && t.count > 0 && (
+                  <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${
+                    t.id === 'requests' ? 'bg-[#E91E63] text-white' :
+                    t.id === 'blocked' ? 'bg-gray-500 text-white' :
+                    'bg-gray-200 text-gray-600'
+                  }`}>
+                    {t.count}
+                  </span>
+                )}
+                {tab === t.id && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E91E63] rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {loading ? (
+        {searchQuery ? (
+          <div className="p-4 space-y-3">
+            {searching ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-8 h-8 border-4 border-[#E91E63]/30 border-t-[#E91E63] rounded-full animate-spin" />
+              </div>
+            ) : searchResults.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Search size={36} className="text-gray-200 mb-3" />
+                <p className="text-gray-500 font-medium">No users found</p>
+                <p className="text-gray-400 text-sm mt-1">Try a different name or @username</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide px-1">
+                  {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                </p>
+                {searchResults.map((u) => {
+                  const isFriend = friendIds.has(u.id);
+                  const isPending = searchSentIds.has(u.id);
+                  return (
+                    <div key={u.id} className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
+                      <button onClick={() => setSelectedProfile(u)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                        <Avatar name={u.name} avatarUrl={u.avatar_url} />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900 truncate">{u.name}</p>
+                          {u.username && (
+                            <p className="text-xs text-gray-400">@{u.username}</p>
+                          )}
+                          {u.home_city && (
+                            <p className="text-xs text-gray-400 truncate">{u.home_city}</p>
+                          )}
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => !isPending && !isFriend && handleSearchAddFriend(u.id)}
+                        disabled={isPending || isFriend || actionLoading === u.id}
+                        className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 ${
+                          isFriend
+                            ? 'bg-gray-100 text-gray-400 cursor-default'
+                            : isPending
+                            ? 'bg-amber-50 text-amber-600 cursor-default'
+                            : 'bg-[#E91E63] text-white hover:bg-[#C2185B]'
+                        }`}
+                      >
+                        {isFriend ? (
+                          <><UserCheck size={14} /> Friends</>
+                        ) : isPending ? (
+                          <><Clock size={14} /> Sent</>
+                        ) : actionLoading === u.id ? (
+                          <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <><UserPlus size={14} /> Add</>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        ) : loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="w-10 h-10 border-4 border-[#E91E63]/30 border-t-[#E91E63] rounded-full animate-spin" />
           </div>

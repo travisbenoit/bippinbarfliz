@@ -46,6 +46,8 @@ const FriendsView = lazy(() => import('./components/Friends/FriendsView'));
 const HistoryView = lazy(() => import('./components/History/HistoryView'));
 const PeopleNearbyView = lazy(() => import('./components/People/PeopleNearbyView'));
 const CompleteDemoWalkthrough = lazy(() => import('./components/Demo/CompleteDemoWalkthrough').then(m => ({ default: m.CompleteDemoWalkthrough })));
+const PrivacyPolicy = lazy(() => import('./components/Legal/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./components/Legal/TermsOfService'));
 
 function PageLoader() {
   return (
@@ -196,6 +198,8 @@ function AppRouter() {
           <Route path="/payments/lush-coin" element={<LushCoinPage />} />
           <Route path="/payments/venmo-manage" element={<VenmoSetup />} />
           <Route path="/leaderboard" element={<LeaderboardView />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
@@ -213,6 +217,8 @@ function AppRouter() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/verify-phone" element={<PhoneVerification />} />
           <Route path="/demo" element={<CompleteDemoWalkthrough />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

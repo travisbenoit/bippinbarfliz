@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Edit3, MapPin, Heart, LogOut, DollarSign, Trophy, Flame } from 'lucide-react';
+import { Settings, Edit3, MapPin, Heart, LogOut, DollarSign, Trophy, Flame, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -166,6 +166,9 @@ export default function ProfileView() {
           <h2 className="text-2xl font-bold text-gray-900">
             {profile.name}, {calculateAge(profile.dob)}
           </h2>
+          {profile.username && (
+            <p className="text-sm text-gray-500 mt-0.5">@{profile.username}</p>
+          )}
 
           <div className="mt-3 flex items-center justify-center gap-2">
             {(profile.registration_country === 'US' || (!profile.registration_country && profile.phone_country_code === '+1')) ? (
@@ -213,6 +216,46 @@ export default function ProfileView() {
       </div>
 
       <div className="px-6 -mt-12 space-y-4">
+        {/* Profile completeness */}
+        {(() => {
+          const fields = [
+            { done: !!profile.avatar_url, label: 'Add a photo' },
+            { done: !!profile.bio?.trim(), label: 'Write a bio' },
+            { done: !!profile.occupation?.trim(), label: 'Add your occupation' },
+            { done: (profile.vibe_tags?.length ?? 0) > 0, label: 'Choose vibe tags' },
+            { done: !!profile.home_city?.trim(), label: 'Set your city' },
+            { done: (profile.favorite_drinks?.length ?? 0) > 0, label: 'Add favorite drinks' },
+            { done: !!profile.instagram_username?.trim(), label: 'Link Instagram' },
+            { done: !!profile.spotify_username?.trim(), label: 'Link Spotify' },
+          ];
+          const done = fields.filter(f => f.done).length;
+          const pct = Math.round((done / fields.length) * 100);
+          if (pct === 100) return null;
+          const nextMissing = fields.find(f => !f.done);
+          return (
+            <div className="bg-white rounded-2xl p-4 shadow-md">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-[#E91E63]" />
+                  <span className="text-sm font-semibold text-gray-900">Profile {pct}% complete</span>
+                </div>
+                <button onClick={() => navigate('/settings/edit-profile')} className="text-xs text-[#E91E63] font-semibold">
+                  Complete →
+                </button>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
+                <div
+                  className="bg-gradient-to-r from-[#E91E63] to-[#FF6B9D] h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              {nextMissing && (
+                <p className="text-xs text-gray-500">Next: {nextMissing.label}</p>
+              )}
+            </div>
+          );
+        })()}
+
         <button
           onClick={() => setShowStatusModal(true)}
           className="w-full bg-white rounded-2xl p-6 shadow-md space-y-4 text-left hover:shadow-lg transition-shadow"

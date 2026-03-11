@@ -184,8 +184,30 @@ export default function HelpCenter() {
           </ul>
         </div>
 
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide px-5 py-3 bg-gray-50">Legal</h3>
+          <div className="divide-y divide-gray-100">
+            <button
+              onClick={() => navigate('/privacy')}
+              className="w-full flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors text-left"
+            >
+              <Shield size={18} className="text-[#E91E63] flex-shrink-0" />
+              <span className="flex-1 text-sm font-medium text-gray-800">Privacy Policy</span>
+              <ChevronDown size={16} className="text-gray-400 -rotate-90" />
+            </button>
+            <button
+              onClick={() => navigate('/terms')}
+              className="w-full flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors text-left"
+            >
+              <Mail size={18} className="text-[#E91E63] flex-shrink-0" />
+              <span className="flex-1 text-sm font-medium text-gray-800">Terms of Service</span>
+              <ChevronDown size={16} className="text-gray-400 -rotate-90" />
+            </button>
+          </div>
+        </div>
+
         <div className="text-center space-y-2 pt-2 pb-4">
-          <p className="text-sm text-gray-500">Barfliz v1.0.0</p>
+          <p className="text-sm text-gray-500">Barfliz v1.3.0</p>
           <p className="text-xs text-gray-400">Making every night out better</p>
         </div>
       </div>

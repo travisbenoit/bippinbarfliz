@@ -31,6 +31,7 @@ const HelpCenter = lazy(() => import('./components/Settings/HelpCenter'));
 const AdminGooglePlaces = lazy(() => import('./components/Settings/AdminGooglePlaces'));
 const AdminGeofences = lazy(() => import('./components/Settings/AdminGeofences'));
 const AdminOSMImport = lazy(() => import('./components/Settings/AdminOSMImport'));
+const AdminVenueAnalytics = lazy(() => import('./components/Settings/AdminVenueAnalytics'));
 const AdminVenues = lazy(() => import('./pages/AdminVenues'));
 const PaymentsView = lazy(() => import('./components/Payments/PaymentsView').then(m => ({ default: m.PaymentsView })));
 const PaymentSettings = lazy(() => import('./components/Payments/PaymentSettings').then(m => ({ default: m.PaymentSettings })));
@@ -186,6 +187,7 @@ function AppRouter() {
           <Route path="/settings/admin/google-places" element={<AdminGooglePlaces />} />
           <Route path="/settings/admin/geofences" element={<AdminGeofences />} />
           <Route path="/settings/admin/osm-import" element={<AdminOSMImport />} />
+          <Route path="/settings/admin/venue-analytics" element={<AdminVenueAnalytics />} />
           <Route path="/admin/venues" element={<AdminVenues />} />
           <Route path="/payments/settings" element={<PaymentSettings />} />
           <Route path="/payments/setup" element={<VenmoSetup />} />

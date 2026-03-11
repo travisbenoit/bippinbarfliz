@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { User, MapPin, Gift, MessageCircle } from 'lucide-react';
 import { roomService, RoomPresenceUser } from '../../services/roomService';
+import { giftsService } from '../../services/giftsService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const DRINK_EMOJIS: Record<string, string> = {
   beer: '🍺',
@@ -34,9 +36,24 @@ interface WhoIsHereProps {
   currentUserId: string | null;
 }
 
+const QUICK_GIFT_ITEM = 'beer'; // fallback item ID — resolved below
+const QUICK_GIFT_EMOJI = '🍺';
+
 export function WhoIsHere({ venueId, onMessageUser, currentUserId }: WhoIsHereProps) {
+  const { user } = useAuth();
   const [presence, setPresence] = useState<RoomPresenceUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [giftingUserId, setGiftingUserId] = useState<string | null>(null);
+  const [giftItemId, setGiftItemId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch the beer virtual item ID once
+    import('../../lib/supabase').then(({ supabase }) => {
+      supabase.from('virtual_items').select('id').eq('name', 'Beer').maybeSingle().then(({ data }) => {
+        if (data) setGiftItemId(data.id);
+      });
+    });
+  }, []);
 
   const load = async () => {
     try {
@@ -132,12 +149,29 @@ export function WhoIsHere({ venueId, onMessageUser, currentUserId }: WhoIsHerePr
                   <button
                     onClick={() => onMessageUser(u.id)}
                     className="w-9 h-9 bg-gray-700 hover:bg-gray-600 rounded-xl flex items-center justify-center transition-colors"
+                    title="Message"
                   >
                     <MessageCircle className="w-4 h-4 text-gray-300" />
                   </button>
                 )}
-                <button className="w-9 h-9 bg-amber-500/20 hover:bg-amber-500/30 rounded-xl flex items-center justify-center transition-colors border border-amber-500/30">
-                  <Gift className="w-4 h-4 text-amber-400" />
+                <button
+                  disabled={giftingUserId === u.id || !giftItemId}
+                  onClick={async () => {
+                    if (!giftItemId || giftingUserId) return;
+                    setGiftingUserId(u.id);
+                    try {
+                      await giftsService.sendGift(u.id, giftItemId, undefined, 'venue', venueId);
+                    } catch { /* silent */ } finally {
+                      setGiftingUserId(null);
+                    }
+                  }}
+                  className="w-9 h-9 bg-amber-500/20 hover:bg-amber-500/30 rounded-xl flex items-center justify-center transition-colors border border-amber-500/30 disabled:opacity-40"
+                  title={`Send ${QUICK_GIFT_EMOJI} beer`}
+                >
+                  {giftingUserId === u.id
+                    ? <div className="w-3 h-3 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+                    : <Gift className="w-4 h-4 text-amber-400" />
+                  }
                 </button>
               </div>
             )}

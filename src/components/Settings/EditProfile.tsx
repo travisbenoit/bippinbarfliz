@@ -104,25 +104,47 @@ export default function EditProfile() {
     setLoading(false);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const compressImage = (file: File): Promise<File> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        const MAX_PX = 800;
+        const scale = Math.min(1, MAX_PX / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(objectUrl);
+        canvas.toBlob(
+          (blob) => resolve(new File([blob!], 'avatar.jpg', { type: 'image/jpeg' })),
+          'image/jpeg',
+          0.85
+        );
+      };
+      img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file); };
+      img.src = objectUrl;
+    });
 
-    if (!file.type.startsWith('image/')) {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.files?.[0];
+    if (!raw) return;
+
+    if (!raw.type.startsWith('image/')) {
       showError('Please select an image file');
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      showError('Image must be less than 5MB');
+    if (raw.size > 10 * 1024 * 1024) {
+      showError('Image must be less than 10MB');
       return;
     }
 
     setUploadingImage(true);
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
+      const file = await compressImage(raw);
+      const fileName = `${Date.now()}.jpg`;
       const filePath = `avatars/${user!.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage

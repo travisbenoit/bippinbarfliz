@@ -3,6 +3,7 @@ import { ArrowLeft, MapPin, Clock, Search, X, UserPlus, Trash2 } from 'lucide-re
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { sendPushToUser } from '../../services/pushService';
 import { VIBE_TAGS, type VibeTag } from '../../data/dummyData';
 import TimePicker from './TimePicker';
 import type { Database } from '../../lib/database.types';
@@ -286,6 +287,17 @@ export default function EditSwarm({ swarm, onClose, onSaved }: EditSwarmProps) {
           .map(f => ({ swarm_id: swarm.id, user_id: f.id, role: 'member', rsvp: 'invited' }));
         if (toInsert.length > 0) {
           await supabase.from('swarm_members').insert(toInsert);
+          // Push invites (non-blocking)
+          const { data: hostProfile } = await supabase.from('users').select('name').eq('id', user!.id).maybeSingle();
+          const hostName = hostProfile?.name || 'Someone';
+          toInsert.forEach(({ user_id }) => {
+            sendPushToUser(user_id, {
+              title: `${hostName} invited you to a Swarm`,
+              body: (swarm as any).title || 'Join the swarm tonight!',
+              url: `/swarms?id=${swarm.id}`,
+              tag: `swarm-invite-${swarm.id}`,
+            }).catch(() => null);
+          });
         }
       }
 

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useGeofencing } from './useGeofencing';
 import { activityService } from '../services/activityService';
+import { sendPushToUser } from '../services/pushService';
 import { xpService } from '../services/xpService';
 import { supabase } from '../lib/supabase';
 import type {
@@ -179,6 +180,24 @@ export function GeofenceProvider({
             `Your friend just arrived at ${event.venue.name}`,
             { venueId: event.venue.id }
           );
+
+          // Push to each friend (non-blocking)
+          supabase
+            .from('friendships')
+            .select('user_id, friend_id')
+            .eq('status', 'accepted')
+            .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+            .then(({ data: friendships }) => {
+              (friendships || []).forEach((f) => {
+                const friendId = f.user_id === user.id ? f.friend_id : f.user_id;
+                sendPushToUser(friendId, {
+                  title: `${actorName} is out tonight 📍`,
+                  body: `Just arrived at ${event.venue!.name}`,
+                  url: '/home',
+                  tag: `friend-venue-${user.id}`,
+                }).catch(() => null);
+              });
+            });
         }
 
         const today = new Date().toISOString().split('T')[0];

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Clock, Sparkles, X, Trash2, MessageCircle, Share2, Receipt, Pencil } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -15,6 +15,7 @@ type Swarm = Database['public']['Tables']['swarms']['Row'];
 export default function SwarmsView() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { showSuccess, showError, showInfo } = useToast();
   const [swarms, setSwarms] = useState<Swarm[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +30,14 @@ export default function SwarmsView() {
   useEffect(() => {
     loadSwarms();
   }, [filter, user]);
+
+  // Auto-open swarm from push notification deep-link (?id=swarm-uuid)
+  useEffect(() => {
+    const deepLinkId = searchParams.get('id');
+    if (!deepLinkId || swarms.length === 0) return;
+    const target = swarms.find(s => s.id === deepLinkId);
+    if (target) { setSelectedSwarm(target); setShowManageModal(true); }
+  }, [searchParams, swarms]);
 
   const loadSwarms = async () => {
     setLoading(true);

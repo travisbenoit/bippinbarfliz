@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Users, MessageCircle, Zap, Camera, ArrowLeft } from 'lucide-react';
+import { X, Users, MessageCircle, Zap, Camera, Trophy } from 'lucide-react';
 import { roomService, RoomStats } from '../../services/roomService';
 import { supabase } from '../../lib/supabase';
 import { RoomChat } from './RoomChat';
 import { WhoIsHere } from './WhoIsHere';
 import { VibeTab } from './VibeTab';
 import { MomentsTab } from './MomentsTab';
+import { VenueLeaderboard } from './VenueLeaderboard';
 
-type RoomTab = 'chat' | 'who' | 'vibe' | 'moments';
+type RoomTab = 'chat' | 'who' | 'vibe' | 'moments' | 'regulars';
 
 interface TheRoomProps {
   venueId: string;
@@ -23,6 +24,7 @@ const TABS: { id: RoomTab; label: string; icon: React.ReactNode }[] = [
   { id: 'who', label: "Who's Here", icon: <Users className="w-4 h-4" /> },
   { id: 'vibe', label: 'Vibe', icon: <Zap className="w-4 h-4" /> },
   { id: 'moments', label: 'Moments', icon: <Camera className="w-4 h-4" /> },
+  { id: 'regulars', label: 'Regulars', icon: <Trophy className="w-4 h-4" /> },
 ];
 
 export function TheRoom({ venueId, venueName, venuePhoto, isInsideVenue, onClose, onMessageUser }: TheRoomProps) {
@@ -140,6 +142,12 @@ export function TheRoom({ venueId, venueName, venuePhoto, isInsideVenue, onClose
           <MomentsTab
             venueId={venueId}
             isInsideVenue={isInsideVenue}
+            currentUserId={currentUserId}
+          />
+        )}
+        {tab === 'regulars' && (
+          <VenueLeaderboard
+            venueId={venueId}
             currentUserId={currentUserId}
           />
         )}

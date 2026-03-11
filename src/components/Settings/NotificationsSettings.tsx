@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Bell, MessageCircle, Users, MapPin, Gift, Megaphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../Layout/PageHeader';
+import { supabase } from '../../lib/supabase';
 
 interface NotificationSetting {
   id: string;
@@ -59,24 +60,51 @@ export default function NotificationsSettings() {
   ]);
 
   useEffect(() => {
+    loadPreferences();
+  }, []);
+
+  const loadPreferences = async () => {
+    // Try DB first
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('users')
+          .select('notification_preferences')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (data?.notification_preferences) {
+          const prefs = data.notification_preferences as Record<string, boolean>;
+          setSettings(prev => prev.map(s => ({ ...s, enabled: prefs[s.id] ?? s.enabled })));
+          localStorage.setItem('notification_settings', JSON.stringify(prefs));
+          return;
+        }
+      }
+    } catch { /* fall through to localStorage */ }
+    // Fallback to localStorage
     const saved = localStorage.getItem('notification_settings');
     if (saved) {
       const savedSettings = JSON.parse(saved);
-      setSettings(prev => prev.map(s => ({
-        ...s,
-        enabled: savedSettings[s.id] ?? s.enabled
-      })));
+      setSettings(prev => prev.map(s => ({ ...s, enabled: savedSettings[s.id] ?? s.enabled })));
     }
-  }, []);
+  };
 
-  const toggleSetting = (id: string) => {
+  const toggleSetting = async (id: string) => {
     const updated = settings.map(s =>
       s.id === id ? { ...s, enabled: !s.enabled } : s
     );
     setSettings(updated);
 
-    const toSave = updated.reduce((acc, s) => ({ ...acc, [s.id]: s.enabled }), {});
+    const toSave = updated.reduce((acc, s) => ({ ...acc, [s.id]: s.enabled }), {} as Record<string, boolean>);
     localStorage.setItem('notification_settings', JSON.stringify(toSave));
+
+    // Persist to DB
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('users').update({ notification_preferences: toSave }).eq('id', user.id);
+      }
+    } catch { /* silent */ }
   };
 
   const masterToggle = settings.find(s => s.id === 'push_all');

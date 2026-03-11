@@ -225,6 +225,7 @@ export default function UserProfileModal({
         <div className="pt-20 pb-6 px-6 space-y-5 overflow-y-auto flex-1 scrollbar-hide">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
+            {user.username && <p className="text-sm text-gray-400 mt-0.5">@{user.username}</p>}
             <p className="text-gray-500">{age} years old</p>
             {user.home_city && (
               <p className="text-sm text-gray-400 mt-1 flex items-center justify-center gap-1">

@@ -15,7 +15,7 @@ Stack: **Vite + React + TypeScript** | **Supabase (Postgres, Auth, Storage, Real
 ## CURRENT VERSION
 
 ```
-v1.3.0  —  March 10, 2026
+v1.4.0  —  March 10, 2026
 Branch: main
 DB: Production (yfucglycufjwmcuadace.supabase.co)
 ```
@@ -49,6 +49,22 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 | i18n / translation infrastructure | ✅ Live |
 | Twilio OTP (phone verify) | ⚠️ Deployed, no API key yet |
 | Admin panel (venues, geofences) | ✅ Live (internal only) |
+
+---
+
+## WHAT WAS JUST SHIPPED — v1.4.0
+
+### App store readiness batch
+- **Friend search** — Search by name or @username in FriendsView; debounced live results with Add/Sent/Friends state
+- **Privacy Policy** — Full page at `/privacy`, accessible logged in and out
+- **Terms of Service** — Full page at `/terms`, accessible logged in and out
+- **Legal links** — HelpCenter now has a Legal section linking both pages
+- **Profile completeness bar** — 8-field progress bar in ProfileView with gradient bar and next-step nudge; hides at 100%
+- **@username display** — Shows under name in ProfileView and UserProfileModal
+- **Friends' activity feed on Home** — ActivityFeed (compact, 5 items) at top of HomeDashboardTab
+- **Moments photo upload** — File picker + client-side compression (1200px/JPEG 82%) in MomentsTab post form
+- **Notification preferences persist to DB** — Saves to `users.notification_preferences` JSONB column; localStorage as fallback
+- **Migration** — `20260310000003_add_notification_preferences.sql`
 
 ---
 
@@ -206,18 +222,17 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-## NEXT — v1.4.0
+## NEXT — v1.5.0
 
 | Feature | Priority | Notes |
 |---|---|---|
 | Twilio OTP (phone auth) | 🔴 High | Blocked on API key |
-| Photo/video posting in Moments | 🟡 Medium | DB schema ready, UI form is text-only |
-| Notification preferences persist to DB | 🟡 Medium | Currently localStorage only |
-| Swarm chat from inside swarm push | 🟡 Medium | `/swarms?id=&tab=chat` deep-link |
-| Room Moments photo upload | 🟡 Medium | Add file picker to moment post form |
+| Swarm chat deep-link from push | 🟡 Medium | `/swarms?id=&tab=chat` deep-link |
 | The Room VibeTab redesign | 🟡 Medium | More visual, less list-like |
 | Group splits in swarm context | 🟢 Low | Beem/Venmo integration from swarm detail |
 | Admin OSMImport auth guard | 🟢 Low | Currently no admin check |
+| App store metadata (icons, screenshots, descriptions) | 🔴 High | Required before submission |
+| Apple/Google developer account setup | 🔴 High | Capacitor shell needed for native submission |
 
 ---
 
@@ -247,4 +262,4 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-*Last updated: March 10, 2026 — v1.3.0*
+*Last updated: March 10, 2026 — v1.4.0*

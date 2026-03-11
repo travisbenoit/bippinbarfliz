@@ -56,8 +56,9 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 
 ### Capacitor native push + app init
 - **`initCapacitor()` wired to `main.tsx`** — StatusBar, SplashScreen, deep links, and native push init on every app start (no-op on web)
-- **FCM native push support** — `send-push-notification` Edge Function now queries `native_token` rows (`platform = 'ios' | 'android'`) and sends via FCM Legacy HTTP API alongside existing VAPID web push
-- Add `FCM_SERVER_KEY` to Supabase Dashboard → Settings → Edge Functions to activate native push delivery
+- **Direct APNS for iOS** — `send-push-notification` Edge Function sends to iOS devices via Apple's APNS HTTP/2 API (JWT p8 auth, no Firebase/FCM)
+- Android native push not used (no FCM); Android users receive web push via browser engine
+- Add `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, `APNS_PRIVATE_KEY` to Supabase Dashboard → Edge Functions env vars to activate iOS push
 
 ---
 

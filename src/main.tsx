@@ -4,7 +4,11 @@ import App from './App.tsx';
 import { AuthProvider } from './contexts/AuthContext';
 import { RegionalSettingsProvider } from './contexts/RegionalSettingsContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { initCapacitor } from './services/capacitorService';
 import './index.css';
+
+// Initialize Capacitor plugins (no-op on web)
+initCapacitor().catch(console.error);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -15,7 +15,7 @@ Stack: **Vite + React + TypeScript** | **Supabase (Postgres, Auth, Storage, Real
 ## CURRENT VERSION
 
 ```
-v1.4.0  —  March 10, 2026
+v1.4.1  —  March 10, 2026
 Branch: main
 DB: Production (yfucglycufjwmcuadace.supabase.co)
 ```
@@ -49,6 +49,15 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 | i18n / translation infrastructure | ✅ Live |
 | Twilio OTP (phone verify) | ⚠️ Deployed, no API key yet |
 | Admin panel (venues, geofences) | ✅ Live (internal only) |
+
+---
+
+## WHAT WAS JUST SHIPPED — v1.4.1
+
+### Capacitor native push + app init
+- **`initCapacitor()` wired to `main.tsx`** — StatusBar, SplashScreen, deep links, and native push init on every app start (no-op on web)
+- **FCM native push support** — `send-push-notification` Edge Function now queries `native_token` rows (`platform = 'ios' | 'android'`) and sends via FCM Legacy HTTP API alongside existing VAPID web push
+- Add `FCM_SERVER_KEY` to Supabase Dashboard → Settings → Edge Functions to activate native push delivery
 
 ---
 

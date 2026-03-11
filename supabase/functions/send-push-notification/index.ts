@@ -2,10 +2,10 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
-// VAPID-signed Web Push using the Web Crypto API (no npm:web-push needed in Deno)
-// Env vars required: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
+// Supports both VAPID Web Push (browser) and FCM (iOS/Android native via Capacitor)
+// Env vars: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, FCM_SERVER_KEY
 
-interface PushSubscription {
+interface WebPushSubscription {
   endpoint: string;
   p256dh: string;
   auth: string;
@@ -18,7 +18,8 @@ interface PushPayload {
   tag?: string;
 }
 
-// Convert base64url string to Uint8Array
+// ── VAPID helpers ─────────────────────────────────────────────────────────────
+
 function base64urlToUint8Array(base64url: string): Uint8Array {
   const padding = "=".repeat((4 - (base64url.length % 4)) % 4);
   const base64 = (base64url + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -26,7 +27,6 @@ function base64urlToUint8Array(base64url: string): Uint8Array {
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
 }
 
-// Convert Uint8Array to base64url string
 function uint8ArrayToBase64url(arr: Uint8Array): string {
   return btoa(String.fromCharCode(...arr))
     .replace(/\+/g, "-")
@@ -36,59 +36,57 @@ function uint8ArrayToBase64url(arr: Uint8Array): string {
 
 async function importVapidPrivateKey(privKeyBase64url: string): Promise<CryptoKey> {
   const keyData = base64urlToUint8Array(privKeyBase64url);
-  return crypto.subtle.importKey(
-    "pkcs8",
-    keyData,
-    { name: "ECDSA", namedCurve: "P-256" },
-    false,
-    ["sign"]
-  );
+  try {
+    return await crypto.subtle.importKey(
+      "pkcs8",
+      keyData,
+      { name: "ECDSA", namedCurve: "P-256" },
+      false,
+      ["sign"]
+    );
+  } catch {
+    return await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "ECDSA", namedCurve: "P-256" },
+      false,
+      ["sign"]
+    );
+  }
 }
 
-async function buildVapidJwt(subject: string, audience: string, publicKeyBase64url: string, privateKey: CryptoKey): Promise<string> {
+async function buildVapidJwt(
+  subject: string,
+  audience: string,
+  vapidPublicKey: string,
+  privateKey: CryptoKey
+): Promise<string> {
   const header = { typ: "JWT", alg: "ES256" };
   const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    aud: audience,
-    exp: now + 12 * 3600,
-    sub: subject,
-  };
-
+  const payload = { aud: audience, exp: now + 12 * 3600, sub: subject };
   const encode = (obj: object) =>
     uint8ArrayToBase64url(new TextEncoder().encode(JSON.stringify(obj)));
-
   const unsignedToken = `${encode(header)}.${encode(payload)}`;
   const sig = await crypto.subtle.sign(
     { name: "ECDSA", hash: { name: "SHA-256" } },
     privateKey,
     new TextEncoder().encode(unsignedToken)
   );
-
   return `${unsignedToken}.${uint8ArrayToBase64url(new Uint8Array(sig))}`;
 }
 
-async function sendPush(sub: PushSubscription, payload: PushPayload, vapidPublicKey: string, vapidPrivateKey: string, vapidSubject: string): Promise<{ ok: boolean; status?: number }> {
+async function sendWebPush(
+  sub: WebPushSubscription,
+  payload: PushPayload,
+  vapidPublicKey: string,
+  vapidPrivateKey: string,
+  vapidSubject: string
+): Promise<{ ok: boolean; status?: number }> {
   const url = new URL(sub.endpoint);
   const audience = `${url.protocol}//${url.host}`;
-
-  let privKey: CryptoKey;
-  try {
-    privKey = await importVapidPrivateKey(vapidPrivateKey);
-  } catch {
-    // If pkcs8 fails, try raw format
-    const rawKey = base64urlToUint8Array(vapidPrivateKey);
-    privKey = await crypto.subtle.importKey(
-      "raw",
-      rawKey,
-      { name: "ECDSA", namedCurve: "P-256" },
-      false,
-      ["sign"]
-    );
-  }
-
+  const privKey = await importVapidPrivateKey(vapidPrivateKey);
   const jwt = await buildVapidJwt(vapidSubject, audience, vapidPublicKey, privKey);
 
-  const body = JSON.stringify(payload);
   const resp = await fetch(sub.endpoint, {
     method: "POST",
     headers: {
@@ -96,11 +94,52 @@ async function sendPush(sub: PushSubscription, payload: PushPayload, vapidPublic
       "TTL": "86400",
       "Authorization": `vapid t=${jwt},k=${vapidPublicKey}`,
     },
-    body,
+    body: JSON.stringify(payload),
   });
-
   return { ok: resp.ok, status: resp.status };
 }
+
+// ── FCM helper (HTTP v1 API) ──────────────────────────────────────────────────
+
+async function sendFcmPush(
+  token: string,
+  payload: PushPayload,
+  fcmServerKey: string
+): Promise<{ ok: boolean; status?: number }> {
+  // FCM Legacy HTTP API — still widely supported and simpler than v1 OAuth2
+  const resp = await fetch("https://fcm.googleapis.com/fcm/send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `key=${fcmServerKey}`,
+    },
+    body: JSON.stringify({
+      to: token,
+      notification: {
+        title: payload.title,
+        body: payload.body,
+        sound: "default",
+        badge: "1",
+      },
+      data: {
+        url: payload.url ?? "",
+        tag: payload.tag ?? "",
+      },
+      priority: "high",
+      apns: {
+        payload: {
+          aps: {
+            sound: "default",
+            badge: 1,
+          },
+        },
+      },
+    }),
+  });
+  return { ok: resp.ok, status: resp.status };
+}
+
+// ── Handler ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -120,13 +159,7 @@ Deno.serve(async (req) => {
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
     const vapidSubject = Deno.env.get("VAPID_SUBJECT") ?? "mailto:hello@barfliz.com";
-
-    if (!vapidPublicKey || !vapidPrivateKey) {
-      return new Response(JSON.stringify({ error: "VAPID keys not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const fcmServerKey = Deno.env.get("FCM_SERVER_KEY");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -135,7 +168,7 @@ Deno.serve(async (req) => {
 
     const { data: subs, error } = await supabase
       .from("push_subscriptions")
-      .select("endpoint, p256dh, auth")
+      .select("endpoint, p256dh, auth, native_token, platform")
       .eq("user_id", user_id);
 
     if (error || !subs?.length) {
@@ -145,25 +178,50 @@ Deno.serve(async (req) => {
     }
 
     const payload: PushPayload = { title, body: body ?? "", url, tag };
+    const webSubs = subs.filter((s) => s.platform === "web" && s.endpoint && s.p256dh && s.auth);
+    const nativeSubs = subs.filter((s) => (s.platform === "ios" || s.platform === "android") && s.native_token);
 
-    const results = await Promise.allSettled(
-      subs.map((sub) =>
-        sendPush(sub as PushSubscription, payload, vapidPublicKey, vapidPrivateKey, vapidSubject)
-      )
-    );
-
-    // Remove subscriptions that returned 404 or 410 (no longer valid)
+    let sent = 0;
     const staleEndpoints: string[] = [];
-    results.forEach((result, i) => {
-      if (result.status === "fulfilled" && (result.value.status === 404 || result.value.status === 410)) {
-        staleEndpoints.push(subs[i].endpoint);
-      }
-    });
+
+    // Web push (VAPID)
+    if (vapidPublicKey && vapidPrivateKey && webSubs.length) {
+      const webResults = await Promise.allSettled(
+        webSubs.map((sub) =>
+          sendWebPush(
+            sub as WebPushSubscription,
+            payload,
+            vapidPublicKey,
+            vapidPrivateKey,
+            vapidSubject
+          )
+        )
+      );
+      webResults.forEach((result, i) => {
+        if (result.status === "fulfilled") {
+          if (result.value.ok) sent++;
+          if (result.value.status === 404 || result.value.status === 410) {
+            staleEndpoints.push(webSubs[i].endpoint);
+          }
+        }
+      });
+    }
+
+    // Native push (FCM — covers both iOS via APNS-FCM bridge and Android)
+    if (fcmServerKey && nativeSubs.length) {
+      const nativeResults = await Promise.allSettled(
+        nativeSubs.map((sub) => sendFcmPush(sub.native_token, payload, fcmServerKey))
+      );
+      nativeResults.forEach((result) => {
+        if (result.status === "fulfilled" && result.value.ok) sent++;
+      });
+    }
+
+    // Clean up stale web subscriptions
     if (staleEndpoints.length) {
       await supabase.from("push_subscriptions").delete().in("endpoint", staleEndpoints);
     }
 
-    const sent = results.filter((r) => r.status === "fulfilled" && r.value.ok).length;
     return new Response(JSON.stringify({ sent }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

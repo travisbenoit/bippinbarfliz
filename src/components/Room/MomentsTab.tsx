@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Flag, User, Clock, Heart, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Plus, Trash2, Flag, User, Clock, Heart, X, ChevronLeft, ChevronRight, ImagePlus } from 'lucide-react';
 import { roomService, RoomMoment } from '../../services/roomService';
+import { supabase } from '../../lib/supabase';
 
 function timeLeft(expiresAt: string): string {
   const diff = new Date(expiresAt).getTime() - Date.now();
@@ -171,6 +172,28 @@ function StoryViewer({ moments, startIndex, likedIds, onLike, onDelete, onReport
 
 // ── MomentsTab ────────────────────────────────────────────────────────────────
 
+async function compressMomentImage(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const maxW = 1200;
+      const scale = img.width > maxW ? maxW / img.width : 1;
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        if (!blob) { reject(new Error('compress failed')); return; }
+        resolve(new File([blob], 'moment.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.82);
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
 export function MomentsTab({ venueId, isInsideVenue, currentUserId }: MomentsTabProps) {
   const [moments, setMoments] = useState<RoomMoment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -180,6 +203,9 @@ export function MomentsTab({ venueId, isInsideVenue, currentUserId }: MomentsTab
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [likingIds, setLikingIds] = useState<Set<string>>(new Set());
   const [storyIndex, setStoryIndex] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     try {
@@ -230,13 +256,42 @@ export function MomentsTab({ venueId, isInsideVenue, currentUserId }: MomentsTab
     }
   };
 
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const preview = URL.createObjectURL(file);
+    setImagePreview(preview);
+    setSelectedImage(file);
+    e.target.value = '';
+  };
+
+  const clearImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
   const handlePost = async () => {
-    if (!caption.trim() || posting) return;
+    if (!caption.trim() && !selectedImage || posting) return;
     setPosting(true);
     try {
-      const moment = await roomService.postMoment(venueId, caption.trim(), 'text');
+      let mediaUrl: string | undefined;
+      let momentType: 'text' | 'photo' = 'text';
+
+      if (selectedImage && currentUserId) {
+        momentType = 'photo';
+        const compressed = await compressMomentImage(selectedImage);
+        const filePath = `moments/${currentUserId}/${Date.now()}.jpg`;
+        const { error } = await supabase.storage.from('profiles').upload(filePath, compressed, { upsert: false });
+        if (!error) {
+          mediaUrl = supabase.storage.from('profiles').getPublicUrl(filePath).data.publicUrl;
+        }
+      }
+
+      const moment = await roomService.postMoment(venueId, caption.trim(), momentType, mediaUrl);
       setMoments((prev) => [moment, ...prev]);
       setCaption('');
+      clearImage();
       setShowPostForm(false);
     } catch {
       // silent
@@ -317,30 +372,50 @@ export function MomentsTab({ venueId, isInsideVenue, currentUserId }: MomentsTab
         {/* Post form */}
         {isInsideVenue && showPostForm && (
           <div className="px-4 pb-2">
+            <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
             <div className="bg-gray-800/80 border border-amber-500/30 rounded-2xl p-4 space-y-3">
+              {imagePreview && (
+                <div className="relative rounded-xl overflow-hidden">
+                  <img src={imagePreview} alt="preview" className="w-full max-h-40 object-cover rounded-xl" />
+                  <button
+                    onClick={clearImage}
+                    className="absolute top-2 right-2 w-6 h-6 bg-black/70 rounded-full flex items-center justify-center"
+                  >
+                    <X className="w-3.5 h-3.5 text-white" />
+                  </button>
+                </div>
+              )}
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value.slice(0, 150))}
-                placeholder="What's happening right now? (expires in 24h)"
+                placeholder={imagePreview ? 'Add a caption... (optional)' : "What's happening right now? (expires in 24h)"}
                 className="w-full bg-transparent text-white placeholder-gray-500 text-sm resize-none focus:outline-none"
                 rows={3}
                 autoFocus
               />
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">{caption.length}/150</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600">{caption.length}/150</span>
+                  <button
+                    onClick={() => photoInputRef.current?.click()}
+                    className="flex items-center gap-1 text-amber-500/70 hover:text-amber-400 transition-colors"
+                  >
+                    <ImagePlus className="w-4 h-4" />
+                  </button>
+                </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => { setShowPostForm(false); setCaption(''); }}
+                    onClick={() => { setShowPostForm(false); setCaption(''); clearImage(); }}
                     className="px-3 py-1.5 text-gray-400 text-sm hover:text-white transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handlePost}
-                    disabled={!caption.trim() || posting}
+                    disabled={(!caption.trim() && !selectedImage) || posting}
                     className="px-4 py-1.5 bg-amber-500 text-black text-sm font-bold rounded-xl disabled:opacity-40 hover:bg-amber-400 transition-colors"
                   >
-                    Post
+                    {posting ? '...' : 'Post'}
                   </button>
                 </div>
               </div>

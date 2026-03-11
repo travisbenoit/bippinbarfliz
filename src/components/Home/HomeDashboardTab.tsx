@@ -1,4 +1,4 @@
-import { MapPin, Users, Building2, Sparkles, User as UserIcon, Clock, Flame, Trophy } from 'lucide-react';
+import { MapPin, Users, Building2, Sparkles, User as UserIcon, Clock, Flame, Trophy, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { Database } from '../../lib/database.types';
@@ -13,6 +13,7 @@ import { SwarmSuggestion } from '../Social/SwarmSuggestion';
 import { TrendingVenues } from '../Venues/TrendingVenues';
 import { NightRoutePlanner } from '../Social/NightRoutePlanner';
 import { xpService, UserStats } from '../../services/xpService';
+import { ActivityFeed } from '../Activity/ActivityFeed';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -66,6 +67,22 @@ export default function HomeDashboardTab({
 
       <SwarmSuggestion />
       <FriendSafeArrivals />
+
+      <div className="bg-white rounded-2xl p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Activity size={20} className="text-[#E91E63]" />
+            <h3 className="font-bold text-gray-900">Friends' Activity</h3>
+          </div>
+          <button
+            onClick={onShowActivityHistory}
+            className="text-xs text-[#E91E63] font-semibold"
+          >
+            See all →
+          </button>
+        </div>
+        <ActivityFeed maxItems={5} compact />
+      </div>
 
       {userProfile && (
         <div className="bg-gradient-to-br from-[#E91E63] to-[#C2185B] rounded-2xl p-5 text-white shadow-lg">

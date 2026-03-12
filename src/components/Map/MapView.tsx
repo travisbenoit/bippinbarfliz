@@ -258,7 +258,6 @@ export default function MapView() {
   }, [userLocation]);
 
   const handleSearchThisArea = useCallback(() => {
-    setMapCenter(currentMapCenter);
     setSearchCenter({ lat: currentMapCenter[0], lng: currentMapCenter[1] });
     setShowSearchThisArea(false);
   }, [currentMapCenter]);

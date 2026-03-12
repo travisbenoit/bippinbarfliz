@@ -24,7 +24,11 @@ export interface MapUserProfile extends RealTimeUser {
   avatar_url?: string;
 }
 
-export function useMapData(userLocation: { lat: number; lng: number } | null, distanceFilter: number) {
+export function useMapData(
+  userLocation: { lat: number; lng: number } | null,
+  distanceFilter: number,
+  searchCenter?: { lat: number; lng: number } | null,
+) {
   const [swarms, setSwarms] = useState<MapSwarm[]>([]);
   const [users, setUsers] = useState<MapUserProfile[]>([]);
   const [venues, setVenues] = useState<RealTimeVenue[]>([]);
@@ -126,16 +130,21 @@ export function useMapData(userLocation: { lat: number; lng: number } | null, di
 
   const fetchVenuesAndUsers = async () => {
     try {
-      if (userLocation) {
+      const fetchCenter = searchCenter || userLocation;
+      if (fetchCenter) {
         const countryCode = localStorage.getItem('userCountryCode') || 'US';
-        const nearbyVenues = await locationService.fetchNearbyVenues(userLocation.lat, userLocation.lng, distanceFilter, countryCode);
+        const nearbyVenues = await locationService.fetchNearbyVenues(fetchCenter.lat, fetchCenter.lng, distanceFilter, countryCode);
         setVenues(nearbyVenues);
       }
 
       const [venueUsers, nearbyUsers] = await Promise.all([
         locationService.fetchUsersAtVenues(),
-        userLocation
-          ? locationService.fetchNearbyUsers(userLocation.lat, userLocation.lng, distanceFilter)
+        (searchCenter || userLocation)
+          ? locationService.fetchNearbyUsers(
+              (searchCenter || userLocation)!.lat,
+              (searchCenter || userLocation)!.lng,
+              distanceFilter,
+            )
           : Promise.resolve([]),
       ]);
 
@@ -184,7 +193,7 @@ export function useMapData(userLocation: { lat: number; lng: number } | null, di
     const interval = setInterval(fetchVenuesAndUsers, 10000);
     fetchVenuesAndUsers();
     return () => clearInterval(interval);
-  }, [userLocation, distanceFilter]);
+  }, [userLocation, distanceFilter, searchCenter?.lat, searchCenter?.lng]);
 
   return { swarms, users, venues };
 }

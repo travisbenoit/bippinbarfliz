@@ -153,7 +153,9 @@ export default function MapView() {
     }
   }, []);
 
-  const { swarms: dbSwarms, users: realTimeUsers, venues: realTimeVenues } = useMapData(userLocation, distanceFilter);
+  const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null);
+
+  const { swarms: dbSwarms, users: realTimeUsers, venues: realTimeVenues } = useMapData(userLocation, distanceFilter, searchCenter);
 
   const dynamicDistanceOptions = useMemo(() => {
     if (distanceUnit === 'miles') {
@@ -178,7 +180,6 @@ export default function MapView() {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
-  const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [showSearchThisArea, setShowSearchThisArea] = useState(false);
   const [currentMapCenter, setCurrentMapCenter] = useState<[number, number]>(mapCenter);
   const [mapBounds, setMapBounds] = useState<{ ne: [number, number]; sw: [number, number] } | null>(null);

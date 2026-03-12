@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, Clock, Users, MessageCircle, Share2, User, Crown, Check, Sparkles } from 'lucide-react';
+import { X, MapPin, Clock, Users, MessageCircle, Share2, User, Crown, Check, Sparkles, Pencil } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { MapSwarm } from '../../hooks/useMapData';
+import type { Database } from '../../lib/database.types';
+
+type SwarmRow = Database['public']['Tables']['swarms']['Row'];
 
 interface SwarmMember {
   id: string;
@@ -17,6 +20,8 @@ interface SwarmDetailsModalProps {
   onJoin: (swarmId: string) => void;
   onMessage: (swarmId: string) => void;
   onViewProfile: (userId: string) => void;
+  currentUserId?: string;
+  onEdit?: (swarmRow: SwarmRow) => void;
 }
 
 export default function SwarmDetailsModal({
@@ -26,11 +31,28 @@ export default function SwarmDetailsModal({
   onJoin,
   onMessage,
   onViewProfile,
+  currentUserId,
+  onEdit,
 }: SwarmDetailsModalProps) {
   const [isJoined, setIsJoined] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [host, setHost] = useState<SwarmMember | null>(null);
   const [members, setMembers] = useState<SwarmMember[]>([]);
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false);
+
+  const isHost = !!(currentUserId && swarm && currentUserId === swarm.hostId);
+
+  const handleEditClick = async () => {
+    if (!swarm || !onEdit) return;
+    setIsLoadingEdit(true);
+    const { data } = await supabase
+      .from('swarms')
+      .select('*')
+      .eq('id', swarm.id)
+      .maybeSingle();
+    setIsLoadingEdit(false);
+    if (data) onEdit(data as SwarmRow);
+  };
 
   useEffect(() => {
     if (!isOpen || !swarm) return;
@@ -179,8 +201,30 @@ export default function SwarmDetailsModal({
           </button>
         </div>
 
-        <div className="p-6 border-t border-white/10 bg-midnight-950/50 flex-shrink-0">
-          {isJoined ? (
+        <div className="p-6 border-t border-white/10 bg-midnight-950/50 flex-shrink-0 space-y-3">
+          {isHost && onEdit && (
+            <button
+              onClick={handleEditClick}
+              disabled={isLoadingEdit}
+              className="w-full py-3.5 rounded-2xl font-semibold transition-all flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/20"
+            >
+              {isLoadingEdit ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Pencil className="w-5 h-5" />
+              )}
+              Edit Swarm
+            </button>
+          )}
+          {isHost ? (
+            <button
+              onClick={() => onMessage(swarm.id)}
+              className="w-full btn-primary py-4 flex items-center justify-center gap-2"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Message Members
+            </button>
+          ) : isJoined ? (
             <div className="flex gap-3">
               <button
                 onClick={() => onMessage(swarm.id)}

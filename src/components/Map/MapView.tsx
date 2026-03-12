@@ -16,10 +16,14 @@ import locationService from '../../services/locationService';
 import { useMapData, type MapSwarm, type MapUserProfile } from '../../hooks/useMapData';
 import MapCanvas from './MapCanvas';
 import MapBottomSheet from './MapBottomSheet';
+import EditSwarm from '../Swarms/EditSwarm';
 import type { TabType, TonightStatus } from './MapCanvas';
 import type { RealTimeVenue } from '../../services/locationService';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../contexts/ToastContext';
+import type { Database } from '../../lib/database.types';
+
+type SwarmRow = Database['public']['Tables']['swarms']['Row'];
 
 type GroupSizeValue = 'small' | 'medium' | 'large' | null;
 
@@ -68,6 +72,8 @@ export default function MapView() {
   const [swarmDateFilter, setSwarmDateFilter] = useState<DateFilterOption>('today');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [hasCentered, setHasCentered] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+  const [editSwarmRow, setEditSwarmRow] = useState<SwarmRow | null>(null);
 
   const defaultDistance = distanceUnit === 'miles' ? 8.0 : 10.0;
   const [distanceFilter, setDistanceFilter] = useState(defaultDistance);
@@ -79,6 +85,7 @@ export default function MapView() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          setCurrentUserId(user.id);
           const { data } = await supabase
             .from('users')
             .select('preferred_radius_meters')
@@ -495,7 +502,17 @@ export default function MapView() {
         onJoin={handleJoinSwarm}
         onMessage={handleMessageSwarm}
         onViewProfile={handleViewProfile}
+        currentUserId={currentUserId}
+        onEdit={(row) => { setSelectedSwarm(null); setEditSwarmRow(row); }}
       />
+
+      {editSwarmRow && (
+        <EditSwarm
+          swarm={editSwarmRow}
+          onClose={() => setEditSwarmRow(null)}
+          onSaved={() => setEditSwarmRow(null)}
+        />
+      )}
 
       <UserProfileModal
         isOpen={!!selectedUser}

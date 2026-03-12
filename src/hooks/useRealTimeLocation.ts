@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
-const MIN_UPDATE_INTERVAL_MS = 10000;
-const MIN_DISTANCE_METERS = 10;
+const MIN_UPDATE_INTERVAL_MS = 3000;
+const MIN_DISTANCE_METERS = 5;
 
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000;

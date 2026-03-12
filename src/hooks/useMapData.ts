@@ -181,7 +181,7 @@ export function useMapData(userLocation: { lat: number; lng: number } | null, di
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(fetchVenuesAndUsers, 30000);
+    const interval = setInterval(fetchVenuesAndUsers, 10000);
     fetchVenuesAndUsers();
     return () => clearInterval(interval);
   }, [userLocation, distanceFilter]);

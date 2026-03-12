@@ -395,15 +395,28 @@ export default function MapView() {
           )}
         </div>
 
-        {showSearchThisArea && (
+        {(showSearchThisArea || searchCenter) && (
           <div className="absolute top-24 left-1/2 -translate-x-1/2 z-[999] animate-fade-in">
-            <button
-              onClick={handleSearchThisArea}
-              className="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-full shadow-lg font-medium flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-            >
-              <MapPin className="w-4 h-4" />
-              Search this area
-            </button>
+            {searchCenter ? (
+              <button
+                onClick={() => { setSearchCenter(null); setShowSearchThisArea(false); }}
+                className="bg-white border border-gray-200 text-gray-900 px-5 py-2.5 rounded-full shadow-lg font-medium flex items-center gap-2 transition-all hover:bg-gray-50 active:scale-95"
+              >
+                <MapPin className="w-4 h-4 text-[#E91E63]" />
+                Searching this area
+                <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center ml-1">
+                  <X className="w-3 h-3 text-gray-500" />
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={handleSearchThisArea}
+                className="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-full shadow-lg font-medium flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+              >
+                <MapPin className="w-4 h-4" />
+                Search this area
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -461,33 +474,10 @@ export default function MapView() {
         onSwarmClick={(s) => setSelectedSwarm(s)}
         onUserClick={(u) => setSelectedUser(u)}
         onVenueClick={(v) => setSelectedVenue(v)}
+        tonightStatus={statusInfo}
+        onTonightStatusClick={() => setShowTonightStatus(true)}
       />
 
-      <div className="fixed bottom-28 left-4 z-[1000] flex flex-col gap-3">
-        <button
-          onClick={() => setShowTonightStatus(true)}
-          className="flex items-center gap-2.5 bg-white/90 backdrop-blur-xl border border-gray-200 shadow-md rounded-full px-4 py-3 hover:bg-white transition-all group"
-        >
-          <div className={`w-3 h-3 rounded-full ${statusInfo.color} ${statusInfo.glow}`} />
-          <span className="text-sm font-medium text-gray-900">{statusInfo.label}</span>
-          {myTonightVenue && (
-            <span className="text-xs text-[#E91E63] max-w-[80px] truncate group-hover:max-w-[120px] transition-all">
-              {myTonightVenue}
-            </span>
-          )}
-        </button>
-
-        {searchCenter && (
-          <button
-            onClick={() => setSearchCenter(null)}
-            className="flex items-center gap-2.5 bg-white/90 backdrop-blur-xl border border-gray-200 shadow-md rounded-full px-4 py-3 hover:bg-white transition-all"
-          >
-            <MapPin className="w-4 h-4 text-[#E91E63]" />
-            <span className="text-sm font-medium text-gray-900">Searching This Area</span>
-            <X className="w-4 h-4 text-gray-400" />
-          </button>
-        )}
-      </div>
 
       <TonightStatusModal
         isOpen={showTonightStatus}

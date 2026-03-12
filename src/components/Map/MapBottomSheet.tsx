@@ -23,6 +23,8 @@ interface Props {
   onSwarmClick: (s: MapSwarm) => void;
   onUserClick: (u: MapUserProfile) => void;
   onVenueClick: (v: RealTimeVenue) => void;
+  tonightStatus?: { color: string; label: string; glow: string };
+  onTonightStatusClick?: () => void;
 }
 
 const COLLAPSED_HEIGHT = 12;
@@ -38,6 +40,7 @@ export default function MapBottomSheet({
   hotspotsWithUsers, venueUserCounts,
   getUsersAtVenue,
   onSwarmClick, onUserClick, onVenueClick,
+  tonightStatus, onTonightStatusClick,
 }: Props) {
   const { formatDistance: formatDistanceRegional } = useRegionalSettings();
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -133,6 +136,15 @@ export default function MapBottomSheet({
           </button>
 
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            {tonightStatus && onTonightStatusClick && (
+              <button
+                onClick={onTonightStatusClick}
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all whitespace-nowrap shrink-0"
+              >
+                <div className={`w-2.5 h-2.5 rounded-full ${tonightStatus.color}`} />
+                {tonightStatus.label}
+              </button>
+            )}
             {tabs.map(tab => (
               <button
                 key={tab.key}

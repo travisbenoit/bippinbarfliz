@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, Star, Users, User, MessageCircle, ExternalLink, CheckCircle, Radio, Phone, Globe, Clock } from 'lucide-react';
+import { X, MapPin, Star, Users, User, MessageCircle, ExternalLink, CheckCircle, Radio, Phone, Globe, Clock, Navigation, Footprints, Car } from 'lucide-react';
 import type { RealTimeVenue } from '../../services/locationService';
 import type { MapUserProfile } from '../../hooks/useMapData';
 import { VenueRatingWidget } from '../Venues/VenueRatingWidget';
@@ -11,6 +11,7 @@ import { VenueEntryAnimation } from '../Room/VenueEntryAnimation';
 import { roomService, RoomStats } from '../../services/roomService';
 import { supabase } from '../../lib/supabase';
 import { useGeofenceContext } from '../../geolocation/GeofenceProvider';
+import geocodingService from '../../services/geocodingService';
 
 interface VenueDetailsModalProps {
   isOpen: boolean;
@@ -36,6 +37,8 @@ export default function VenueDetailsModal({
   const [showRoom, setShowRoom] = useState(false);
   const [showEntryAnimation, setShowEntryAnimation] = useState(false);
   const [roomStats, setRoomStats] = useState<RoomStats>({ message_count: 0, active_users: 0, top_drink: null, top_music: null });
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [showDirectionsMenu, setShowDirectionsMenu] = useState(false);
 
   const isAutoCheckedIn = geofenceState.currentVenue?.id === venue?.id;
 
@@ -43,12 +46,30 @@ export default function VenueDetailsModal({
     if (isOpen && venue) {
       loadCurrentPresence();
       roomService.getStats(venue.id).then(setRoomStats).catch(() => {});
+      getUserLocation();
     } else {
       setCheckedIn(false);
       setShowRoom(false);
       setShowEntryAnimation(false);
+      setShowDirectionsMenu(false);
     }
   }, [isOpen, venue?.id, isAutoCheckedIn]);
+
+  const getUserLocation = async () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        () => {
+          setUserLocation(null);
+        }
+      );
+    }
+  };
 
   const loadCurrentPresence = async () => {
     if (!venue) return;
@@ -217,24 +238,99 @@ export default function VenueDetailsModal({
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => {
-                  if (venue.address) {
-                    window.open(`https://maps.google.com/?q=${encodeURIComponent(venue.address)}`, '_blank');
-                  }
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-[#E91E63]/10 text-[#E91E63] rounded-xl text-sm font-semibold hover:bg-[#E91E63]/20 transition-colors"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Directions
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowDirectionsMenu(!showDirectionsMenu)}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#E91E63] text-white rounded-xl text-sm font-semibold hover:bg-[#C2185B] transition-colors"
+                >
+                  <Navigation className="w-4 h-4" />
+                  Directions
+                </button>
+                {showDirectionsMenu && (
+                  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
+                    {userLocation && venue.lat && venue.lng ? (
+                      <>
+                        <button
+                          onClick={() => {
+                            const url = geocodingService.getWalkingDirectionsUrl(
+                              userLocation.lat,
+                              userLocation.lng,
+                              venue.lat,
+                              venue.lng,
+                              geocodingService.detectPlatform()
+                            );
+                            window.open(url, '_blank');
+                            setShowDirectionsMenu(false);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 transition-colors flex items-center gap-2"
+                        >
+                          <Footprints className="w-4 h-4 text-[#E91E63]" />
+                          <div>
+                            <p className="font-semibold text-gray-900 text-sm">Walking</p>
+                            <p className="text-xs text-gray-500">Pedestrian route</p>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => {
+                            const url = geocodingService.getDrivingDirectionsUrl(
+                              userLocation.lat,
+                              userLocation.lng,
+                              venue.lat,
+                              venue.lng,
+                              geocodingService.detectPlatform()
+                            );
+                            window.open(url, '_blank');
+                            setShowDirectionsMenu(false);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
+                        >
+                          <Car className="w-4 h-4 text-[#E91E63]" />
+                          <div>
+                            <p className="font-semibold text-gray-900 text-sm">Driving</p>
+                            <p className="text-xs text-gray-500">Fastest route</p>
+                          </div>
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          const url = geocodingService.getDirectionsUrl(
+                            venue.lat,
+                            venue.lng,
+                            venue.address || venue.name,
+                            geocodingService.detectPlatform()
+                          );
+                          window.open(url, '_blank');
+                          setShowDirectionsMenu(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      >
+                        <MapPin className="w-4 h-4 text-[#E91E63]" />
+                        <div>
+                          <p className="font-semibold text-gray-900 text-sm">Open in Maps</p>
+                          <p className="text-xs text-gray-500">View on map</p>
+                        </div>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-3">
               {venue.address && (
-                <div className="flex items-start gap-3 text-gray-600">
-                  <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm">{venue.address}</p>
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-start gap-3 text-gray-600">
+                      <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">{venue.address}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Coordinates: {venue.lat.toFixed(4)}, {venue.lng.toFixed(4)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

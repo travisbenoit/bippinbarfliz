@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import geocodingService from './geocodingService';
 import type {
   Venue,
   VenuePhoto,
@@ -240,4 +241,86 @@ export function getVenueCategoryLabel(category: string): string {
     restaurant: 'Restaurant',
   };
   return labels[category] || category;
+}
+
+export interface AddressValidationResult {
+  isValid: boolean;
+  addressMatch: boolean;
+  matchConfidence: number;
+  distanceMeters: number;
+  warnings: string[];
+}
+
+export async function validateVenueCoordinates(
+  venue: Venue
+): Promise<AddressValidationResult> {
+  const warnings: string[] = [];
+
+  if (!venue.lat || !venue.lng) {
+    return {
+      isValid: false,
+      addressMatch: false,
+      matchConfidence: 0,
+      distanceMeters: 0,
+      warnings: ['Missing venue coordinates'],
+    };
+  }
+
+  if (!venue.address) {
+    return {
+      isValid: true,
+      addressMatch: false,
+      matchConfidence: 0,
+      distanceMeters: 0,
+      warnings: ['No address available for validation'],
+    };
+  }
+
+  const geocodeResult = await geocodingService.reverseGeocode(
+    venue.lat,
+    venue.lng
+  );
+
+  if (!geocodeResult) {
+    return {
+      isValid: true,
+      addressMatch: false,
+      matchConfidence: 0,
+      distanceMeters: 0,
+      warnings: ['Could not reverse geocode coordinates'],
+    };
+  }
+
+  const { match, confidence } = geocodingService.validateAddressMatch(
+    venue.address,
+    geocodeResult.address
+  );
+
+  if (!match && confidence < 0.5) {
+    warnings.push(
+      `Address may not match coordinates (confidence: ${(confidence * 100).toFixed(0)}%)`
+    );
+  }
+
+  return {
+    isValid: true,
+    addressMatch: match,
+    matchConfidence: confidence,
+    distanceMeters: 0,
+    warnings,
+  };
+}
+
+export function ensureCoordinatesInBounds(
+  venue: Venue,
+  bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number }
+): boolean {
+  if (!venue.lat || !venue.lng) return false;
+
+  return (
+    venue.lat >= bounds.minLat &&
+    venue.lat <= bounds.maxLat &&
+    venue.lng >= bounds.minLng &&
+    venue.lng <= bounds.maxLng
+  );
 }

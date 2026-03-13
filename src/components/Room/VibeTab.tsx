@@ -50,56 +50,70 @@ function PollSection({
   totalVotes: number;
 }) {
   const maxCount = Math.max(...Object.values(results), 1);
+  const winner = totalVotes > 0
+    ? options.find(o => (results[o.value] || 0) === maxCount)
+    : null;
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">{title}</h3>
-      <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{title}</h3>
+        {totalVotes > 0 && <span className="text-xs text-gray-600">{totalVotes} vote{totalVotes !== 1 ? 's' : ''}</span>}
+      </div>
+
+      {/* Winner hero (only when votes exist) */}
+      {winner && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+          <span className="text-3xl">{winner.emoji}</span>
+          <div className="flex-1">
+            <p className="font-bold text-amber-300 text-sm">{winner.label}</p>
+            <p className="text-xs text-amber-500/70">
+              {Math.round(((results[winner.value] || 0) / totalVotes) * 100)}% of votes
+            </p>
+          </div>
+          <span className="text-lg">🏆</span>
+        </div>
+      )}
+
+      {/* Option grid */}
+      <div className="grid grid-cols-4 gap-2">
         {options.map((opt) => {
           const count = results[opt.value] || 0;
           const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-          const isWinner = count === maxCount && totalVotes > 0;
           const isVoted = userVote === opt.value;
+          const isWinner = winner?.value === opt.value;
 
           return (
             <button
               key={opt.value}
               onClick={() => isInsideVenue && onVote(opt.value)}
               disabled={!isInsideVenue || votingPoll}
-              className={`w-full relative overflow-hidden rounded-xl border transition-all ${
+              className={`relative flex flex-col items-center gap-1.5 py-3 px-1 rounded-2xl border transition-all active:scale-95 disabled:cursor-default ${
                 isVoted
-                  ? 'border-amber-500 bg-amber-500/10'
+                  ? 'border-amber-500 bg-amber-500/15 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
                   : isWinner && totalVotes > 0
-                  ? 'border-gray-600 bg-gray-800/80'
-                  : 'border-gray-700/50 bg-gray-800/40 hover:border-gray-600'
-              } disabled:cursor-default`}
+                  ? 'border-amber-500/40 bg-amber-500/5'
+                  : 'border-gray-700/50 bg-gray-800/40 hover:border-gray-600 hover:bg-gray-800/60'
+              }`}
             >
-              <div
-                className={`absolute inset-y-0 left-0 transition-all duration-500 rounded-xl ${
-                  isVoted ? 'bg-amber-500/20' : 'bg-gray-700/30'
-                }`}
-                style={{ width: totalVotes > 0 ? `${pct}%` : '0%' }}
-              />
-              <div className="relative flex items-center gap-3 px-3 py-2.5">
-                <span className="text-xl">{opt.emoji}</span>
-                <span className={`flex-1 text-left text-sm font-medium ${isVoted ? 'text-amber-400' : 'text-white'}`}>
-                  {opt.label}
+              <span className="text-2xl leading-none">{opt.emoji}</span>
+              <span className={`text-[10px] font-semibold leading-tight text-center ${isVoted ? 'text-amber-400' : 'text-gray-400'}`}>
+                {opt.label}
+              </span>
+              {totalVotes > 0 && (
+                <span className={`text-[10px] font-bold ${isVoted ? 'text-amber-300' : 'text-gray-600'}`}>
+                  {pct}%
                 </span>
-                {totalVotes > 0 && (
-                  <div className="flex items-center gap-2">
-                    {isWinner && (
-                      <span className="text-xs text-amber-400 font-bold">WINNING</span>
-                    )}
-                    <span className="text-xs text-gray-400 font-medium w-8 text-right">{pct}%</span>
-                  </div>
-                )}
-                {isVoted && <span className="text-amber-400 text-xs">✓</span>}
-              </div>
+              )}
+              {isVoted && (
+                <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-amber-500 flex items-center justify-center">
+                  <span className="text-[8px] text-black font-bold">✓</span>
+                </span>
+              )}
             </button>
           );
         })}
       </div>
-      <p className="text-xs text-gray-600 text-right">{totalVotes} vote{totalVotes !== 1 ? 's' : ''}</p>
     </div>
   );
 }
@@ -166,8 +180,9 @@ export function VibeTab({ venueId, isInsideVenue }: VibeTabProps) {
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-8">
       {!isInsideVenue && (
-        <div className="px-4 py-2 bg-gray-800/60 rounded-xl border border-gray-700 text-center text-xs text-gray-400">
-          Check in to vote on the vibe
+        <div className="px-4 py-3 bg-gray-800/60 rounded-2xl border border-gray-700/50 text-center">
+          <span className="text-2xl">📍</span>
+          <p className="text-xs text-gray-400 mt-1 font-medium">Check in to cast your vote</p>
         </div>
       )}
 

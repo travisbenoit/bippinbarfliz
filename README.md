@@ -15,7 +15,7 @@ Stack: **Vite + React + TypeScript** | **Supabase (Postgres, Auth, Storage, Real
 ## CURRENT VERSION
 
 ```
-v1.4.3  —  March 12, 2026
+v1.5.0  —  March 12, 2026
 Branch: main
 DB: Production (yfucglycufjwmcuadace.supabase.co)
 ```
@@ -49,6 +49,17 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 | i18n / translation infrastructure | ✅ Live |
 | Twilio OTP (phone verify) | ⚠️ Deployed, no API key yet |
 | Admin panel (venues, geofences) | ✅ Live (internal only) |
+
+---
+
+## WHAT WAS JUST SHIPPED — v1.5.0
+
+### App store readiness batch (minus Twilio key)
+- **Capacitor native restored** — `capacitorService.ts` restored with full Capacitor integration (StatusBar, SplashScreen, deep link `appUrlOpen`); was stubbed to no-ops in previous push
+- **Admin OSMImport auth guard** — `AdminOSMImport` now checks `is_admin` on mount and redirects to `/` if not admin; matches pattern used by all other admin pages
+- **Swarm chat deep-link** — `/swarms?id=X&tab=chat` now navigates directly to swarm chat in MessagesView; `MessagesView` handles `location.state.openSwarmChat` to auto-open the right conversation
+- **Group splits on map Swarm** — `SwarmDetailsModal` (map view) now has "Split the Tab" button for hosts and members; wired to existing `GroupSplit` component
+- **VibeTab visual redesign** — Polls redesigned from list-with-progress-bars to emoji grid; winner shown as a hero card with trophy; vote % shown per tile; check-in gate updated with location pin
 
 ---
 
@@ -261,17 +272,13 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-## NEXT — v1.5.0
+## NEXT — v1.6.0
 
 | Feature | Priority | Notes |
 |---|---|---|
-| Twilio OTP (phone auth) | 🔴 High | Blocked on API key |
-| Swarm chat deep-link from push | 🟡 Medium | `/swarms?id=&tab=chat` deep-link |
-| The Room VibeTab redesign | 🟡 Medium | More visual, less list-like |
-| Group splits in swarm context | 🟢 Low | Beem/Venmo integration from swarm detail |
-| Admin OSMImport auth guard | 🟢 Low | Currently no admin check |
-| App store metadata (icons, screenshots, descriptions) | 🔴 High | Required before submission |
-| Apple/Google developer account setup | 🔴 High | Capacitor shell needed for native submission |
+| Twilio OTP (phone auth) | 🔴 High | Blocked on API key — need to add to Supabase env vars |
+| App store metadata (descriptions, keywords, screenshots) | 🔴 High | Copy drafted — needs screenshots from real device |
+| Apple/Google developer account setup | 🔴 High | Bundle ID `com.barfliz.app` set — needs account enrollment + provisioning |
 
 ---
 

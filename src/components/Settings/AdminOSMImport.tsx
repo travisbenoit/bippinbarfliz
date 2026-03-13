@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Download, RefreshCw, MapPin, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 
 interface CityStats {
   city: string | null;
@@ -23,6 +24,7 @@ type ImportStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export default function AdminOSMImport() {
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [stats, setStats] = useState<CityStats[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
   const [countryFilter, setCountryFilter] = useState<string>('all');
@@ -59,8 +61,20 @@ export default function AdminOSMImport() {
   };
 
   useEffect(() => {
-    fetchStats();
-  }, [countryFilter]);
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { navigate('/'); return; }
+      supabase.from('users').select('is_admin').eq('id', user.id).single().then(({ data }) => {
+        if (!data?.is_admin) { navigate('/'); return; }
+        setIsAdmin(true);
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin) fetchStats();
+  }, [countryFilter, isAdmin]);
+
+  if (isAdmin === null) return null;
 
   const triggerImport = async (regionType: 'country' | 'southFlorida', countryCode?: string) => {
     setImportStatus('loading');

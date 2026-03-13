@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, Clock, Users, MessageCircle, Share2, User, Crown, Check, Sparkles, Pencil } from 'lucide-react';
+import { X, MapPin, Clock, Users, MessageCircle, Share2, User, Crown, Check, Sparkles, Pencil, Receipt } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { MapSwarm } from '../../hooks/useMapData';
 import type { Database } from '../../lib/database.types';
+import { GroupSplit } from '../Payments/GroupSplit';
 
 type SwarmRow = Database['public']['Tables']['swarms']['Row'];
 
@@ -39,6 +40,7 @@ export default function SwarmDetailsModal({
   const [host, setHost] = useState<SwarmMember | null>(null);
   const [members, setMembers] = useState<SwarmMember[]>([]);
   const [isLoadingEdit, setIsLoadingEdit] = useState(false);
+  const [showSplit, setShowSplit] = useState(false);
 
   const isHost = !!(currentUserId && swarm && currentUserId === swarm.hostId);
 
@@ -256,8 +258,23 @@ export default function SwarmDetailsModal({
               )}
             </button>
           )}
+        {(isHost || isJoined) && (
+          <button
+            onClick={() => setShowSplit(true)}
+            className="w-full py-3 rounded-2xl font-semibold transition-all flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 text-sm"
+          >
+            <Receipt className="w-4 h-4" />
+            Split the Tab
+          </button>
+        )}
         </div>
       </div>
+
+      <GroupSplit
+        swarmId={swarm?.id}
+        isOpen={showSplit}
+        onClose={() => setShowSplit(false)}
+      />
     </div>
   );
 }

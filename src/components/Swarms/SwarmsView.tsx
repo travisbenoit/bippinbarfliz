@@ -31,12 +31,19 @@ export default function SwarmsView() {
     loadSwarms();
   }, [filter, user]);
 
-  // Auto-open swarm from push notification deep-link (?id=swarm-uuid)
+  // Auto-open swarm from push notification deep-link (?id=swarm-uuid&tab=chat)
   useEffect(() => {
     const deepLinkId = searchParams.get('id');
+    const deepLinkTab = searchParams.get('tab');
     if (!deepLinkId || swarms.length === 0) return;
     const target = swarms.find(s => s.id === deepLinkId);
-    if (target) { setSelectedSwarm(target); setShowManageModal(true); }
+    if (!target) return;
+    if (deepLinkTab === 'chat') {
+      navigate('/messages', { state: { openSwarmChat: target.id, swarmName: target.title } });
+    } else {
+      setSelectedSwarm(target);
+      setShowManageModal(true);
+    }
   }, [searchParams, swarms]);
 
   const loadSwarms = async () => {

@@ -61,7 +61,7 @@ export default function MessagesView() {
   }, []);
 
   useEffect(() => {
-    const state = location.state as { openDmWith?: string; dmUserName?: string; dmUserAvatar?: string | null } | null;
+    const state = location.state as { openDmWith?: string; dmUserName?: string; dmUserAvatar?: string | null; openSwarmChat?: string; swarmName?: string } | null;
     if (state?.openDmWith) {
       setDirectChatUser({
         id: state.openDmWith,
@@ -70,7 +70,23 @@ export default function MessagesView() {
       });
       window.history.replaceState({}, '');
     }
-  }, [location.state]);
+    if (state?.openSwarmChat) {
+      const swarmId = state.openSwarmChat;
+      const swarmName = state.swarmName || 'Swarm';
+      const existing = swarmConversations.find(s => s.swarmId === swarmId);
+      setActiveChat(existing ?? {
+        id: swarmId,
+        type: 'swarm',
+        name: swarmName,
+        avatar_url: null,
+        lastMessage: '',
+        lastMessageTime: '',
+        unread: false,
+        swarmId,
+      });
+      window.history.replaceState({}, '');
+    }
+  }, [location.state, swarmConversations]);
 
   useEffect(() => {
     const subscription = messagesService.subscribeToAllMessages(() => {

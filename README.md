@@ -15,7 +15,7 @@ Stack: **Vite + React + TypeScript** | **Supabase (Postgres, Auth, Storage, Real
 ## CURRENT VERSION
 
 ```
-v1.4.2  —  March 11, 2026
+v1.4.3  —  March 12, 2026
 Branch: main
 DB: Production (yfucglycufjwmcuadace.supabase.co)
 ```
@@ -52,9 +52,29 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 
 ---
 
+## WHAT WAS JUST SHIPPED — v1.4.3
+
+### Bug fixes from debug session (March 12, 2026)
+- **Directions dropdown click-outside** — `VenueDetailsModal` directions menu now closes when tapping/clicking anywhere outside it (was stuck open until a menu item was clicked)
+- **`geocodingService.reverseGeocode` broken RPC** — Replaced non-existent `reverse_geocode` Supabase RPC call with Nominatim (OpenStreetMap) API; no key required, results cached in-memory 24h
+
+---
+
 ## WHAT WAS JUST SHIPPED — v1.4.2
 
-### Remove push notifications
+### Map overhaul batch
+- **Search this area** — Pin map center, fetch venues/users from that location instead of GPS; shows active "Searching this area ✕" pill to cancel
+- **Walking + driving directions** — Venue detail sheet Directions button now opens a mode picker (Walking/Driving) using platform-detected deep links (Apple Maps on iOS, Google Maps on Android/web)
+- **Swarm host editing from map** — Swarm hosts see an "Edit Swarm" button directly in SwarmDetailsModal on the map; loads EditSwarm modal inline
+- **Tonight Status in bottom sheet** — Status pill moved into MapBottomSheet tab bar (removed floating button from map overlay)
+- **Birthday date picker redesign** — Replaced masked text input with dropdowns (Month / Day / Year); dynamic day count per month
+- **Music sharing consolidation** — `musicSharingService.ts` deleted; `shareMusic`, `getReceivedMusic`, `getSentMusic`, `getSwarmMusic` methods merged into `musicService.ts`; `ChatView` migrated to use `musicService`
+- **Location accuracy** — Real-time location update interval tightened to 3s / 5m threshold (was 10s / 10m); map data refresh reduced to 10s (was 30s)
+- **Venue coordinate validation** — New `validateVenueCoordinates` utility + migration `20260312_validate_venue_coordinates.sql`
+- **Geocoding service** — New `geocodingService.ts` with platform-aware directions URLs, address validation, and reverse geocoding via Nominatim
+- **Capacitor stubbed for web** — `capacitorService.ts` simplified to no-ops for web builds; native Capacitor plugins remain in `package.json` for future native shell
+
+### Remove push notifications (v1.4.2)
 - Stripped all push notification code — imports, call sites, and service logic removed from friendsService, giftsService, messagesService, GeofenceProvider, CreateSwarm, EditSwarm, NotificationsPermission, and capacitorService
 - `pushService.ts` left in place but unused (safe to delete later)
 - Push can be re-added cleanly when ready (Flutter-native, Pushy, or direct APNS)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, MapPin, Star, Users, User, MessageCircle, ExternalLink, CheckCircle, Radio, Phone, Globe, Clock, Navigation, Footprints, Car } from 'lucide-react';
 import type { RealTimeVenue } from '../../services/locationService';
 import type { MapUserProfile } from '../../hooks/useMapData';
@@ -39,6 +39,7 @@ export default function VenueDetailsModal({
   const [roomStats, setRoomStats] = useState<RoomStats>({ message_count: 0, active_users: 0, top_drink: null, top_music: null });
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showDirectionsMenu, setShowDirectionsMenu] = useState(false);
+  const directionsRef = useRef<HTMLDivElement>(null);
 
   const isAutoCheckedIn = geofenceState.currentVenue?.id === venue?.id;
 
@@ -54,6 +55,17 @@ export default function VenueDetailsModal({
       setShowDirectionsMenu(false);
     }
   }, [isOpen, venue?.id, isAutoCheckedIn]);
+
+  useEffect(() => {
+    if (!showDirectionsMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (directionsRef.current && !directionsRef.current.contains(e.target as Node)) {
+        setShowDirectionsMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDirectionsMenu]);
 
   const getUserLocation = async () => {
     if (navigator.geolocation) {
@@ -238,7 +250,7 @@ export default function VenueDetailsModal({
                   </div>
                 )}
               </div>
-              <div className="relative">
+              <div className="relative" ref={directionsRef}>
                 <button
                   onClick={() => setShowDirectionsMenu(!showDirectionsMenu)}
                   className="flex items-center gap-2 px-4 py-2 bg-[#E91E63] text-white rounded-xl text-sm font-semibold hover:bg-[#C2185B] transition-colors"

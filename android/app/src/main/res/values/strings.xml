@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Barfliz</string>
+    <string name="title_activity_main">Barfliz</string>
+    <string name="package_name">com.barfliz.app</string>
+    <string name="custom_url_scheme">com.barfliz.app</string>
+</resources>

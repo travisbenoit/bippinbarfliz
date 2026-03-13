@@ -1,5 +1,3 @@
-import { supabase } from '../lib/supabase';
-
 export interface GeocodeResult {
   address: string;
   formattedAddress: string;
@@ -8,7 +6,6 @@ export interface GeocodeResult {
 
 class GeocodingService {
   private cache = new Map<string, GeocodeResult>();
-  private cacheTimeout = 24 * 60 * 60 * 1000;
 
   private getCacheKey(lat: number, lng: number): string {
     return `${lat.toFixed(6)}_${lng.toFixed(6)}`;
@@ -20,21 +17,20 @@ class GeocodingService {
       const cached = this.cache.get(cacheKey);
       if (cached) return cached;
 
-      const { data, error } = await supabase
-        .rpc('reverse_geocode', {
-          latitude: lat,
-          longitude: lng,
-        });
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+      const response = await fetch(url, {
+        headers: { 'Accept-Language': 'en', 'User-Agent': 'Barfliz/1.0' },
+      });
 
-      if (error || !data) {
-        console.error('Reverse geocoding error:', error);
-        return null;
-      }
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      if (!data || data.error) return null;
 
       const result: GeocodeResult = {
-        address: data.address || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
-        formattedAddress: data.formatted_address || data.address || '',
-        confidence: data.confidence || 0.8,
+        address: data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+        formattedAddress: data.display_name || '',
+        confidence: 0.9,
       };
 
       this.cache.set(cacheKey, result);

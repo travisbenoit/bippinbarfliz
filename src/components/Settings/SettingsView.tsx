@@ -100,7 +100,7 @@ export default function SettingsView() {
           icon: User,
           label: 'Profile',
           subtitle: profile ? `${profile.name}, ${calculateAge(profile.dob)}` : 'View and edit your profile',
-          action: () => navigate('/settings/profile'),
+          action: () => navigate('/settings/edit-profile'),
           showProfile: true,
         },
         {

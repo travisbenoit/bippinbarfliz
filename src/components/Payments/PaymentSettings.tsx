@@ -39,7 +39,7 @@ export function PaymentSettings() {
 
   const handlePaymentSetup = () => {
     if (paymentLinked) {
-      navigate('/payments/venmo-manage');
+      navigate('/payments/setup');
     } else {
       navigate('/payments/setup');
     }

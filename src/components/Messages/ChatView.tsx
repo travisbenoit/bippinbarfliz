@@ -28,9 +28,9 @@ import { VirtualItemsModal } from '../VirtualItems/VirtualItemsModal';
 import { GiftCard } from '../VirtualItems/GiftCard';
 import type { VirtualItem } from '../../data/virtualItems';
 import type { Song } from '../../services/musicService';
+import { musicService } from '../../services/musicService';
 import { messagesService } from '../../services/messagesService';
 import { giftsService } from '../../services/giftsService';
-import { musicSharingService } from '../../services/musicSharingService';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../contexts/ToastContext';
 import { markConversationAsRead } from '../../services/messagesService';
@@ -351,7 +351,7 @@ export default function ChatView({ isOpen, onClose, chatType, recipient, swarm, 
   const handleSendMusic = async (song: Song, musicMessage: string) => {
     try {
       if (chatType === 'direct' && recipient) {
-        await musicSharingService.shareMusic(
+        await musicService.shareMusic(
           recipient.id,
           {
             songId: song.id,
@@ -375,7 +375,7 @@ export default function ChatView({ isOpen, onClose, chatType, recipient, swarm, 
 
           await Promise.all(
             otherMembers.map(m =>
-              musicSharingService.shareMusic(
+              musicService.shareMusic(
                 m.user_id,
                 {
                   songId: song.id,

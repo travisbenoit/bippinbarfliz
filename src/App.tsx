@@ -181,7 +181,6 @@ function AppRouter() {
           <Route path="/create-swarm" element={<CreateSwarm />} />
           <Route path="/settings" element={<SettingsView />} />
           <Route path="/settings/edit-profile" element={<EditProfile />} />
-          <Route path="/settings/profile" element={<EditProfile />} />
           <Route path="/settings/notifications" element={<NotificationsSettings />} />
           <Route path="/settings/safety" element={<SafetySecurity />} />
           <Route path="/settings/help" element={<HelpCenter />} />
@@ -196,7 +195,6 @@ function AppRouter() {
           <Route path="/payments/send" element={<SendPayment />} />
           <Route path="/payments/receive" element={<ReceivePayment />} />
           <Route path="/payments/lush-coin" element={<LushCoinPage />} />
-          <Route path="/payments/venmo-manage" element={<VenmoSetup />} />
           <Route path="/leaderboard" element={<LeaderboardView />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />

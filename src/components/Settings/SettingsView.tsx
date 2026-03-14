@@ -3,6 +3,7 @@ import { User, Bell, Shield, MapPin, HelpCircle, ChevronRight, LogOut, Moon, Rul
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRegionalSettings } from '../../contexts/RegionalSettingsContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../lib/database.types';
 import PageHeader from '../Layout/PageHeader';
@@ -13,8 +14,8 @@ export default function SettingsView() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { distanceUnit, setDistanceUnit, setTemperatureUnit } = useRegionalSettings();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const [useMetric, setUseMetric] = useState(() => distanceUnit === 'kilometers');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -24,10 +25,6 @@ export default function SettingsView() {
   useEffect(() => {
     loadProfile();
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem('darkMode', darkMode.toString());
-  }, [darkMode]);
 
   useEffect(() => {
     setDistanceUnit(useMetric ? 'kilometers' : 'miles');
@@ -201,7 +198,7 @@ export default function SettingsView() {
                 </div>
               </div>
               <button
-                onClick={() => setDarkMode(!darkMode)}
+                onClick={toggleDarkMode}
                 className={`w-12 h-7 rounded-full transition-all duration-300 ${
                   darkMode ? 'bg-[#E91E63]' : 'bg-gray-300'
                 }`}

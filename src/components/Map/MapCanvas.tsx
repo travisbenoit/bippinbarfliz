@@ -171,21 +171,27 @@ export default function MapCanvas({
     if (userLocation) {
       const latlng: L.LatLngExpression = [userLocation.lat, userLocation.lng];
 
+      const isDarkMap = mapStyle === 'dark';
+      const circleColor = isDarkMap ? 'rgba(0, 217, 255, 0.25)' : 'rgba(37, 99, 235, 0.2)';
+      const circleFill = isDarkMap ? 'rgba(0, 217, 255, 0.1)' : 'rgba(37, 99, 235, 0.08)';
+
       if (!userCircleRef.current) {
         userCircleRef.current = L.circleMarker(latlng, {
           radius: 40,
-          color: 'rgba(37, 99, 235, 0.2)',
-          fillColor: 'rgba(37, 99, 235, 0.08)',
+          color: circleColor,
+          fillColor: circleFill,
           fillOpacity: 1,
           weight: 0,
           interactive: false,
         }).addTo(map);
       } else {
         userCircleRef.current.setLatLng(latlng);
+        userCircleRef.current.setStyle({ color: circleColor, fillColor: circleFill });
       }
 
+      const darkClass = mapStyle === 'dark' ? ' dark-map' : '';
       const userIcon = createDivIcon(
-        `<div class="user-location-dot">
+        `<div class="user-location-dot${darkClass}">
           <div class="user-location-pulse"></div>
           <div class="user-location-core"></div>
         </div>`,
@@ -200,7 +206,7 @@ export default function MapCanvas({
         userMarkerRef.current.setIcon(userIcon);
       }
     }
-  }, [userLocation]);
+  }, [userLocation, mapStyle]);
 
   const updateMarkers = useCallback(() => {
     const map = mapRef.current;

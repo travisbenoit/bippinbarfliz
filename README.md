@@ -15,7 +15,7 @@ Stack: **Vite + React + TypeScript** | **Supabase (Postgres, Auth, Storage, Real
 ## CURRENT VERSION
 
 ```
-v1.6.0  —  March 14, 2026
+v1.6.1  —  March 14, 2026
 Branch: main
 DB: Production (yfucglycufjwmcuadace.supabase.co)
 ```
@@ -51,6 +51,14 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 | i18n / translation infrastructure | ✅ Live |
 | Twilio OTP (phone verify) | ⚠️ Deployed, no API key yet |
 | Admin panel (venues, geofences) | ✅ Live (internal only) |
+
+---
+
+## WHAT WAS JUST SHIPPED — v1.6.1
+
+### Bug fixes from #fixes channel
+- **Dark mode now works** — Was saving to localStorage but never applied. Created `ThemeContext` provider that adds/removes `dark` class on `<html>`. Added global CSS dark overrides for all common patterns (backgrounds, text, borders, inputs, modals). Enabled Tailwind `darkMode: 'class'`. SettingsView toggle now wired through context.
+- **User location dot visible on night map** — Blue dot was nearly invisible on CARTO dark tiles. Now switches to bright cyan (`#00D9FF`) with glow effect when map is in Night mode. Circle marker background also adapts. Dot updates dynamically when switching map styles.
 
 ---
 
@@ -354,4 +362,4 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-*Last updated: March 14, 2026 — v1.6.0*
+*Last updated: March 14, 2026 — v1.6.1*

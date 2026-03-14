@@ -4,6 +4,7 @@ import App from './App.tsx';
 import { AuthProvider } from './contexts/AuthContext';
 import { RegionalSettingsProvider } from './contexts/RegionalSettingsContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { initCapacitor } from './services/capacitorService';
 import { CRYPTO_ENABLED } from './lib/featureFlags';
 import './index.css';
@@ -18,15 +19,17 @@ initCapacitor().catch(console.error);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
-      <CryptoProviders>
-        <RegionalSettingsProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
-        </RegionalSettingsProvider>
-      </CryptoProviders>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CryptoProviders>
+          <RegionalSettingsProvider>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </RegionalSettingsProvider>
+        </CryptoProviders>
+      </AuthProvider>
+    </ThemeProvider>
   </StrictMode>
 );
 

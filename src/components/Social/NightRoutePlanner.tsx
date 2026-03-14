@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Plus, Trash2, Send, Navigation, Users, X, Loader2 } from 'lucide-react';
+import { MapPin, Plus, Trash2, Send, Navigation, Users, X, Loader2, Sparkles, Clock, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { aiService } from '../../services/aiService';
+import type { SmartNightPlan } from '../../types/ai';
 
 interface RouteStop {
   venue_id: string;
@@ -29,9 +31,10 @@ interface Venue {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
-export function NightRoutePlanner({ isOpen, onClose }: Props) {
+export function NightRoutePlanner({ isOpen, onClose, userLocation }: Props) {
   const { user } = useAuth();
   const [routes, setRoutes] = useState<NightRoute[]>([]);
   const [routeName, setRouteName] = useState('');
@@ -43,7 +46,11 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<'list' | 'create'>('list');
+  const [step, setStep] = useState<'list' | 'create' | 'ai-plan'>('list');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiGroupSize, setAiGroupSize] = useState(2);
+  const [aiPlan, setAiPlan] = useState<SmartNightPlan | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !user) return;
@@ -157,6 +164,40 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
     }
   };
 
+  const generateAIPlan = async () => {
+    if (!userLocation || !aiPrompt.trim()) return;
+    setAiLoading(true);
+    setError(null);
+    setAiPlan(null);
+    try {
+      const res = await aiService.getSmartNightPlan(
+        userLocation.lat, userLocation.lng, aiPrompt.trim(), aiGroupSize
+      );
+      if (res.success && res.data) {
+        setAiPlan(res.data);
+      } else {
+        setError(res.error || 'AI planning failed');
+      }
+    } catch {
+      setError('Something went wrong');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const useAIPlan = () => {
+    if (!aiPlan) return;
+    setRouteName(aiPlan.plan_name);
+    setStops(aiPlan.stops.map(s => ({
+      venue_id: s.venue_id,
+      venue_name: s.venue_name,
+      order: s.order,
+    })));
+    setAiPlan(null);
+    setAiPrompt('');
+    setStep('create');
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -173,12 +214,20 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
           </div>
           <div className="flex items-center gap-2">
             {step === 'list' && (
-              <button
-                onClick={() => setStep('create')}
-                className="flex items-center gap-1.5 bg-[#E91E63] text-white px-3 py-1.5 rounded-full text-sm font-semibold"
-              >
-                <Plus className="w-4 h-4" /> New Route
-              </button>
+              <>
+                <button
+                  onClick={() => setStep('ai-plan')}
+                  className="flex items-center gap-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold"
+                >
+                  <Sparkles className="w-4 h-4" /> AI Plan
+                </button>
+                <button
+                  onClick={() => setStep('create')}
+                  className="flex items-center gap-1.5 bg-[#E91E63] text-white px-3 py-1.5 rounded-full text-sm font-semibold"
+                >
+                  <Plus className="w-4 h-4" /> Manual
+                </button>
+              </>
             )}
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
               <X className="w-5 h-5 text-gray-500" />
@@ -232,6 +281,106 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
                     </div>
                   </div>
                 ))
+              )}
+            </>
+          )}
+
+          {step === 'ai-plan' && (
+            <>
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <p className="text-sm font-semibold text-purple-900">Describe your perfect night</p>
+                </div>
+                <textarea
+                  value={aiPrompt}
+                  onChange={e => setAiPrompt(e.target.value)}
+                  placeholder="e.g., Chill start at a brewery, then cocktails, end the night dancing near downtown"
+                  rows={3}
+                  className="w-full border border-purple-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500 resize-none bg-white"
+                />
+                <div className="flex items-center gap-3 mt-3">
+                  <label className="text-sm text-gray-600">Group size:</label>
+                  <div className="flex gap-1.5">
+                    {[2, 3, 4, 5, 6].map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setAiGroupSize(n)}
+                        className={`w-8 h-8 rounded-full text-sm font-medium transition-all ${
+                          aiGroupSize === n
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setStep('list'); setError(null); setAiPlan(null); }}
+                  className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={generateAIPlan}
+                  disabled={!aiPrompt.trim() || aiLoading || !userLocation}
+                  className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {aiLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  {aiLoading ? 'Planning...' : 'Generate Plan'}
+                </button>
+              </div>
+
+              {aiPlan && (
+                <div className="space-y-3">
+                  <div className="bg-white border border-gray-100 rounded-2xl p-4">
+                    <h3 className="font-bold text-gray-900">{aiPlan.plan_name}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{aiPlan.overview}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    {aiPlan.stops.map((stop, i) => (
+                      <div key={stop.venue_id} className="relative">
+                        {i < aiPlan.stops.length - 1 && (
+                          <div className="absolute left-[18px] top-[44px] bottom-[-8px] w-0.5 bg-gradient-to-b from-purple-300 to-pink-300" />
+                        )}
+                        <div className="flex items-start gap-3 bg-gray-50 rounded-xl p-3">
+                          <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                            {stop.order}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900 text-sm">{stop.venue_name}</p>
+                            <p className="text-xs text-gray-500 capitalize">{stop.category}</p>
+                            <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-400">
+                              <Clock className="w-3 h-3" />
+                              <span>{stop.suggested_arrival}</span>
+                              <ArrowRight className="w-3 h-3" />
+                              <span>{stop.suggested_departure}</span>
+                            </div>
+                            <p className="text-xs text-purple-600 mt-1">{stop.reason}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={useAIPlan}
+                    className="w-full py-3 bg-[#E91E63] text-white rounded-xl text-sm font-semibold hover:bg-[#C2185B] flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    Use This Plan
+                  </button>
+                </div>
               )}
             </>
           )}

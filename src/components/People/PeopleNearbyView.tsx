@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Users, Wine, UserPlus, UserCheck, RefreshCw } from 'lucide-react';
+import { WingmanPanel } from '../AI/WingmanPanel';
 import { useAuth } from '../../contexts/AuthContext';
 import locationService from '../../services/locationService';
 import type { RealTimeUser } from '../../services/locationService';
@@ -189,10 +190,10 @@ export default function PeopleNearbyView() {
             };
 
             return (
-              <button
+              <div
                 key={person.id}
                 onClick={() => handleUserClick(person.id)}
-                className="w-full bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-left"
+                className="w-full bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-left cursor-pointer"
               >
                 <div className="flex items-start gap-4">
                   <div className="relative">
@@ -278,7 +279,12 @@ export default function PeopleNearbyView() {
                     )}
                   </div>
                 </div>
-              </button>
+                {person.id !== userProfile?.id && (
+                  <div onClick={e => e.stopPropagation()}>
+                    <WingmanPanel targetUserId={person.id} targetName={person.name} />
+                  </div>
+                )}
+              </div>
             );
           })
         )}

@@ -15,7 +15,7 @@ Stack: **Vite + React + TypeScript** | **Supabase (Postgres, Auth, Storage, Real
 ## CURRENT VERSION
 
 ```
-v1.6.1  —  March 14, 2026
+v1.7.0  —  March 14, 2026
 Branch: main
 DB: Production (yfucglycufjwmcuadace.supabase.co)
 ```
@@ -40,6 +40,9 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 | Venue Buzz (ephemeral venue chat) | ✅ Live |
 | The Room (geofence-gated venue community) | ✅ Live |
 | People Nearby (add friends inline) | ✅ Live |
+| AI Vibe Matchmaker | ✅ Live — requires ANTHROPIC_API_KEY in Supabase |
+| AI Smart Night Planner | ✅ Live — requires ANTHROPIC_API_KEY in Supabase |
+| AI Wingman Mode | ✅ Live — requires ANTHROPIC_API_KEY in Supabase |
 | History view with XP stats | ✅ Live |
 | Avatar upload (Supabase Storage) | ✅ Live |
 | Web Push notifications | ✅ Infrastructure live — VAPID secrets needed |
@@ -51,6 +54,22 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 | i18n / translation infrastructure | ✅ Live |
 | Twilio OTP (phone verify) | ⚠️ Deployed, no API key yet |
 | Admin panel (venues, geofences) | ✅ Live (internal only) |
+
+---
+
+## WHAT WAS JUST SHIPPED — v1.7.0
+
+### AI-Powered Features (3 new Edge Functions + Claude integration)
+- **AI Vibe Matchmaker** — Bottom-sheet modal on Home dashboard; analyzes 90-day check-in history, venue categories, day-of-week patterns, live occupancy, and vibe votes to recommend top 5 venues via Claude. Shows match score %, contextual message, occupancy, and address per recommendation. Refresh to regenerate.
+- **AI Smart Night Planner** — Natural language input in Night Route Planner ("chill cocktails then dancing for 4 people"); Claude generates a multi-stop timed itinerary with venue names, arrival/departure times, and reasons. "Use This Plan" converts AI result to editable manual stops.
+- **AI Wingman Mode** — Expandable panel on each People Nearby card; lazy-loads on tap. Aggregates shared venue history, mutual friends, music taste overlap, and vibe tag matches. Generates typed insights (shared_venue, mutual_friend, music_taste, vibe_match, crossing_paths) with icons + 3 ice-breaker conversation starters. Privacy-first: checks ghost_mode and user_blocks before any data aggregation; never reveals exact timestamps or visit counts.
+- **Shared Claude helper** — `supabase/functions/_shared/claude.ts` with `callClaude()` and `callClaudeJSON<T>()` for all AI Edge Functions; uses `claude-haiku-4-5-20251001` model
+- **AI service layer** — `src/services/aiService.ts` with 3 methods calling Edge Functions with auth bearer tokens
+- **AI type definitions** — `src/types/ai.ts` with full TypeScript interfaces for all AI responses
+
+**New Edge Functions:** `ai-vibe-matchmaker`, `ai-night-planner`, `ai-wingman`
+
+**Setup required:** Set `ANTHROPIC_API_KEY` in Supabase Dashboard → Settings → Edge Functions secrets
 
 ---
 
@@ -223,11 +242,13 @@ src/
 │   ├── Permissions/       # Push + location permission screens
 │   ├── Settings/          # Profile, notifications, safety
 │   ├── Swarms/            # Create, details, edit, join
+│   ├── AI/                # VibeMatchmaker, WingmanPanel
 │   └── ...
 ├── services/
 │   ├── xpService.ts       # XP, streaks, badges, challenges, leaderboard
 │   ├── giftsService.ts    # Virtual gift send/receive
 │   ├── messagesService.ts # DM + Swarm messaging + Realtime
+│   ├── aiService.ts       # AI feature client (vibe match, planner, wingman)
 │   ├── pushService.ts     # Web Push subscribe/send
 │   ├── vibeService.ts     # Venue mood votes
 │   ├── buzzService.ts     # Ephemeral venue chat
@@ -245,7 +266,11 @@ src/
 
 supabase/
 ├── migrations/            # 70+ migrations, all idempotent
-└── functions/             # 28 Edge Functions
+└── functions/             # 31 Edge Functions
+    ├── _shared/claude.ts       # Shared Claude API helper (v1.7.0)
+    ├── ai-vibe-matchmaker      # AI venue recommendations (v1.7.0)
+    ├── ai-night-planner        # AI multi-stop itinerary (v1.7.0)
+    ├── ai-wingman              # AI conversation starters (v1.7.0)
     ├── mint-lush-coins         # Mint LUSH SPL token (v1.6.0)
     ├── burn-lush-coins         # Burn LUSH on gift purchase (v1.6.0)
     ├── verify-payment          # Verify USDC payment on-chain (v1.6.0)
@@ -318,10 +343,11 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-## NEXT — v1.7.0
+## NEXT — v1.8.0
 
 | Feature | Priority | Notes |
 |---|---|---|
+| Set ANTHROPIC_API_KEY in Supabase | 🔴 High | Required for all AI features to work — add to Edge Function secrets |
 | Privy account setup | 🔴 High | Create account at privy.io, get App ID, add to .env |
 | Deploy LUSH token to devnet | 🔴 High | Run `npx tsx scripts/deploy-lush-token.ts`, add mint address to env |
 | Twilio OTP (phone auth) | 🔴 High | Blocked on API key — need to add to Supabase env vars |
@@ -332,7 +358,7 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-## v1.7.0 — HORIZON
+## HORIZON
 
 - Privy wallet activation + LUSH token mainnet launch
 - Paid Lush Coin packs (USDC → LUSH)
@@ -362,4 +388,4 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-*Last updated: March 14, 2026 — v1.6.1*
+*Last updated: March 14, 2026 — v1.7.0*

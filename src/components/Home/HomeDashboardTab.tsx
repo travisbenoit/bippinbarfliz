@@ -1,4 +1,4 @@
-import { MapPin, Users, Building2, Sparkles, User as UserIcon, Clock, Flame, Trophy, Activity } from 'lucide-react';
+import { MapPin, Users, Building2, Sparkles, User as UserIcon, Clock, Flame, Trophy, Activity, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { Database } from '../../lib/database.types';
@@ -12,6 +12,7 @@ import { SafeArrivalButton, FriendSafeArrivals } from '../Safety/SafeArrival';
 import { SwarmSuggestion } from '../Social/SwarmSuggestion';
 import { TrendingVenues } from '../Venues/TrendingVenues';
 import { NightRoutePlanner } from '../Social/NightRoutePlanner';
+import { VibeMatchmaker } from '../AI/VibeMatchmaker';
 import { xpService, UserStats } from '../../services/xpService';
 import { ActivityFeed } from '../Activity/ActivityFeed';
 
@@ -54,6 +55,7 @@ export default function HomeDashboardTab({
 }: Props) {
   const navigate = useNavigate();
   const [showPlanner, setShowPlanner] = useState(false);
+  const [showVibeMatchmaker, setShowVibeMatchmaker] = useState(false);
   const [xpStats, setXpStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
@@ -354,6 +356,19 @@ export default function HomeDashboardTab({
       </div>
 
       <button
+        onClick={() => setShowVibeMatchmaker(true)}
+        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition-all"
+      >
+        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+          <Sparkles className="w-5 h-5 text-white" />
+        </div>
+        <div className="text-left">
+          <p className="font-bold">Vibe Matchmaker</p>
+          <p className="text-xs text-white/80">AI-picked spots based on your vibe</p>
+        </div>
+      </button>
+
+      <button
         onClick={() => setShowPlanner(true)}
         className="w-full bg-gradient-to-r from-[#E91E63] to-[#C2185B] text-white rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition-all"
       >
@@ -362,11 +377,16 @@ export default function HomeDashboardTab({
         </div>
         <div className="text-left">
           <p className="font-bold">Plan Tonight's Route</p>
-          <p className="text-xs text-white/80">Build a bar crawl and invite friends</p>
+          <p className="text-xs text-white/80">Build a bar crawl or let AI plan it</p>
         </div>
       </button>
 
-      <NightRoutePlanner isOpen={showPlanner} onClose={() => setShowPlanner(false)} />
+      <VibeMatchmaker
+        isOpen={showVibeMatchmaker}
+        onClose={() => setShowVibeMatchmaker(false)}
+        userLocation={userLocation}
+      />
+      <NightRoutePlanner isOpen={showPlanner} onClose={() => setShowPlanner(false)} userLocation={userLocation} />
 
       <div className="bg-white rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">

@@ -5,7 +5,13 @@ import { AuthProvider } from './contexts/AuthContext';
 import { RegionalSettingsProvider } from './contexts/RegionalSettingsContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { initCapacitor } from './services/capacitorService';
+import { CRYPTO_ENABLED } from './lib/featureFlags';
 import './index.css';
+
+// Lazy-load crypto providers only when feature is enabled
+const CryptoProviders = CRYPTO_ENABLED
+  ? await import('./providers/CryptoProviders').then((m) => m.CryptoProviders)
+  : ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
 // Initialize Capacitor plugins (no-op on web)
 initCapacitor().catch(console.error);
@@ -13,11 +19,13 @@ initCapacitor().catch(console.error);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <RegionalSettingsProvider>
-        <ToastProvider>
-          <App />
-        </ToastProvider>
-      </RegionalSettingsProvider>
+      <CryptoProviders>
+        <RegionalSettingsProvider>
+          <ToastProvider>
+            <App />
+          </ToastProvider>
+        </RegionalSettingsProvider>
+      </CryptoProviders>
     </AuthProvider>
   </StrictMode>
 );

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1024px; height: 500px; overflow: hidden;
+    background: #08080f;
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  }
+
+  /* Radial glow background */
+  .bg-glow {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 75% 50%, rgba(233,30,99,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 20% 30%, rgba(233,30,99,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 80% 100% at 50% 100%, rgba(15,15,40,0.9) 0%, transparent 60%);
+  }
+
+  /* Subtle grid */
+  .grid {
+    position: absolute; inset: 0; opacity: 0.04;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Map pin dots */
+  .pins { position: absolute; inset: 0; }
+  .pin {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #E91E63;
+    box-shadow: 0 0 16px 4px rgba(233,30,99,0.5);
+  }
+  .pin::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(233,30,99,0.25);
+    animation: pulse 2s infinite;
+  }
+  .pin.dim { background: rgba(233,30,99,0.35); box-shadow: 0 0 8px 2px rgba(233,30,99,0.15); }
+  .pin.dim::after { display: none; }
+
+  /* Connection lines between pins */
+  .connections { position: absolute; inset: 0; }
+
+  /* Main content */
+  .content {
+    position: absolute; inset: 0;
+    display: flex; align-items: center;
+    padding: 0 80px;
+    gap: 60px;
+  }
+
+  .left { flex: 1; }
+
+  /* Logo lockup */
+  .logo-row {
+    display: flex; align-items: center; gap: 18px;
+    margin-bottom: 20px;
+  }
+  .logo-icon {
+    width: 64px; height: 64px; border-radius: 16px;
+    background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 32px rgba(233,30,99,0.4);
+    flex-shrink: 0;
+  }
+  .logo-icon svg { width: 36px; height: 36px; }
+
+  .wordmark {
+    font-size: 52px; font-weight: 800; letter-spacing: -1.5px;
+    color: #ffffff;
+    line-height: 1;
+  }
+  .wordmark span { color: #E91E63; }
+
+  .tagline {
+    font-size: 22px; font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.2px;
+    margin-bottom: 32px;
+  }
+
+  /* Feature pills */
+  .pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill {
+    padding: 7px 16px; border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+    font-size: 13px; font-weight: 500;
+    backdrop-filter: blur(8px);
+  }
+  .pill.hot {
+    border-color: rgba(233,30,99,0.4);
+    background: rgba(233,30,99,0.1);
+    color: #F48FB1;
+  }
+
+  /* Right side — phone mockup cards */
+  .right {
+    width: 280px; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 14px 16px;
+    backdrop-filter: blur(12px);
+  }
+  .card-header {
+    display: flex; align-items: center; gap-10px;
+    margin-bottom: 6px;
+  }
+  .card-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+  .card-title { font-size: 13px; font-weight: 700; color: #fff; }
+  .card-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .card-badge {
+    margin-left: auto; padding: 2px 8px; border-radius: 100px;
+    font-size: 10px; font-weight: 700;
+    background: rgba(233,30,99,0.2); color: #F48FB1;
+    border: 1px solid rgba(233,30,99,0.3);
+  }
+
+  /* Bottom badge */
+  .age-badge {
+    position: absolute; bottom: 22px; right: 80px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.4);
+    color: rgba(255,255,255,0.35); font-size: 11px; font-weight: 500;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="grid"></div>
+
+  <!-- Scattered venue pins -->
+  <div class="pins">
+    <div class="pin" style="top:38%;left:58%"></div>
+    <div class="pin dim" style="top:22%;left:64%"></div>
+    <div class="pin dim" style="top:55%;left:71%"></div>
+    <div class="pin dim" style="top:68%;left:60%"></div>
+    <div class="pin dim" style="top:30%;left:78%"></div>
+    <div class="pin dim" style="top:72%;left:80%"></div>
+    <div class="pin dim" style="top:15%;left:55%"></div>
+    <div class="pin dim" style="top:80%;left:67%"></div>
+  </div>
+
+  <!-- Connection lines SVG -->
+  <svg class="connections" viewBox="0 0 1024 500" xmlns="http://www.w3.org/2000/svg">
+    <line x1="594" y1="190" x2="655" y2="110" stroke="rgba(233,30,99,0.12)" stroke-width="1.5"/>
+    <line x1="594" y1="190" x2="727" y2="275" stroke="rgba(233,30,99,0.12)" stroke-width="1.5"/>
+    <line x1="655" y1="110" x2="799" y2="150" stroke="rgba(233,30,99,0.08)" stroke-width="1"/>
+    <line x1="727" y1="275" x2="799" y2="150" stroke="rgba(233,30,99,0.08)" stroke-width="1"/>
+    <line x1="727" y1="275" x2="614" y2="340" stroke="rgba(233,30,99,0.08)" stroke-width="1"/>
+  </svg>
+
+  <div class="content">
+    <div class="left">
+      <div class="logo-row">
+        <div class="logo-icon">
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 4C10.268 4 4 10.268 4 18s6.268 14 14 14 14-6.268 14-14S25.732 4 18 4z" fill="rgba(255,255,255,0.15)"/>
+            <path d="M18 8a2 2 0 100 4 2 2 0 000-4zM12 14a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM24 14a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM15 22c0-1.657 1.343-3 3-3s3 1.343 3 3v4h-6v-4z" fill="white"/>
+            <circle cx="18" cy="19" r="4" fill="white" opacity="0.9"/>
+            <path d="M18 15l1.5 3h3l-2.5 1.8.9 3L18 21l-2.9 1.8.9-3L13.5 18h3L18 15z" fill="rgba(233,30,99,0.9)"/>
+          </svg>
+        </div>
+        <div class="wordmark">Barf<span>liz</span></div>
+      </div>
+
+      <div class="tagline">Your night. Real time.</div>
+
+      <div class="pills">
+        <div class="pill hot">Live venue map</div>
+        <div class="pill hot">See who's out</div>
+        <div class="pill">Swarms</div>
+        <div class="pill">The Room</div>
+        <div class="pill">XP &amp; streaks</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <div style="display:flex;align-items:center;margin-bottom:5px">
+          <div class="card-dot" style="background:#E91E63;box-shadow:0 0 6px rgba(233,30,99,0.6)"></div>
+          <div class="card-title">Rosie's Bar &amp; Grill</div>
+          <div class="card-badge">12 here</div>
+        </div>
+        <div class="card-sub">🎵 Hip Hop · 🔥 Wild energy · 🍺 Beer winning</div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;margin-bottom:5px">
+          <div class="card-dot" style="background:#10B981;box-shadow:0 0 6px rgba(16,185,129,0.5)"></div>
+          <div class="card-title">Friday Night Swarm</div>
+          <div class="card-badge" style="background:rgba(16,185,129,0.15);color:#6EE7B7;border-color:rgba(16,185,129,0.3)">6 in</div>
+        </div>
+        <div class="card-sub">Alex, Jordan +4 · Starting at Rosie's 10pm</div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;margin-bottom:5px">
+          <div class="card-dot" style="background:#F59E0B;box-shadow:0 0 6px rgba(245,158,11,0.5)"></div>
+          <div class="card-title">You're on a 4-night streak</div>
+        </div>
+        <div class="card-sub">🏆 #3 on the leaderboard this week</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="age-badge">21+ · Nightlife Social</div>
+</body>
+</html>

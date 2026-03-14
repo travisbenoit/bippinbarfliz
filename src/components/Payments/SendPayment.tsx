@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, User, Search } from 'lucide-react';
+import { ChevronLeft, User, Search, Wallet } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { CRYPTO_ENABLED } from '../../lib/featureFlags';
+import { useWallet } from '../../hooks/useWallet';
+import { CryptoPaymentModal } from './CryptoPaymentModal';
 
 interface Friend {
   id: string;
   name: string;
   avatar_url: string | null;
+  wallet_address?: string | null;
 }
 
 const DRINK_AMOUNTS = [
@@ -24,6 +28,7 @@ export function SendPayment() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showError, showSuccess } = useToast();
+  const wallet = useWallet();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [amount, setAmount] = useState(10);
@@ -31,6 +36,7 @@ export function SendPayment() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCryptoModal, setShowCryptoModal] = useState(false);
 
   useEffect(() => {
     loadFriends();
@@ -39,7 +45,7 @@ export function SendPayment() {
   const loadFriends = async () => {
     const { data } = await supabase
       .from('users')
-      .select('id, name, avatar_url')
+      .select('id, name, avatar_url, wallet_address')
       .neq('id', user?.id)
       .limit(50);
 
@@ -168,7 +174,7 @@ export function SendPayment() {
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-200">
+        <div className="p-6 border-t border-gray-200 space-y-3">
           <button
             onClick={handleSendPayment}
             disabled={loading}
@@ -180,7 +186,27 @@ export function SendPayment() {
               `Send $${customAmount || amount}`
             )}
           </button>
+
+          {CRYPTO_ENABLED && wallet.address && selectedFriend?.wallet_address && (
+            <button
+              onClick={() => setShowCryptoModal(true)}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full py-4 font-bold transition-all active:scale-95"
+            >
+              <Wallet className="w-5 h-5" />
+              Pay with USDC
+            </button>
+          )}
         </div>
+
+        {CRYPTO_ENABLED && selectedFriend?.wallet_address && (
+          <CryptoPaymentModal
+            isOpen={showCryptoModal}
+            onClose={() => setShowCryptoModal(false)}
+            recipientName={selectedFriend.name}
+            recipientUserId={selectedFriend.id}
+            recipientWalletAddress={selectedFriend.wallet_address}
+          />
+        )}
       </div>
     );
   }

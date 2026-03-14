@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabase';
+import { CRYPTO_ENABLED } from '../lib/featureFlags';
+import { mintLushCoins, burnLushCoins } from './lushCoinService';
 
 export interface UserStats {
   user_id: string;
@@ -168,13 +170,22 @@ export const xpService = {
 
   // ─── Coins ─────────────────────────────────────────────────────────────────
 
-  async earnCoins(userId: string, amount: number): Promise<number> {
+  async earnCoins(userId: string, amount: number, event = 'generic'): Promise<number> {
+    // On-chain path: mint LUSH via edge function (also updates DB as cache)
+    if (CRYPTO_ENABLED) {
+      const result = await mintLushCoins(userId, amount, event);
+      if (result.success && result.new_balance !== undefined) {
+        return result.new_balance;
+      }
+      // Fall through to DB path on failure
+    }
+
+    // DB path (default, or fallback when chain fails)
     const { data, error } = await supabase.rpc('increment_lush_coins', {
       p_user_id: userId,
       p_amount: amount,
     });
 
-    // Fallback: manual read-increment-write if RPC doesn't exist
     if (error) {
       const { data: u } = await supabase
         .from('users')
@@ -188,7 +199,22 @@ export const xpService = {
     return data as number;
   },
 
-  async spendCoins(userId: string, amount: number): Promise<{ success: boolean; newBalance: number }> {
+  async spendCoins(userId: string, amount: number, itemId?: string): Promise<{ success: boolean; newBalance: number }> {
+    // On-chain path: burn LUSH via edge function (also updates DB)
+    if (CRYPTO_ENABLED) {
+      const result = await burnLushCoins(userId, amount, itemId);
+      if (result.success) {
+        const balance = await this.getCoinBalance(userId);
+        return { success: true, newBalance: balance };
+      }
+      if (result.error === 'Insufficient balance') {
+        const balance = await this.getCoinBalance(userId);
+        return { success: false, newBalance: balance };
+      }
+      // Fall through to DB path on other failures
+    }
+
+    // DB path (default)
     const { data: u } = await supabase
       .from('users')
       .select('lush_coin_balance')

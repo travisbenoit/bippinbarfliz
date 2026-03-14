@@ -15,7 +15,7 @@ Stack: **Vite + React + TypeScript** | **Supabase (Postgres, Auth, Storage, Real
 ## CURRENT VERSION
 
 ```
-v1.5.0  —  March 12, 2026
+v1.6.0  —  March 14, 2026
 Branch: main
 DB: Production (yfucglycufjwmcuadace.supabase.co)
 ```
@@ -33,6 +33,8 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 | Swarms (crew coordination) | ✅ Live |
 | DM + Swarm chat (Realtime) | ✅ Live |
 | Virtual gifts + Lush Coin economy | ✅ Live |
+| Solana blockchain (LUSH SPL token) | ✅ Built — pending Privy account + token deploy |
+| USDC payments | ✅ Built — pending Privy account |
 | XP + streaks + badges + leaderboard | ✅ Live |
 | Vibe Votes (venue mood) | ✅ Live |
 | Venue Buzz (ephemeral venue chat) | ✅ Live |
@@ -49,6 +51,27 @@ DB: Production (yfucglycufjwmcuadace.supabase.co)
 | i18n / translation infrastructure | ✅ Live |
 | Twilio OTP (phone verify) | ⚠️ Deployed, no API key yet |
 | Admin panel (venues, geofences) | ✅ Live (internal only) |
+
+---
+
+## WHAT WAS JUST SHIPPED — v1.6.0
+
+### Solana blockchain integration (LUSH Coin + USDC)
+- **Feature flag system** — `VITE_CRYPTO_ENABLED` env var gates all blockchain UI; app works identically with flag off
+- **Privy embedded wallets** — Auto-creates Solana wallet on login via Privy SDK; zero-friction, no seed phrases
+- **WalletProvider (One-Way Model)** — React Context providing wallet state; strict unidirectional flow: UI → Service → Chain → Context → UI
+- **LUSH SPL token** — Earn = on-chain mint via Edge Function; Spend = on-chain burn via Edge Function; 0 decimals (matches existing integer system)
+- **xpService on-chain routing** — `earnCoins()` and `spendCoins()` route through `mint-lush-coins` / `burn-lush-coins` Edge Functions when crypto enabled; graceful fallback to DB path
+- **USDC payments** — `CryptoPaymentModal` for friend-to-friend USDC transfers; `verify-payment` Edge Function confirms on-chain + records in `payment_transactions`
+- **PaymentsView wallet card** — Shows Solana wallet address, LUSH balance, USDC balance when crypto enabled
+- **LushCoinPage crypto mode** — Shows on-chain balance, wallet address, updated disclaimer text
+- **SendPayment USDC button** — "Pay with USDC" option alongside Venmo/Beem when friend has wallet
+- **Token deploy script** — `scripts/deploy-lush-token.ts` creates LUSH SPL token with Metaplex metadata
+- **DB migration** — `wallet_address` on users, `tx_signature` + `token_mint` on payment_transactions and user_gifts
+- **3 new Edge Functions** — `mint-lush-coins`, `burn-lush-coins`, `verify-payment`
+- **Investor pitch** — `PITCH.md` with full token economics, revenue projections, competitive analysis, regulatory positioning
+
+**New packages:** `@privy-io/react-auth`, `@solana/web3.js`, `@solana/spl-token`
 
 ---
 
@@ -204,15 +227,22 @@ src/
 │   └── ...
 ├── lib/
 │   ├── supabase.ts        # Supabase client
+│   ├── featureFlags.ts    # CRYPTO_ENABLED and future flags
+│   ├── privy.ts           # Privy SDK config
 │   └── database.types.ts  # Auto-generated DB types
 └── providers/
-    └── GeofenceProvider   # Radar geofence ENTER → check-in → XP
+    ├── GeofenceProvider   # Radar geofence ENTER → check-in → XP
+    ├── WalletProvider.tsx # Solana wallet state (One-Way Model)
+    └── CryptoProviders.tsx# Privy + Wallet bundle (lazy-loaded)
 
 supabase/
 ├── migrations/            # 70+ migrations, all idempotent
-└── functions/             # 25 Edge Functions
+└── functions/             # 28 Edge Functions
+    ├── mint-lush-coins         # Mint LUSH SPL token (v1.6.0)
+    ├── burn-lush-coins         # Burn LUSH on gift purchase (v1.6.0)
+    ├── verify-payment          # Verify USDC payment on-chain (v1.6.0)
     ├── radar-webhook           # Geofence ENTER/EXIT events
-    ├── send-push-notification  # VAPID Web Push (new)
+    ├── send-push-notification  # VAPID Web Push
     ├── twilio-send-otp         # Phone auth
     ├── uber-rides              # Ride integration
     ├── spotify-search          # Music sharing
@@ -243,6 +273,14 @@ npx supabase functions deploy <function-name>
 VITE_SUPABASE_URL=https://yfucglycufjwmcuadace.supabase.co
 VITE_SUPABASE_ANON_KEY=...
 VITE_VAPID_PUBLIC_KEY=BB5LYqFhfJo3M8LwrCTYEmh_WAH3yy2bAs9v7j-pOMlwKFceFDJ3fz-NyisU-1Mw7KPuwLo5IB5naP4LS7v2low
+
+# Blockchain (optional — set CRYPTO_ENABLED=true to activate)
+VITE_CRYPTO_ENABLED=false
+VITE_PRIVY_APP_ID=
+VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+VITE_SOLANA_NETWORK=devnet
+VITE_LUSH_MINT_ADDRESS=
+VITE_USDC_MINT_ADDRESS=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
 ```
 
 ---
@@ -272,24 +310,30 @@ Swarm visibility: `join_mode` column (not `is_public`).
 
 ---
 
-## NEXT — v1.6.0
+## NEXT — v1.7.0
 
 | Feature | Priority | Notes |
 |---|---|---|
+| Privy account setup | 🔴 High | Create account at privy.io, get App ID, add to .env |
+| Deploy LUSH token to devnet | 🔴 High | Run `npx tsx scripts/deploy-lush-token.ts`, add mint address to env |
 | Twilio OTP (phone auth) | 🔴 High | Blocked on API key — need to add to Supabase env vars |
-| App store metadata (descriptions, keywords, screenshots) | 🔴 High | Copy drafted — needs screenshots from real device |
-| Apple/Google developer account setup | 🔴 High | Bundle ID `com.barfliz.app` set — needs account enrollment + provisioning |
+| App Store + Google Play submission | 🔴 High | Bundle ID `com.barfliz.app` set — needs account enrollment |
+| Push LUSH Edge Function secrets | 🟡 Medium | MINT_AUTHORITY_KEYPAIR, LUSH_MINT_ADDRESS, SOLANA_RPC_URL to Supabase |
+| Token migration (existing balances) | 🟡 Medium | One-time script to mint existing lush_coin_balance to user wallets |
+| Paid LUSH Coin packs | 🟡 Medium | USDC → LUSH via treasury (in-app purchase alternative) |
 
 ---
 
-## v1.5.0 — HORIZON
+## v1.7.0 — HORIZON
 
+- Privy wallet activation + LUSH token mainnet launch
+- Paid Lush Coin packs (USDC → LUSH)
+- Venue partnerships (LUSH drink redemption)
 - Public venue profiles (shareable links)
 - Promoter / venue owner portal
-- Paid Lush Coin packs (in-app purchase)
 - Cross-city swarms
 - Event RSVP + ticketing integration
-- iOS/Android native shell (Capacitor)
+- PostHog analytics integration
 
 ---
 
@@ -304,8 +348,10 @@ Swarm visibility: `join_mode` column (not `is_public`).
 | Google Places API | GCP console |
 | Twilio | Pending — no key yet |
 | VAPID keys | Supabase → Edge Function secrets |
+| Privy | Pending — need account at privy.io |
+| Solana RPC | Helius / QuickNode (devnet free tier for now) |
 | GitHub | `travisbenoit/bippinbarliz` |
 
 ---
 
-*Last updated: March 10, 2026 — v1.4.0*
+*Last updated: March 14, 2026 — v1.6.0*

@@ -1,21 +1,30 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, Coins, Flame, Sparkles, Gift, Users, Wine } from 'lucide-react';
+import { ChevronLeft, Coins, Flame, Sparkles, Gift, Users, Wine, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { xpService, COIN_REWARDS } from '../../services/xpService';
+import { CRYPTO_ENABLED } from '../../lib/featureFlags';
+import { useWallet } from '../../hooks/useWallet';
 
 interface EarnRow { icon: React.ReactNode; action: string; coins: number; desc: string; }
 
 export function LushCoinPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const wallet = useWallet();
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
-    xpService.getCoinBalance(user.id).then(b => { setBalance(b); setLoading(false); });
-  }, [user]);
+    if (CRYPTO_ENABLED && wallet.address) {
+      // Use on-chain balance when crypto is enabled
+      setBalance(wallet.balances.lush);
+      setLoading(wallet.loading);
+    } else {
+      xpService.getCoinBalance(user.id).then(b => { setBalance(b); setLoading(false); });
+    }
+  }, [user, wallet.address, wallet.balances.lush, wallet.loading]);
 
   const earnRows: EarnRow[] = [
     { icon: <span className="text-2xl">📍</span>,   action: 'Check in to a venue',         coins: COIN_REWARDS.checkin,            desc: 'Every time you auto check-in' },
@@ -59,9 +68,16 @@ export function LushCoinPage() {
             </>
           )}
           <p className="text-sm text-purple-200 mt-4 leading-relaxed">
-            Earn coins by going out and spending them on gifts for friends.
-            No real money — just vibes.
+            {CRYPTO_ENABLED
+              ? 'LUSH is a Solana SPL token. Earn by going out, spend on gifts for friends.'
+              : 'Earn coins by going out and spending them on gifts for friends. No real money — just vibes.'}
           </p>
+          {CRYPTO_ENABLED && wallet.address && (
+            <div className="mt-3 flex items-center justify-center gap-2 text-purple-300 text-xs">
+              <Wallet className="w-3.5 h-3.5" />
+              <span className="truncate max-w-[200px]">{wallet.address}</span>
+            </div>
+          )}
         </div>
 
         {/* How to earn */}
@@ -120,8 +136,9 @@ export function LushCoinPage() {
         </div>
 
         <p className="text-xs text-gray-400 text-center px-4">
-          Lush Coins have no real-world monetary value and cannot be exchanged for cash.
-          They exist entirely within Barfliz for community gifting.
+          {CRYPTO_ENABLED
+            ? 'LUSH is a utility token on Solana used for in-app gifting. Not an investment.'
+            : 'Lush Coins have no real-world monetary value and cannot be exchanged for cash. They exist entirely within Barfliz for community gifting.'}
         </p>
       </div>
     </div>

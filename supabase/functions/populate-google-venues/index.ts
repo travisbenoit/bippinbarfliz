@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { corsHeaders } from '../_shared/cors.ts';
+import { uploadVenuePhoto } from '../_shared/storage-photo.ts';
 
 const GOOGLE_PLACES_API_KEY = Deno.env.get('GOOGLE_PLACES_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -165,20 +166,12 @@ async function getPlaceDetails(placeId: string): Promise<GooglePlaceResult | nul
   return data.result;
 }
 
-async function getPhotoUrl(
+async function resolvePhotoUrl(
   photoReference: string,
-  maxWidth: number = 400
-): Promise<string> {
-  if (!GOOGLE_PLACES_API_KEY) {
-    return '';
-  }
-
-  const url = new URL('https://maps.googleapis.com/maps/api/place/photo');
-  url.searchParams.set('key', GOOGLE_PLACES_API_KEY);
-  url.searchParams.set('photo_reference', photoReference);
-  url.searchParams.set('max_width', maxWidth.toString());
-
-  return url.toString();
+  venueId: string
+): Promise<string | null> {
+  if (!GOOGLE_PLACES_API_KEY) return null;
+  return uploadVenuePhoto(photoReference, venueId, GOOGLE_PLACES_API_KEY);
 }
 
 function categorizeVenue(name: string, types: string[]): {
@@ -250,12 +243,12 @@ async function populateVenuesForLocation(
 
         const { category, subcategory } = categorizeVenue(details.name, []);
 
+        const venueId = `gp:${place.place_id}`;
+
         let imageUrl = null;
         if (details.photos && details.photos.length > 0) {
-          imageUrl = await getPhotoUrl(details.photos[0].photo_reference);
+          imageUrl = await resolvePhotoUrl(details.photos[0].photo_reference, venueId);
         }
-
-        const venueId = `gp:${place.place_id}`;
 
         const { error } = await supabase.from('venues').upsert(
           {

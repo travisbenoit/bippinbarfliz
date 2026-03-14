@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { corsHeaders } from '../_shared/cors.ts';
 import { isFeaturedMarket } from '../_shared/markets.ts';
+import { uploadVenuePhoto } from '../_shared/storage-photo.ts';
 
 let GOOGLE_MAPS_SERVER_KEY = Deno.env.get('GOOGLE_PLACES_API_KEY') || Deno.env.get('GOOGLE_MAPS_SERVER_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -99,8 +100,11 @@ async function fetchPlaceDetails(placeId: string): Promise<any> {
   return data.result;
 }
 
-function buildPhotoUrl(photoRef: string, maxWidth = 800): string {
-  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photoRef}&key=${GOOGLE_MAPS_SERVER_KEY}`;
+async function resolvePhotoUrl(photoRef: string, venueId: string): Promise<string | null> {
+  if (!GOOGLE_MAPS_SERVER_KEY) return null;
+  // Download from Google and upload to Supabase Storage
+  const storageUrl = await uploadVenuePhoto(photoRef, venueId, GOOGLE_MAPS_SERVER_KEY);
+  return storageUrl;
 }
 
 async function enrichVenue(adminSupabase: any, venue: Venue, regionCode: string): Promise<{
@@ -137,7 +141,7 @@ async function enrichVenue(adminSupabase: any, venue: Venue, regionCode: string)
     const details = await fetchPlaceDetails(best.place_id);
 
     const photoRef = details.photos?.[0]?.photo_reference;
-    const photoUrl = photoRef ? buildPhotoUrl(photoRef) : null;
+    const photoUrl = photoRef ? await resolvePhotoUrl(photoRef, venue.id) : null;
 
     const { error: updateError } = await adminSupabase.from('venues').update({
       google_place_id: best.place_id,

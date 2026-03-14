@@ -133,49 +133,6 @@ export default function Home() {
     }
   };
 
-  const fetchNearbyVenues = async () => {
-    if (!('geolocation' in navigator)) { loadData(); return; }
-
-    setLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { data: session } = await supabase.auth.getSession();
-          const countryCode = localStorage.getItem('userCountryCode') || 'US';
-          const response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-venues`,
-            {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${session.session?.access_token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-                radius: searchRadius,
-                country: countryCode,
-              }),
-            }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            if (data.venues) {
-              setVenues(data.venues);
-              showSuccess(`Found ${data.venues.length} venues nearby`);
-            }
-          } else {
-            showError('Could not fetch venues. Try again.');
-          }
-        } catch {
-          showError('Venue search failed. Check your connection.');
-        } finally {
-          setLoading(false);
-        }
-      },
-      () => { setLoading(false); loadData(); }
-    );
-  };
 
   const updateLocation = async () => {
     if (!('geolocation' in navigator)) {

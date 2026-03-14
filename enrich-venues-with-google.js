@@ -40,12 +40,35 @@ async function getPlaceDetails(placeId) {
   return data.result;
 }
 
-function getPhotoUrl(photoReference, maxWidth = 800) {
-  const url = new URL('https://maps.googleapis.com/maps/api/place/photo');
-  url.searchParams.set('key', GOOGLE_API_KEY);
-  url.searchParams.set('photo_reference', photoReference);
-  url.searchParams.set('maxwidth', maxWidth.toString());
-  return url.toString();
+const VENUE_PHOTOS_BUCKET = 'venue-photos';
+
+async function uploadPhotoToStorage(photoReference, venueId, maxWidth = 800) {
+  const googleUrl = new URL('https://maps.googleapis.com/maps/api/place/photo');
+  googleUrl.searchParams.set('key', GOOGLE_API_KEY);
+  googleUrl.searchParams.set('photo_reference', photoReference);
+  googleUrl.searchParams.set('maxwidth', maxWidth.toString());
+
+  const response = await fetch(googleUrl.toString(), { redirect: 'follow' });
+  if (!response.ok) return null;
+
+  const contentType = response.headers.get('content-type') || 'image/jpeg';
+  const buffer = await response.arrayBuffer();
+  if (buffer.byteLength < 1000) return null;
+
+  const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
+  const fileName = `${venueId}/photo.${ext}`;
+
+  const { error } = await supabase.storage
+    .from(VENUE_PHOTOS_BUCKET)
+    .upload(fileName, buffer, { contentType, upsert: true });
+
+  if (error) {
+    console.error(`Storage upload failed for ${venueId}:`, error.message);
+    return null;
+  }
+
+  const { data } = supabase.storage.from(VENUE_PHOTOS_BUCKET).getPublicUrl(fileName);
+  return data.publicUrl;
 }
 
 async function enrichVenue(venue) {
@@ -62,7 +85,7 @@ async function enrichVenue(venue) {
   }
 
   const photoUrl = details.photos && details.photos.length > 0
-    ? getPhotoUrl(details.photos[0].photo_reference, 800)
+    ? await uploadPhotoToStorage(details.photos[0].photo_reference, venue.id, 800)
     : null;
 
   const updateData = {

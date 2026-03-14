@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Plus, Trash2, Send, Navigation, Users, ChevronRight, X } from 'lucide-react';
+import { MapPin, Plus, Trash2, Send, Navigation, Users, X, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { activityService } from '../../services/activityService';
 
 interface RouteStop {
   venue_id: string;
@@ -18,7 +17,6 @@ interface NightRoute {
   status: string;
   creator_id: string;
   creator_name?: string;
-  invited_count?: number;
 }
 
 interface Venue {
@@ -36,41 +34,57 @@ interface Props {
 export function NightRoutePlanner({ isOpen, onClose }: Props) {
   const { user } = useAuth();
   const [routes, setRoutes] = useState<NightRoute[]>([]);
-  const [creating, setCreating] = useState(false);
   const [routeName, setRouteName] = useState('');
   const [stops, setStops] = useState<RouteStop[]>([]);
-  const [venues, setVenues] = useState<Venue[]>([]);
+  const [venueResults, setVenueResults] = useState<Venue[]>([]);
   const [venueSearch, setVenueSearch] = useState('');
   const [friends, setFriends] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-  const [step, setStep] = useState<'list' | 'create' | 'invite'>('list');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<'list' | 'create'>('list');
 
   useEffect(() => {
     if (!isOpen || !user) return;
-    loadRoutes();
-    loadVenues();
-    loadFriends();
+    setLoading(true);
+    setError(null);
+    Promise.all([loadRoutes(), loadFriends()])
+      .catch(() => setError('Failed to load data'))
+      .finally(() => setLoading(false));
   }, [isOpen, user]);
 
+  // Server-side venue search with debounce
+  useEffect(() => {
+    if (!venueSearch.trim()) {
+      setVenueResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      const { data } = await supabase
+        .from('venues')
+        .select('id, name, category, address')
+        .ilike('name', `%${venueSearch.trim()}%`)
+        .limit(8);
+      if (data) setVenueResults(data);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [venueSearch]);
+
   const loadRoutes = async () => {
-    const { data } = await supabase
+    // Simple query without FK join to avoid PostgREST resolution issues
+    const { data, error: err } = await supabase
       .from('night_routes')
-      .select('id, name, stops, planned_date, status, creator_id, creator:users!night_routes_creator_id_fkey(name)')
+      .select('id, name, stops, planned_date, status, creator_id')
       .order('created_at', { ascending: false })
       .limit(10);
+    if (err) throw err;
     if (data) {
       setRoutes(data.map((r: any) => ({
         ...r,
-        creator_name: r.creator?.name,
         stops: r.stops || [],
       })));
     }
-  };
-
-  const loadVenues = async () => {
-    const { data } = await supabase.from('venues').select('id, name, category, address').limit(50);
-    if (data) setVenues(data);
   };
 
   const loadFriends = async () => {
@@ -87,14 +101,11 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
     }
   };
 
-  const filteredVenues = venues.filter(v =>
-    v.name.toLowerCase().includes(venueSearch.toLowerCase())
-  ).slice(0, 8);
-
   const addStop = (venue: Venue) => {
     if (stops.find(s => s.venue_id === venue.id)) return;
     setStops(prev => [...prev, { venue_id: venue.id, venue_name: venue.name, order: prev.length + 1 }]);
     setVenueSearch('');
+    setVenueResults([]);
   };
 
   const removeStop = (venueId: string) => {
@@ -104,8 +115,9 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
   const saveRoute = async () => {
     if (!user || stops.length < 2) return;
     setSaving(true);
+    setError(null);
     try {
-      const { data: route } = await supabase
+      const { data: route, error: insertErr } = await supabase
         .from('night_routes')
         .insert({
           creator_id: user.id,
@@ -115,6 +127,8 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
         })
         .select()
         .maybeSingle();
+
+      if (insertErr) throw insertErr;
 
       if (route && selectedFriends.length > 0) {
         await supabase.from('night_route_invites').insert(
@@ -132,13 +146,12 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
       }
 
       await loadRoutes();
-      setCreating(false);
       setStep('list');
       setStops([]);
       setRouteName('');
       setSelectedFriends([]);
-    } catch {
-      // silent
+    } catch (err: any) {
+      setError(err?.message || 'Failed to save route');
     } finally {
       setSaving(false);
     }
@@ -174,9 +187,19 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
         </div>
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+              {error}
+            </div>
+          )}
+
           {step === 'list' && (
             <>
-              {routes.length === 0 ? (
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 text-[#E91E63] animate-spin" />
+                </div>
+              ) : routes.length === 0 ? (
                 <div className="text-center py-12">
                   <Navigation className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                   <p className="text-gray-400 font-medium">No routes yet</p>
@@ -235,9 +258,9 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
                   placeholder="Search venues..."
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#E91E63]"
                 />
-                {venueSearch && (
+                {venueResults.length > 0 && (
                   <div className="mt-2 border border-gray-100 rounded-xl overflow-hidden shadow-sm">
-                    {filteredVenues.map(v => (
+                    {venueResults.map(v => (
                       <button
                         key={v.id}
                         onClick={() => addStop(v)}
@@ -299,7 +322,7 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
 
               <div className="flex gap-3 pt-2">
                 <button
-                  onClick={() => setStep('list')}
+                  onClick={() => { setStep('list'); setError(null); }}
                   className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
@@ -309,7 +332,11 @@ export function NightRoutePlanner({ isOpen, onClose }: Props) {
                   disabled={stops.length < 2 || saving}
                   className="flex-1 py-3 bg-[#E91E63] text-white rounded-xl text-sm font-semibold hover:bg-[#C2185B] disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  <Send className="w-4 h-4" />
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                   {saving ? 'Saving...' : 'Save & Invite'}
                 </button>
               </div>

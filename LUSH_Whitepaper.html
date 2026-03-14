@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUSH Coin Whitepaper — Barfliz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --pink: #E91E63;
+    --dark: #0f1219;
+    --darker: #080b10;
+    --card: #1a1f2e;
+    --border: #2a3040;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --cyan: #00D9FF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--darker);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+
+  h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--pink);
+    margin: 50px 0 10px;
+    letter-spacing: -0.5px;
+  }
+
+  h1:first-of-type {
+    font-size: 42px;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 5px;
+  }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin: 50px 0 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--pink);
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cyan);
+    margin: 30px 0 10px;
+  }
+
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 20px 0 8px;
+  }
+
+  p {
+    margin: 10px 0;
+    color: var(--text);
+  }
+
+  strong { color: #fff; }
+
+  em { color: var(--muted); font-style: italic; }
+
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  ul, ol {
+    padding-left: 24px;
+    margin: 10px 0;
+  }
+
+  li {
+    margin: 6px 0;
+    color: var(--text);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    font-size: 14px;
+  }
+
+  thead tr {
+    background: var(--pink);
+    color: var(--dark);
+  }
+
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  tbody tr:hover {
+    background: rgba(233, 30, 99, 0.05);
+  }
+
+  pre {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 15px 0;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  pre code {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--cyan);
+  }
+
+  code.inline {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--cyan);
+  }
+
+  /* Title page styling */
+  .title-meta {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 40px;
+  }
+
+  /* Disclaimer box */
+  h2:first-of-type + p {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--pink);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: white; color: #1a1a1a; font-size: 11pt; }
+    .container { padding: 20px; max-width: 100%; }
+    h1 { color: #E91E63; }
+    h2 { color: #1a1a1a; border-bottom-color: #E91E63; }
+    h3 { color: #1a1a1a; }
+    strong { color: #1a1a1a; }
+    pre { background: #f5f5f5; border-color: #ddd; }
+    pre code { color: #333; }
+    code.inline { background: #f5f5f5; border-color: #ddd; color: #333; }
+    thead tr { background: #E91E63; color: white; }
+    td { border-bottom-color: #ddd; color: #333; }
+    p, li { color: #333; }
+    em { color: #666; }
+    hr { border-top-color: #ddd; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>LUSH COIN (LUSH) — WHITEPAPER</h1>
+
+<p><strong>Barfliz, Inc.</strong></p>
+<p><strong>Version 1.0 | March 2026</strong></p>
+
+<hr>
+
+<h2>NOTICE & DISCLAIMER</h2>
+
+<p>This whitepaper is for informational purposes only and does not constitute an offer to sell, a solicitation of an offer to buy, or a recommendation of any token, security, investment, or financial product. LUSH is a utility token. It is not a security, equity, debt instrument, or investment contract. LUSH has not been registered under the Securities Act of 1933, as amended, or the securities laws of any U.S. state or any other jurisdiction. Nothing in this document shall be construed as investment, legal, tax, or financial advice. Prospective participants should consult their own legal, financial, and tax advisors. This whitepaper may contain forward-looking statements. Actual results may differ materially from those described herein. Barfliz, Inc. assumes no obligation to update or revise forward-looking statements.</p>
+
+<hr>
+
+<h2>Table of Contents</h2>
+
+<li>Abstract</li>
+<li>Introduction: The Nightlife Problem</li>
+<li>The Barfliz Platform</li>
+<li>LUSH Token Design & Classification</li>
+<li>Utility Functions of LUSH</li>
+<li>Token Economics</li>
+<li>USDC Integration: Two-Token Model</li>
+<li>Technical Architecture</li>
+<li>Wallet Infrastructure & User Experience</li>
+<li>Token Distribution</li>
+<li>Governance & Mint Authority</li>
+<li>Security & Risk Management</li>
+<li>Legal & Regulatory Analysis</li>
+<li>Roadmap</li>
+<li>Conclusion</li>
+<li>Legal Disclaimers</li>
+
+<hr>
+
+<h2>1. Abstract</h2>
+
+<p>Lush Coin (ticker: LUSH) is a utility token built on the Solana blockchain as an SPL token. It functions as the native in-app currency of Barfliz, a real-time nightlife social application. LUSH is designed exclusively as a gamified engagement reward and spending mechanism within the Barfliz ecosystem. Users earn LUSH by performing verifiable actions within the application — checking into venues, maintaining engagement streaks, completing challenges, and participating in social features. Users spend LUSH by purchasing virtual gift items, which permanently burns the tokens from circulation.</p>
+
+<p>LUSH is not designed, marketed, or intended to function as a security, investment vehicle, or speculative asset. It has no fixed exchange rate, is not listed on any exchange at launch, cannot be purchased with fiat currency at launch, and derives its utility solely from its function within the Barfliz application. LUSH is, by design, a consumable digital good — more analogous to arcade tokens or in-game currency than to financial instruments.</p>
+
+<p>This whitepaper describes the design, mechanics, economics, and legal positioning of LUSH.</p>
+
+<hr>
+
+<h2>2. Introduction: The Nightlife Problem</h2>
+
+<p>The global nightlife and hospitality industry generates over $250 billion annually. Yet it has no social infrastructure connecting participants in real time. Existing technology serves this market poorly:</p>
+
+<ul><li><strong>No real-time visibility.</strong> There is no widely adopted application that tells a user which venues in their area are active right now — not reviews from last week, but live occupancy and atmosphere data.</li></ul>
+<ul><li><strong>No crew coordination.</strong> Organizing a group outing relies on fragmented group texts across messaging platforms with no shared context about venues, timing, or RSVPs.</li></ul>
+<ul><li><strong>No cross-venue loyalty.</strong> Loyalty programs are siloed to individual venues or chains. A regular nightlife consumer who visits dozens of venues per year has no unified engagement history or rewards.</li></ul>
+<ul><li><strong>No venue intelligence.</strong> Venue operators have limited visibility into who is coming, what their crowd demographics look like, or how to incentivize return visits.</li></ul>
+<ul><li><strong>Passive social media.</strong> Instagram and Snapchat show where people were. They do not show where people are going or what is happening right now.</li></ul>
+
+<p>Barfliz was built to fill this gap. LUSH is the economic layer that incentivizes and rewards the behaviors that make the platform valuable: showing up, engaging, and connecting.</p>
+
+<hr>
+
+<h2>3. The Barfliz Platform</h2>
+
+<p>Barfliz is a mobile-first social application for nightlife. It is live in production and available as a Progressive Web App (PWA) with native iOS and Android shells via Capacitor. The application is built on Vite, React, and TypeScript, with a Supabase backend (PostgreSQL, Authentication, Realtime subscriptions, Edge Functions). Geofencing is powered by Radar.io. Venue data is sourced from Google Places and OpenStreetMap.</p>
+
+<h3>Core Features</h3>
+
+<p>| Feature | Description |</p>
+<p>|---------|-------------|</p>
+<p>| <strong>Live Map</strong> | GPS-aware venue map with real-time occupancy indicators, multiple map styles, venue categories, and hotspot detection |</p>
+<p>| <strong>The Room</strong> | GPS-gated venue hub — users within a venue's geofence can access live chat, vibe polls, photo moments, and see who else is present |</p>
+<p>| <strong>Swarms</strong> | Crew coordination — create or join groups for a night out with RSVP, shared venue selection, group chat, and tab splitting |</p>
+<p>| <strong>Lush Coins</strong> | Gamified virtual currency earned through engagement, spent on virtual gifts |</p>
+<p>| <strong>Virtual Gifts</strong> | 29 items across 5 rarity tiers (Common, Uncommon, Rare, Epic, Legendary) — send to friends as social expression |</p>
+<p>| <strong>XP & Achievements</strong> | Experience points, 9 achievement badges, 5 rotating daily challenges, venue-specific and global leaderboards |</p>
+<p>| <strong>Night Route Planner</strong> | Plan multi-stop bar crawls, invite friends, track progress |</p>
+<p>| <strong>Music Sharing</strong> | Spotify integration — send tracks to friends |</p>
+<p>| <strong>Safety</strong> | Emergency contacts, safe arrival check-in, night route tracking |</p>
+<p>| <strong>Payments</strong> | Venmo and Beem deep-link integration, group tab splitting, USDC on-chain transfers |</p>
+
+<h3>Platform Status</h3>
+
+<p>| Metric | Value |</p>
+<p>|--------|-------|</p>
+<p>| Version | v1.6.0 (production) |</p>
+<p>| Database | 70+ tables with Row Level Security |</p>
+<p>| Edge Functions | 25+ deployed |</p>
+<p>| Platforms | PWA, iOS, Android |</p>
+<p>| Geofencing | Radar.io (live) |</p>
+<p>| Venue data | Google Places + OpenStreetMap |</p>
+<p>| Authentication | Phone OTP via Supabase Auth |</p>
+
+<p>The Barfliz platform is fully functional without the LUSH token. The application was built, tested, and deployed as a complete product before blockchain integration. LUSH adds a reward and spending layer on top of an already-functional application. This sequence — product first, token second — is intentional and central to our regulatory positioning (see Section 13).</p>
+
+<hr>
+
+<h2>4. LUSH Token Design & Classification</h2>
+
+<h3>4.1 Token Specification</h3>
+
+<p>| Property | Value |</p>
+<p>|----------|-------|</p>
+<p>| <strong>Name</strong> | Lush Coin |</p>
+<p>| <strong>Ticker</strong> | LUSH |</p>
+<p>| <strong>Blockchain</strong> | Solana |</p>
+<p>| <strong>Token Standard</strong> | SPL Token (Solana Program Library) |</p>
+<p>| <strong>Decimals</strong> | 0 (whole units only — no fractional tokens) |</p>
+<p>| <strong>Mint Authority</strong> | Server-side keypair controlled by Barfliz Edge Functions |</p>
+<p>| <strong>Freeze Authority</strong> | None (tokens cannot be frozen once minted) |</p>
+<p>| <strong>Transfer Restrictions</strong> | None at the protocol level |</p>
+
+<h3>4.2 Classification: Utility Token</h3>
+
+<p>LUSH is classified as a <strong>utility token</strong>. It is not a security, equity instrument, debt instrument, derivative, or investment contract.</p>
+
+<p>The term "utility token" describes a digital asset that provides access to a product or service. LUSH provides access to the virtual gift system within Barfliz. Without LUSH, a user cannot send paid virtual gifts. With LUSH, they can. This is the token's sole utility at launch.</p>
+
+<p>LUSH is functionally equivalent to:</p>
+
+<ul><li><strong>Arcade tokens</strong> — purchased or earned at the door, spent on machines, no expectation of financial return</li></ul>
+<ul><li><strong>In-game currency</strong> (e.g., V-Bucks, Robux) — earned through play, spent on cosmetic items, not marketed as investments</li></ul>
+<ul><li><strong>Loyalty points</strong> (e.g., airline miles, credit card points) — accrued through engagement, redeemed for goods or services</li></ul>
+
+<p>The critical distinction between a utility token and a security is addressed in Section 13 (Legal & Regulatory Analysis).</p>
+
+<h3>4.3 What LUSH Is Not</h3>
+
+<ul><li>LUSH is <strong>not an investment</strong>. There is no expectation of profit from holding LUSH. Tokens are designed to be earned and spent, not accumulated.</li></ul>
+<ul><li>LUSH is <strong>not a stablecoin</strong>. It is not pegged to any fiat currency or commodity.</li></ul>
+<ul><li>LUSH is <strong>not a governance token</strong>. Holding LUSH does not confer voting rights, board seats, or influence over Barfliz corporate decisions.</li></ul>
+<ul><li>LUSH is <strong>not equity</strong>. Holding LUSH does not represent ownership in Barfliz, Inc. or entitle the holder to dividends, revenue share, or any claim on company assets.</li></ul>
+<ul><li>LUSH does <strong>not have a fixed exchange rate</strong>. Its value is determined entirely by its utility within the application.</li></ul>
+
+<hr>
+
+<h2>5. Utility Functions of LUSH</h2>
+
+<p>LUSH has two primary functions within the Barfliz ecosystem:</p>
+
+<h3>5.1 Reward for Verifiable Engagement (Minting)</h3>
+
+<p>Users earn LUSH by performing specific, verifiable actions within the application. These actions are gated by technical controls:</p>
+
+<ul><li><strong>Venue check-ins</strong> are verified by GPS geofencing (Radar.io). A user must be physically within the geofence of a registered venue for the check-in to register.</li></ul>
+<ul><li><strong>Streak milestones</strong> are calculated server-side from the user's check-in history. Streaks cannot be fabricated without corresponding geofence events.</li></ul>
+<ul><li><strong>Challenge completions</strong> are validated against the challenge's specific criteria (e.g., "check into 3 different venues tonight") by server-side logic.</li></ul>
+<ul><li><strong>Swarm participation</strong> is validated against swarm membership records.</li></ul>
+
+<p>Tokens are minted by a server-side Edge Function that holds the mint authority keypair. The client application cannot mint tokens. All mint events are recorded with an event type, timestamp, and user ID.</p>
+
+<h3>5.2 Purchase of Virtual Goods (Burning)</h3>
+
+<p>Users spend LUSH to purchase virtual gift items. When a gift is purchased:</p>
+
+<li>The user's LUSH balance is debited</li>
+<li>The gift is delivered to the recipient's inbox</li>
+<li>The spent LUSH is permanently removed from circulation (burned)</li>
+
+<p>This is a <strong>consumptive use</strong> — the token is destroyed upon use, analogous to spending an arcade token or using a postage stamp. Burned tokens cannot be recovered, re-minted, or returned.</p>
+
+<h3>5.3 Future Utility (Roadmap)</h3>
+
+<p>Additional burn sinks are planned to increase the consumptive utility of LUSH:</p>
+
+<ul><li><strong>Profile cosmetics</strong> — Avatar frames, chat themes, badge upgrades</li></ul>
+<ul><li><strong>Promoted events</strong> — Pay LUSH to feature a Swarm event in discovery feeds</li></ul>
+<ul><li><strong>Premium venue features</strong> — Unlock VIP room capabilities</li></ul>
+<ul><li><strong>Venue drink redemptions</strong> — Redeem LUSH for real-world drink discounts at partner venues (partner venues purchase LUSH from the treasury to offer these promotions)</li></ul>
+
+<p>Each future utility will be consumptive (burn-on-use) rather than speculative (hold-for-value).</p>
+
+<hr>
+
+<h2>6. Token Economics</h2>
+
+<h3>6.1 Supply Model</h3>
+
+<p>LUSH uses a <strong>controlled inflation model with deflationary burns</strong>. There is no fixed supply cap.</p>
+
+<p><strong>Rationale for no cap:</strong> A fixed supply creates scarcity, which creates speculative value, which transforms a utility token into a de facto investment vehicle. This is the opposite of LUSH's design intent. LUSH must remain accessible and affordable so that any user — whether they joined the app today or a year ago — can earn and spend tokens without being priced out by early adopters hoarding supply.</p>
+
+<p>New tokens enter circulation only through verified earn events. Tokens exit circulation permanently through gift purchases (burns). The net supply at any given time is:</p>
+
+<p>``<code class="inline"></p>
+<p>Net Supply = Total Minted (all time) - Total Burned (all time)</p>
+</code>`<code class="inline">
+
+<h3>6.2 Minting Schedule</h3>
+
+<p>| Earn Event | LUSH Minted | Trigger Condition |</p>
+<p>|------------|-------------|-------------------|</p>
+<p>| Venue check-in | 10 | GPS geofence entry at registered venue |</p>
+<p>| First check-in of night | 25 | First check-in after 6:00 PM local time (once per night) |</p>
+<p>| 7-night streak | 50 | 7 consecutive nights with at least 1 check-in |</p>
+<p>| 14-night streak | 100 | 14 consecutive nights |</p>
+<p>| 30-night streak | 250 | 30 consecutive nights |</p>
+<p>| 60-night streak | 500 | 60 consecutive nights |</p>
+<p>| 100-night streak | 1,000 | 100 consecutive nights |</p>
+<p>| Swarm created (3+ members) | 15 | Swarm reaches 3 confirmed members |</p>
+<p>| Swarm joined | 5 | User accepts swarm invitation |</p>
+<p>| Cheer sent | 5 | User sends a cheer at a venue |</p>
+<p>| Challenge completed | 25-75 | Varies by challenge difficulty (5 active challenges rotate weekly) |</p>
+
+<p><strong>Estimated earning rates:</strong></p>
+<ul><li>Casual user (1-2 nights/week): ~100-160 LUSH per week</li></ul>
+<ul><li>Active user (3-4 nights/week): ~200-400 LUSH per week</li></ul>
+<ul><li>Power user (5+ nights/week with streaks): ~400-800 LUSH per week</li></ul>
+
+<h3>6.3 Burning Schedule</h3>
+
+<p>| Virtual Gift Tier | LUSH Cost Range | Examples |</p>
+<p>|-------------------|----------------|----------|</p>
+<p>| Common (8 items) | 10-75 | Beer (50), Balloon (25), Confetti (50), High-Five (10) |</p>
+<p>| Uncommon (5 items) | 50-75 | Pizza (75), Taco (50), Thumbs Up (50) |</p>
+<p>| Rare (4 items) | 75-150 | Cocktail (100), Rose (100), Fireworks (150), Microphone (75) |</p>
+<p>| Epic (3 items) | 200-250 | Champagne (200), Bouquet (250), Trophy (200) |</p>
+<p>| Legendary (2 items) | 500-1,000 | Crown (500), Diamond (1,000) |</p>
+
+<p><strong>29 total items</strong> in the gift catalog. 8 are free emoji reactions (no LUSH cost). 21 are paid gifts (require LUSH).</p>
+
+<p>The average paid gift costs approximately 100 LUSH. At casual earning rates, this represents 1-2 nights of engagement. This ratio is intentional: gifts should feel meaningful but attainable.</p>
+
+<h3>6.4 Equilibrium Model</h3>
+
+</code>`<code class="inline">
+<p>Per Active User Per Day:</p>
+<p>  Estimated mint:  ~60 LUSH (1.5 venue check-ins + cheer + challenge progress)</p>
+<p>  Estimated burn:  ~30 LUSH (0.3 gifts sent at avg 100 LUSH/gift)</p>
+<p>  Net inflation:   ~30 LUSH</p>
+
+<p>At Scale:</p>
+<p>  10,000 DAU  → 600K minted/day, 300K burned/day, 300K net inflation</p>
+<p>  100,000 DAU → 6M minted/day, 3M burned/day, 3M net inflation</p>
+</code>`<code class="inline">
+
+<p><strong>Natural equilibrium mechanism:</strong> As users build larger friend networks, their gift-sending rate increases. Users with 20+ friends send significantly more gifts than users with 5 friends. Power users with large social graphs tend toward net deflationary behavior — they burn more LUSH on gifts than they earn through check-ins. This creates a natural dampening effect on inflation as the network matures.</p>
+
+<h3>6.5 Anti-Inflation Controls</h3>
+
+<p>If inflation exceeds sustainable levels, the following mechanisms are available:</p>
+
+<li><strong>Expand burn sinks</strong> — Release additional items and features that consume LUSH</li>
+<li><strong>Adjust earn rates</strong> — Reduce minting amounts per event (requires app update)</li>
+<li><strong>Introduce premium tiers</strong> — Higher-cost gift tiers and cosmetics that accelerate burn</li>
+<li><strong>Venue redemption programs</strong> — Allow LUSH to be redeemed for real-world value at partner venues, creating significant burn pressure</li>
+
+<p>No mechanism exists to retroactively burn tokens held by users. All burn events are voluntary (initiated by the user purchasing a gift or feature).</p>
+
+<hr>
+
+<h2>7. USDC Integration: Two-Token Model</h2>
+
+<p>Barfliz employs a deliberate two-token architecture:</p>
+
+<p>| Function | Token | Mechanism |</p>
+<p>|----------|-------|-----------|</p>
+<p>| Engagement rewards | LUSH | Minted on earn events |</p>
+<p>| Virtual gift purchases | LUSH | Burned on spend |</p>
+<p>| Friend-to-friend payments | USDC | Transferred peer-to-peer |</p>
+<p>| Tab splitting | USDC | Transferred peer-to-peer |</p>
+<p>| Future: LUSH pack purchases | USDC | User pays USDC, receives LUSH from treasury |</p>
+<p>| Future: Venue drink redemption | LUSH | User burns LUSH, venue settles in USDC via treasury |</p>
+
+<h3>Why Two Tokens?</h3>
+
+<p>Real-money payments (paying a friend for drinks, splitting a bar tab) require a stable unit of account. Users should not pay for a $12 cocktail with a token whose purchasing power fluctuates. USDC (Circle's USD-pegged stablecoin on Solana) provides price stability for real payments.</p>
+
+<p>LUSH, by contrast, is intentionally not pegged to any currency. Its utility is defined by the gift catalog, not by a dollar value. This separation prevents LUSH from being characterized as a payment instrument or money transmitter vehicle.</p>
+
+<p><strong>USDC on Solana:</strong></p>
+<ul><li>Issued by Circle (regulated financial institution)</li></ul>
+<ul><li>1:1 backed by USD reserves</li></ul>
+<ul><li>Sub-second settlement on Solana (~400ms)</li></ul>
+<ul><li>Near-zero transaction fees (~$0.003)</li></ul>
+<ul><li>Visa settlement infrastructure support (launched December 2025)</li></ul>
+<ul><li>$8.1B circulating supply on Solana</li></ul>
+
+<hr>
+
+<h2>8. Technical Architecture</h2>
+
+<h3>8.1 Blockchain Layer</h3>
+
+<p>LUSH is deployed as a standard SPL token on the Solana blockchain. Solana was selected for:</p>
+
+<p>| Requirement | Solana Capability |</p>
+<p>|-------------|-------------------|</p>
+<p>| Invisible to users (no "confirming..." UX) | ~400ms finality |</p>
+<p>| No meaningful cost per transaction | ~$0.003 per tx |</p>
+<p>| Low deployment cost | ~$2 to create SPL token |</p>
+<p>| USDC availability | $8.1B USDC liquidity |</p>
+<p>| Embedded wallet support | Privy native Solana support |</p>
+<p>| Mobile-optimized | Saga device ecosystem, mobile-first SDKs |</p>
+
+<h3>8.2 Application Architecture</h3>
+
+<p>Barfliz follows a strict <strong>unidirectional data flow</strong> for all blockchain interactions:</p>
+
+</code>`<code class="inline">
+<p>UI Component (read-only)</p>
+<p>    ↓ (user action)</p>
+<p>Service Layer (walletService, lushCoinService, usdcPaymentService)</p>
+<p>    ↓ (RPC call or Edge Function invocation)</p>
+<p>Blockchain (Solana) / Database (Supabase)</p>
+<p>    ↓ (confirmed state)</p>
+<p>WalletProvider Context (single source of truth)</p>
+<p>    ↓ (React state update)</p>
+<p>UI Component (re-render with new state)</p>
+</code>`<code class="inline">
+
+<p><strong>Design rules:</strong></p>
+<ul><li>No UI component imports </code>@solana/web3.js<code class="inline"> or </code>@privy-io/react-auth<code class="inline"> directly</li></ul>
+<ul><li>All blockchain interactions go through service files in </code>src/services/<code class="inline"></li></ul>
+<ul><li>State is managed through a single </code>WalletProvider<code class="inline"> React Context</li></ul>
+<ul><li>No optimistic updates — the UI reflects only confirmed on-chain state</li></ul>
+<ul><li>The entire blockchain layer is gated by a feature flag (</code>VITE_CRYPTO_ENABLED<code class="inline">). When disabled, the application falls back to database-only accounting with identical user experience</li></ul>
+
+<h3>8.3 Mint Authority</h3>
+
+<p>The LUSH mint authority keypair is held server-side in Supabase Edge Function environment secrets. It is never exposed to the client application.</p>
+
+<p>Token minting flow:</p>
+<li>User performs a verified action (e.g., GPS check-in)</li>
+<li>Client calls the </code>mint-lush-coins<code class="inline"> Edge Function with authentication headers</li>
+<li>Edge Function validates: (a) the user's auth token, (b) the earn event type, (c) anti-fraud checks (cooldowns, rate limits)</li>
+<li>If valid, the Edge Function uses the mint authority to mint LUSH to the user's embedded wallet</li>
+<li>The mint transaction is recorded on-chain and in the application database</li>
+<li>The client refreshes the wallet balance from on-chain state</li>
+
+<p>No administrative minting is possible without a corresponding verified earn event. The mint authority cannot be invoked by any client-side code.</p>
+
+<h3>8.4 Feature Flag Architecture</h3>
+
+<p>All blockchain functionality is gated by the </code>VITE_CRYPTO_ENABLED<code class="inline"> environment variable. When set to </code>false<code class="inline"> (the default):</p>
+
+<ul><li>No Privy SDK is loaded</li></ul>
+<ul><li>No Solana connections are established</li></ul>
+<ul><li>LUSH balances are read from the PostgreSQL </code>users.lush_coin_balance` column</li></ul>
+<ul><li>Earn and spend operations update the database directly</li></ul>
+<ul><li>The user experience is identical — they see Lush Coins, gifts, and payments</li></ul>
+
+<p>This design ensures:</p>
+<ul><li>The application is fully functional without any blockchain dependency</li></ul>
+<ul><li>Blockchain integration can be disabled instantly in case of Solana network issues</li></ul>
+<ul><li>Development and testing can proceed without Solana access</li></ul>
+<ul><li>App Store reviewers see a complete app regardless of blockchain status</li></ul>
+
+<hr>
+
+<h2>9. Wallet Infrastructure & User Experience</h2>
+
+<h3>9.1 Privy Embedded Wallets</h3>
+
+<p>Barfliz uses Privy (privy.io) for wallet infrastructure. Privy provides embedded wallets that are:</p>
+
+<ul><li><strong>Automatically created</strong> on user registration — no wallet setup step</li></ul>
+<ul><li><strong>Invisible to the user</strong> — the UI shows "Lush Coins: 47", not "SPL Token Balance: 47"</li></ul>
+<ul><li><strong>Non-custodial</strong> — Privy uses MPC (Multi-Party Computation) key sharding; Barfliz never holds complete private keys</li></ul>
+<ul><li><strong>Recoverable</strong> — tied to the user's phone number or email via Privy's recovery infrastructure</li></ul>
+<ul><li><strong>No seed phrases</strong> — users are never asked to write down or manage cryptographic material</li></ul>
+
+<h3>9.2 User Journey</h3>
+
+<li>User opens Barfliz and signs up with their phone number (existing auth flow)</li>
+<li>Privy silently creates a Solana wallet linked to their account</li>
+<li>User checks into a venue via GPS → 10 LUSH is minted to their wallet</li>
+<li>User sees "Lush Coins: 10" in their profile — no blockchain terminology</li>
+<li>User sends a gift to a friend → LUSH is burned → friend receives the gift</li>
+<li>User wants to pay a friend for drinks → loads USDC via card → sends USDC in-app</li>
+
+<p>At no point does the user encounter wallet addresses, transaction hashes, gas fees, network confirmations, or any blockchain-specific terminology. <strong>The blockchain is infrastructure, not interface.</strong></p>
+
+<hr>
+
+<h2>10. Token Distribution</h2>
+
+<h3>10.1 Genesis Allocation</h3>
+
+<p>At Token Generation Event (TGE), an initial supply of <strong>10,000,000 LUSH</strong> will be minted and distributed:</p>
+
+<p>| Allocation | Percentage | Amount | Purpose | Vesting |</p>
+<p>|-----------|-----------|--------|---------|---------|</p>
+<p>| Community Rewards Pool | 40% | 4,000,000 | Ongoing earn event rewards | Released as users earn |</p>
+<p>| Team & Founders | 20% | 2,000,000 | Core team compensation | 1-year cliff, 36-month linear vest |</p>
+<p>| Strategic Partners & Venues | 15% | 1,500,000 | Venue onboarding incentives | Released per partnership agreements |</p>
+<p>| Treasury Reserve | 15% | 1,500,000 | Market stability, future features | Multisig-controlled, no schedule |</p>
+<p>| Early Investors | 10% | 1,000,000 | Seed/Series A allocation | 6-month cliff, 24-month linear vest |</p>
+
+<h3>10.2 Ongoing Emission</h3>
+
+<p>After TGE, new LUSH is minted exclusively through the Community Rewards Pool as users perform verified earn events. The mint authority is controlled by the Edge Function infrastructure. There is no mechanism for ad-hoc administrative minting without corresponding on-chain event records.</p>
+
+<h3>10.3 No Public Sale</h3>
+
+<p>LUSH will not be sold to the public at launch. There is no Initial Coin Offering (ICO), Initial DEX Offering (IDO), or public token sale. Users obtain LUSH by earning it through app engagement. This is a deliberate design choice to ensure LUSH functions as a utility reward, not an investment.</p>
+
+<hr>
+
+<h2>11. Governance & Mint Authority</h2>
+
+<h3>11.1 Current Governance</h3>
+
+<p>At launch, LUSH governance is centralized under Barfliz, Inc. The mint authority keypair is controlled by the development team via Supabase Edge Function secrets. Minting is permissioned and programmatic — it occurs only in response to verified earn events.</p>
+
+<h3>11.2 Future Governance Consideration</h3>
+
+<p>If community governance becomes appropriate at scale, Barfliz may consider:</p>
+
+<ul><li><strong>Wyoming DUNA (Decentralized Unincorporated Nonprofit Association)</strong> — A legal structure recognized under Wyoming law (SF0050, effective July 2024) that provides legal personhood to DAOs</li></ul>
+<ul><li><strong>On-chain governance</strong> — Token-weighted or reputation-weighted voting on parameters such as earn rates, gift pricing, and new burn sinks</li></ul>
+<ul><li><strong>Multisig treasury</strong> — Transition from single-key mint authority to multi-signature control</li></ul>
+
+<p>Any governance transition would be announced in advance and implemented transparently.</p>
+
+<hr>
+
+<h2>12. Security & Risk Management</h2>
+
+<h3>12.1 Smart Contract Risk</h3>
+
+<p>LUSH is a standard SPL token. It does not use custom smart contracts beyond the standard SPL token program, which has been audited and battle-tested across thousands of tokens and billions of dollars in value.</p>
+
+<h3>12.2 Mint Authority Risk</h3>
+
+<p>The mint authority keypair is stored in Supabase Edge Function environment secrets, accessible only by server-side functions. It is not present in client code, version control, or any public repository.</p>
+
+<h3>12.3 Solana Network Risk</h3>
+
+<p>Solana has experienced network degradation and outages historically. Barfliz mitigates this with the feature flag architecture: if Solana is unavailable, the application falls back to database-only accounting with zero user impact. Balances are reconciled when the network recovers.</p>
+
+<h3>12.4 Regulatory Risk</h3>
+
+<p>See Section 13 for detailed regulatory analysis. The primary mitigation is the utility-first, product-first design: LUSH has concrete consumptive utility, the application was built before the token, and no public sale or exchange listing is planned at launch.</p>
+
+<h3>12.5 Inflation Risk</h3>
+
+<p>See Section 6.5 for anti-inflation controls. The burn-on-spend model, expanding gift catalog, and future venue redemption programs provide multiple levers to manage token supply.</p>
+
+<hr>
+
+<h2>13. Legal & Regulatory Analysis</h2>
+
+<h3>13.1 Howey Test Analysis</h3>
+
+<p>Under U.S. securities law, an asset is classified as a security if it satisfies all four prongs of the Howey Test (<em>SEC v. W.J. Howey Co.</em>, 328 U.S. 293, 1946):</p>
+
+<p>| Howey Prong | Analysis | LUSH Position |</p>
+<p>|-------------|----------|--------------|</p>
+<p>| <strong>Investment of money</strong> | Users must invest money with an expectation of return | LUSH is earned for free through app engagement. No purchase is required to obtain LUSH. Users invest time and social activity, not money. |</p>
+<p>| <strong>Common enterprise</strong> | Investors pool assets in a common venture | Each user's LUSH balance is a function of their individual engagement. There is no pooling of assets, no shared fund, and no collective investment vehicle. |</p>
+<p>| <strong>Expectation of profits</strong> | Investors expect to profit from their investment | LUSH is designed to be spent, not held. The gift catalog provides immediate consumptive utility. LUSH is not marketed as an investment and is not listed on exchanges at launch. There is no mechanism for profit extraction. |</p>
+<p>| <strong>Efforts of others</strong> | Profits are derived from the efforts of a promoter or third party | LUSH utility is driven by individual user engagement (checking in, sending gifts). While Barfliz builds the platform, the token's utility value to any individual user is a function of their own activity and social graph, not Barfliz's corporate efforts. |</p>
+
+<p><strong>Conclusion:</strong> LUSH does not satisfy all four prongs of the Howey Test. Most critically, there is no investment of money (prong 1) and no reasonable expectation of profits (prong 3).</p>
+
+<h3>13.2 Additional Regulatory Mitigations</h3>
+
+<ul><li><strong>No ICO or public sale.</strong> Tokens are distributed via engagement, not purchased.</li></ul>
+<ul><li><strong>No exchange listings at launch.</strong> LUSH is on-chain (transparent, auditable) but not traded on any centralized or decentralized exchange at launch.</li></ul>
+<ul><li><strong>Burn-on-spend model.</strong> Tokens are consumed, not accumulated. The economic design incentivizes spending, not holding.</li></ul>
+<ul><li><strong>Product-first sequencing.</strong> The Barfliz application is fully functional without the token. The product achieved feature completeness and deployed to production before any token was created. This demonstrates that the token serves the product, not the other way around.</li></ul>
+<ul><li><strong>Utility-first documentation.</strong> All marketing materials, this whitepaper, and in-app messaging describe LUSH as a reward and spending mechanism, never as an investment or financial instrument.</li></ul>
+<ul><li><strong>No promises of appreciation.</strong> Barfliz does not and will not make statements suggesting LUSH will increase in value, appreciate, or generate returns.</li></ul>
+
+<h3>13.3 Comparable Precedents</h3>
+
+<ul><li><strong>Rally (RLY)</strong> — Social token for creator engagement. Earned via streaming, spent on fan access. Not classified as a security by the SEC.</li></ul>
+<ul><li><strong>Friends With Benefits (FWB)</strong> — Token-gated social community. $10M Series A from a16z. Survived regulatory scrutiny by providing real community access (IRL events, curated membership).</li></ul>
+<ul><li><strong>Chiliz (CHZ)</strong> — Fan engagement tokens for sports teams. Earned through engagement, spent on voting and experiences. Operating legally across multiple jurisdictions.</li></ul>
+<ul><li><strong>Roblox (Robux) / Epic Games (V-Bucks)</strong> — In-game currencies earned through play, spent on cosmetics. Regulatory consensus treats these as virtual goods, not securities.</li></ul>
+
+<h3>13.4 Money Transmitter Analysis</h3>
+
+<p>LUSH is not a medium of exchange for real-world goods and services at launch. It is a closed-loop virtual currency spent exclusively on digital goods (virtual gifts) within the Barfliz application. Under FinCEN guidance (FIN-2019-G001), closed-loop virtual currencies used within a single platform for virtual goods are generally not subject to money transmitter registration.</p>
+
+<p>USDC transfers between users are peer-to-peer transfers of an existing regulated stablecoin. Barfliz facilitates the transaction but does not take custody of USDC at any point. The USDC is transferred directly from one user's non-custodial wallet to another's.</p>
+
+<h3>13.5 Future Regulatory Considerations</h3>
+
+<p>If LUSH utility expands to include real-world value redemption (e.g., drink discounts at partner venues), Barfliz will:</p>
+
+<ul><li>Consult with securities and fintech counsel before implementation</li></ul>
+<ul><li>Evaluate whether money transmitter licensing is required in applicable states</li></ul>
+<ul><li>Consider Wyoming DUNA registration if community governance is introduced</li></ul>
+<ul><li>Monitor evolving SEC, CFTC, and Congressional guidance on digital asset classification</li></ul>
+
+<hr>
+
+<h2>14. Roadmap</h2>
+
+<h3>Phase 1: Foundation (Complete)</h3>
+<ul><li>Barfliz application v1.6.0 live in production</li></ul>
+<ul><li>15+ features, 25+ Edge Functions, 70+ database tables</li></ul>
+<ul><li>Full gamification system: XP, streaks, badges, challenges, leaderboards</li></ul>
+<ul><li>Virtual gift economy: 29 items across 5 rarity tiers</li></ul>
+<ul><li>GPS geofencing via Radar.io</li></ul>
+<ul><li>Venmo/Beem payment integration</li></ul>
+<ul><li>PWA + iOS + Android via Capacitor</li></ul>
+
+<h3>Phase 2: Token Launch (Current)</h3>
+<ul><li>LUSH SPL token deployed on Solana devnet</li></ul>
+<ul><li>Privy embedded wallet integration built</li></ul>
+<ul><li>Mint/burn Edge Functions deployed</li></ul>
+<ul><li>USDC payment flow implemented</li></ul>
+<ul><li>Feature flag architecture: instant fallback to DB-only</li></ul>
+<ul><li>App Store and Google Play submission</li></ul>
+
+<h3>Phase 3: Market Launch (Next)</h3>
+<ul><li>LUSH token deployed to Solana mainnet</li></ul>
+<ul><li>First 1,000 users in target markets (Miami, Austin, Nashville)</li></ul>
+<ul><li>Venue partnership program launch</li></ul>
+<ul><li>Venue analytics dashboard (subscription model)</li></ul>
+<ul><li>Expanded gift catalog and burn sinks</li></ul>
+
+<h3>Phase 4: Scale</h3>
+<ul><li>Paid LUSH packs (USDC-to-LUSH via treasury)</li></ul>
+<ul><li>Venue drink redemption program</li></ul>
+<ul><li>Profile cosmetics marketplace</li></ul>
+<ul><li>Promoted events and discovery features</li></ul>
+<ul><li>Cross-city Swarm support</li></ul>
+<ul><li>PostHog analytics integration</li></ul>
+
+<hr>
+
+<h2>15. Conclusion</h2>
+
+<p>LUSH is a purpose-built utility token for the Barfliz nightlife ecosystem. It rewards real engagement (verified by GPS geofencing), provides immediate consumptive utility (virtual gifts that burn tokens permanently), and is delivered through zero-friction infrastructure (embedded wallets that users never see).</p>
+
+<p>LUSH is not a security. It is not an investment. It is not a payment instrument. It is a gamified engagement reward — earned by showing up and spent on social expression. The application it powers is live, functional, and feature-complete independent of any blockchain integration.</p>
+
+<p>The nightlife industry has no social infrastructure. Barfliz is building it. LUSH is the fuel.</p>
+
+<hr>
+
+<h2>16. Legal Disclaimers</h2>
+
+<p><strong>Token Classification.</strong> LUSH is a utility token as defined in this whitepaper. It has not been registered as a security under the Securities Act of 1933 or any state securities law. Barfliz, Inc. has made a good-faith determination that LUSH does not constitute a security under the Howey Test. This determination is based on the analysis in Section 13 and may be subject to different interpretations by regulatory authorities.</p>
+
+<p><strong>No Investment Advice.</strong> Nothing in this whitepaper constitutes investment advice, financial advice, trading advice, or any other sort of advice. You should not treat any of the whitepaper's content as such.</p>
+
+<p><strong>No Guarantees.</strong> Barfliz, Inc. makes no guarantees regarding the future value, utility, or availability of LUSH. The token's utility is dependent on the continued operation of the Barfliz platform, which is subject to business, regulatory, and technical risks.</p>
+
+<p><strong>Forward-Looking Statements.</strong> This whitepaper contains forward-looking statements regarding Barfliz's plans, roadmap, and token economics. These statements are based on current expectations and assumptions. Actual results may differ materially.</p>
+
+<p><strong>Jurisdictional Restrictions.</strong> LUSH may not be available in all jurisdictions. It is the responsibility of each user to determine whether their use of LUSH complies with applicable laws in their jurisdiction.</p>
+
+<p><strong>Regulatory Uncertainty.</strong> The regulatory environment for digital assets is evolving. Future legislative or regulatory actions may impact the classification, utility, or availability of LUSH.</p>
+
+<p><strong>No Fiduciary Relationship.</strong> This whitepaper does not create any fiduciary relationship between Barfliz, Inc. and any reader or token holder.</p>
+
+<hr>
+
+<p><em>Barfliz, Inc. | March 2026 | v1.0</em></p>
+
+<p><em>This document may be updated periodically. The most recent version is available at the Barfliz project repository.</em></p>
+
+</div>
+</body>
+</html>

@@ -9,16 +9,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-/**
- * Burn LUSH tokens from a user's Solana wallet (gift purchase / spend).
- *
- * The burn is authority-based: the mint authority signs a burn instruction
- * on the user's token account. This avoids needing the user to sign a
- * separate transaction for every gift sent.
- *
- * Body: { user_id: string, amount: number, item_id?: string }
- * Returns: { success: boolean, tx_signature?: string, error?: string }
- */
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -63,7 +53,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Check DB balance first (fast check before chain)
     const { data: userData, error: userError } = await supabase
       .from("users")
       .select("wallet_address, lush_coin_balance")
@@ -91,7 +80,6 @@ Deno.serve(async (req: Request) => {
     let txSignature: string | undefined;
 
     if (mintAuthoritySecret && lushMintAddress && userData.wallet_address) {
-      // On-chain burn
       const connection = new Connection(rpcUrl, "confirmed");
       const mintAuthority = Keypair.fromSecretKey(
         Uint8Array.from(JSON.parse(mintAuthoritySecret)),
@@ -101,30 +89,20 @@ Deno.serve(async (req: Request) => {
       const ata = getAssociatedTokenAddressSync(mint, owner);
 
       const tx = new Transaction();
-      // Burn from the user's ATA using the owner's delegation
-      // Note: this requires the user to have previously approved the mint authority
-      // as a delegate. For simplicity, we use a server-side approach where the
-      // DB balance is authoritative and chain is for transparency.
       tx.add(createBurnInstruction(ata, mint, owner, amount));
 
       const { blockhash } = await connection.getLatestBlockhash("confirmed");
       tx.recentBlockhash = blockhash;
       tx.feePayer = mintAuthority.publicKey;
 
-      // For server-side burns, we need the user's signature which we don't have.
-      // So we record the intent and deduct from DB. The on-chain burn can be
-      // batched or done when the user next interacts with their wallet.
-      // This is the pragmatic approach — DB is authoritative, chain is audit trail.
-      txSignature = undefined; // Will be set when user-signed burn is implemented
+      txSignature = undefined;
     }
 
-    // Deduct from DB balance (authoritative)
     await supabase
       .from("users")
       .update({ lush_coin_balance: (userData.lush_coin_balance || 0) - amount })
       .eq("id", user_id);
 
-    // Log the burn event
     await supabase.from("event_log").insert({
       event_type: "lush_burn",
       data: { user_id, amount, item_id, tx_signature: txSignature },

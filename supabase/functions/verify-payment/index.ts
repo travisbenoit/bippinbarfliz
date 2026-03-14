@@ -8,18 +8,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-/**
- * Verify a USDC payment on Solana and record it in payment_transactions.
- *
- * Body: {
- *   tx_signature: string,
- *   from_user_id: string,
- *   to_user_id: string,
- *   amount: number,
- *   currency: string,
- *   description?: string
- * }
- */
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -50,7 +38,6 @@ Deno.serve(async (req: Request) => {
 
     const { tx_signature, from_user_id, to_user_id, amount, currency, description } = await req.json();
 
-    // Verify caller is the sender
     if (from_user_id !== user.id) {
       return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
         status: 403,
@@ -65,7 +52,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Verify the transaction on Solana
     const rpcUrl = Deno.env.get("SOLANA_RPC_URL") || "https://api.devnet.solana.com";
     const connection = new Connection(rpcUrl, "confirmed");
 
@@ -88,7 +74,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Check for duplicate
     const { data: existing } = await supabase
       .from("payment_transactions")
       .select("id")
@@ -101,7 +86,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Record the verified payment
     const { error: insertError } = await supabase.from("payment_transactions").insert({
       from_user_id,
       to_user_id,

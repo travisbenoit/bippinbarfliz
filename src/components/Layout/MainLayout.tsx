@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router';
 import { Menu, X, Home, MapPin, MessageCircle, User, Settings, Gift, Users, DollarSign, Music, Shield, Bell, LogOut, Trophy } from 'lucide-react';
 import BottomNav from './BottomNav';
 import { useAuth } from '../../contexts/AuthContext';

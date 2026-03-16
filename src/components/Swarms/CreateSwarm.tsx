@@ -1,9 +1,10 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { ArrowLeft, MapPin, Clock, Search, ChevronRight, X, UserPlus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { xpService } from '../../services/xpService';
+import { logger } from '../../lib/logger';
 
 import { VIBE_TAGS, type VibeTag } from '../../data/dummyData';
 import TimePicker from './TimePicker';
@@ -95,7 +96,8 @@ export default function CreateSwarm() {
         .select('friend:users!friendships_friend_id_fkey(id, name, username, avatar_url)')
         .eq('user_id', user.id)
         .eq('status', 'accepted')
-        .then(({ data }) => {
+        .then(({ data, error }) => {
+          if (error) { logger.error('Failed to load friends:', error); return; }
           if (data) setAllFriends(data.map((r: any) => r.friend).filter(Boolean));
         });
     }
@@ -220,12 +222,12 @@ export default function CreateSwarm() {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'club': return '🎵';
-      case 'brewery': return '🍺';
-      case 'rooftop': return '🌆';
-      case 'lounge': return '🍸';
-      case 'sports_bar': return '🏈';
-      default: return '🍻';
+      case 'club': return '\uD83C\uDFB5';
+      case 'brewery': return '\uD83C\uDF7A';
+      case 'rooftop': return '\uD83C\uDF06';
+      case 'lounge': return '\uD83C\uDF78';
+      case 'sports_bar': return '\uD83C\uDFC8';
+      default: return '\uD83C\uDF7B';
     }
   };
 
@@ -330,7 +332,7 @@ export default function CreateSwarm() {
                   <p className="text-sm text-gray-500">{venue.address.split(',')[0]}</p>
                   {venue.rating && (
                     <div className="flex items-center gap-1 mt-1">
-                      <span className="text-yellow-500 text-xs">{'★'.repeat(Math.round(venue.rating))}</span>
+                      <span className="text-yellow-500 text-xs">{'\u2605'.repeat(Math.round(venue.rating))}</span>
                       <span className="text-xs text-gray-400">{venue.rating}</span>
                     </div>
                   )}

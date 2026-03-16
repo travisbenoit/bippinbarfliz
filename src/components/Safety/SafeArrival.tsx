@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Shield, CheckCircle, Clock, Heart, AlertCircle, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Shield, CircleCheck as CheckCircle, Clock, Heart, CircleAlert as AlertCircle, X } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { activityService } from '../../services/activityService';
@@ -124,7 +124,7 @@ export function SafeArrivalButton() {
             {sent ? 'Safe arrival confirmed!' : "I'm home safe"}
           </p>
           <p className={`text-xs mt-0.5 ${sent ? 'text-emerald-600' : 'text-gray-500'}`}>
-            {sent && lastSent ? `Sent ${timeAgo(lastSent)} · friends notified` : 'Notify friends you got home safely'}
+            {sent && lastSent ? `Sent ${timeAgo(lastSent)} \u00b7 friends notified` : 'Notify friends you got home safely'}
           </p>
         </div>
         <Heart className={`w-5 h-5 flex-shrink-0 ${sent ? 'text-emerald-500 fill-emerald-500' : 'text-gray-300'}`} />

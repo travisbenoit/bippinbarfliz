@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useRealTimeLocation } from '../../hooks/useRealTimeLocation';
 import { Search, X, SlidersHorizontal, Settings, MapPin } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import { VIBE_TAGS, GROUP_SIZE_OPTIONS, type VibeTag } from '../../data/dummyData';
 import MapFilters from './MapFilters';
 import TonightStatusModal from '../TonightStatus/TonightStatusModal';
@@ -22,6 +22,7 @@ import type { RealTimeVenue } from '../../services/locationService';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../contexts/ToastContext';
 import type { Database } from '../../lib/database.types';
+import { logger } from '../../lib/logger';
 
 type SwarmRow = Database['public']['Tables']['swarms']['Row'];
 
@@ -99,7 +100,7 @@ export default function MapView() {
           }
         }
       } catch (err) {
-        console.error('Error loading user radius:', err);
+        logger.error('Error loading user radius:', err);
       }
     };
     loadUserRadius();
@@ -119,7 +120,7 @@ export default function MapView() {
           .eq('id', user.id);
       }
     } catch (err) {
-      console.error('Error saving radius preference:', err);
+      logger.error('Error saving radius preference:', err);
     }
   }, []);
   const [vibeFilters, setVibeFilters] = useState<VibeTag[]>([]);

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Phone, UserPlus, Users, MapPin, Trash2, AlertTriangle, MessageCircle, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Phone, UserPlus, Users, MapPin, Trash2, TriangleAlert as AlertTriangle, MessageCircle, X } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import PageHeader from '../Layout/PageHeader';
+import { logger } from '../../lib/logger';
 
 interface SafetyFriend {
   id: string;
@@ -82,7 +83,7 @@ export default function SafetySecurity() {
         setEmergencyCountry('US');
       }
     } catch (error) {
-      console.error('Error determining emergency number:', error);
+      logger.error('Error determining emergency number:', error);
       setEmergencyNumber('911');
       setEmergencyCountry('US');
     }
@@ -111,7 +112,7 @@ export default function SafetySecurity() {
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Error loading safety friends:', error);
+        logger.error('Error loading safety friends:', error);
       } else if (data) {
         setSafetyFriends(data.map(f => ({
           id: f.id,
@@ -120,7 +121,7 @@ export default function SafetySecurity() {
         })));
       }
     } catch (error) {
-      console.error('Error loading safety friends:', error);
+      logger.error('Error loading safety friends:', error);
     } finally {
       setLoading(false);
     }
@@ -166,7 +167,7 @@ export default function SafetySecurity() {
         .single();
 
       if (error) {
-        console.error('Error adding safety friend:', error);
+        logger.error('Error adding safety friend:', error);
         showError(`Failed to add safety friend: ${error.message}`);
         return;
       }
@@ -182,7 +183,7 @@ export default function SafetySecurity() {
         setShowAddFriend(false);
       }
     } catch (error) {
-      console.error('Error adding safety friend:', error);
+      logger.error('Error adding safety friend:', error);
       showError(`Failed to add safety friend: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
@@ -195,14 +196,14 @@ export default function SafetySecurity() {
         .eq('id', id);
 
       if (error) {
-        console.error('Error removing safety friend:', error);
+        logger.error('Error removing safety friend:', error);
         showError('Failed to remove safety friend. Please try again.');
         return;
       }
 
       setSafetyFriends(safetyFriends.filter(f => f.id !== id));
     } catch (error) {
-      console.error('Error removing safety friend:', error);
+      logger.error('Error removing safety friend:', error);
       showError('Failed to remove safety friend. Please try again.');
     }
   };
@@ -254,7 +255,7 @@ export default function SafetySecurity() {
           const { latitude, longitude } = position.coords;
           const locationUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
 
-          const message = `🚨 EMERGENCY ALERT 🚨\n\nI need immediate help! My current location:\n${locationUrl}\n\nPlease respond or call me ASAP.`;
+          const message = `\uD83D\uDEA8 EMERGENCY ALERT \uD83D\uDEA8\n\nI need immediate help! My current location:\n${locationUrl}\n\nPlease respond or call me ASAP.`;
 
           safetyFriends.forEach(friend => {
             const smsUrl = `sms:${friend.phone}?body=${encodeURIComponent(message)}`;

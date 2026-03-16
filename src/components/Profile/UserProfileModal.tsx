@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, MessageCircle, UserPlus, User, Sparkles, Wine, Music, Gift, Briefcase, GraduationCap, Instagram, CheckCircle, Heart, MessageSquare, Mic, UserCheck, Clock, Shield, ShieldOff, Check, AlertTriangle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { X, MapPin, MessageCircle, UserPlus, User, Sparkles, Wine, Music, Gift, Briefcase, GraduationCap, Instagram, CircleCheck as CheckCircle, Heart, MessageSquare, Mic, UserCheck, Clock, Shield, ShieldOff, Check, TriangleAlert as AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import type { Database } from '../../lib/database.types';
 import { parseDrinkFromStorage } from '../../data/drinkOptions';
 import { friendsService, FriendshipStatus } from '../../services/friendsService';

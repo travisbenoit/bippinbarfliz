@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Radio, MapPin, Save, AlertCircle, CheckCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Radio, MapPin, Save, CircleAlert as AlertCircle, CircleCheck as CheckCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import PageHeader from '../Layout/PageHeader';

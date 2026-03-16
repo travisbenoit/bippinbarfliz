@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link2, AlertCircle, CheckCircle, RefreshCw, Zap, MapPin } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link2, CircleAlert as AlertCircle, CircleCheck as CheckCircle, RefreshCw, Zap, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import PageHeader from '../Layout/PageHeader';

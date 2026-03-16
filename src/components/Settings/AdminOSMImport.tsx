@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Download, RefreshCw, MapPin, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Download, RefreshCw, MapPin, Loader as Loader2, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { supabase } from '../../lib/supabase';
+import { logger } from '../../lib/logger';
 
 interface CityStats {
   city: string | null;
@@ -54,7 +55,7 @@ export default function AdminOSMImport() {
       const data = await response.json();
       setStats(data);
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      logger.error('Error fetching stats:', error);
     } finally {
       setStatsLoading(false);
     }
@@ -276,9 +277,9 @@ export default function AdminOSMImport() {
                       key={`${stat.city}-${stat.state}-${stat.country}-${index}`}
                       className="border-b border-gray-700/50 hover:bg-gray-700/30"
                     >
-                      <td className="py-2 px-3">{stat.city || '—'}</td>
-                      <td className="py-2 px-3 text-gray-400">{stat.state || '—'}</td>
-                      <td className="py-2 px-3 text-gray-400">{stat.country || '—'}</td>
+                      <td className="py-2 px-3">{stat.city || '\u2014'}</td>
+                      <td className="py-2 px-3 text-gray-400">{stat.state || '\u2014'}</td>
+                      <td className="py-2 px-3 text-gray-400">{stat.country || '\u2014'}</td>
                       <td className="py-2 px-3 text-right font-medium">
                         {stat.venue_count.toLocaleString()}
                       </td>

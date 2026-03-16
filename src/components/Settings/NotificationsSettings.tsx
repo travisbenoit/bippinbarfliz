@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Bell, MessageCircle, Users, MapPin, Gift, Megaphone } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import PageHeader from '../Layout/PageHeader';
 import { supabase } from '../../lib/supabase';
 

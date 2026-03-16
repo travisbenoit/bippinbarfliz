@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { BarChart2, MapPin, MessageSquare, Zap, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { ChartBar as BarChart2, MapPin, MessageSquare, Zap, TrendingUp } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import PageHeader from '../Layout/PageHeader';

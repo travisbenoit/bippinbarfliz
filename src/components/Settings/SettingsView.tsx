@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { User, Bell, Shield, MapPin, HelpCircle, ChevronRight, LogOut, Moon, Ruler, Trash2, AlertTriangle, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { User, Bell, Shield, MapPin, Circle as HelpCircle, ChevronRight, LogOut, Moon, Ruler, Trash2, TriangleAlert as AlertTriangle, X } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRegionalSettings } from '../../contexts/RegionalSettingsContext';
 import { useTheme } from '../../contexts/ThemeContext';

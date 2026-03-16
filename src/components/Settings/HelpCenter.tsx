@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ChevronDown, ChevronUp, Mail, MapPin, Users, MessageCircle, Gift, DollarSign, Shield, Bell, Music, Heart, Navigation } from 'lucide-react';
 import PageHeader from '../Layout/PageHeader';
 

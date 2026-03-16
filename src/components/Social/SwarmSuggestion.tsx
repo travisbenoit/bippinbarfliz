@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sparkles, Users, MapPin, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 interface VenueCluster {
   venue_id: string;

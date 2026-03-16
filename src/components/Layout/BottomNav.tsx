@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { MapPin, MessageCircle, Wallet, Sparkles, Users2, History } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { MapPin, MessageCircle, Wallet, Sparkles, Users as Users2, History } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router';
 import { messagesService } from '../../services/messagesService';
 import { friendsService } from '../../services/friendsService';
 import { supabase } from '../../lib/supabase';

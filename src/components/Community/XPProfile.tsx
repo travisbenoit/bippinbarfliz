@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Trophy, Flame, Target, Medal } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { xpService, UserStats, Badge, Challenge } from '../../services/xpService';
+import { logger } from '../../lib/logger';
 import { supabase } from '../../lib/supabase';
 
 interface XPProfileProps {
@@ -42,7 +43,7 @@ export function XPProfile({ userId: propUserId }: XPProfileProps) {
         setBadges(userBadges);
         setChallenges(activeChallenges);
       } catch (error) {
-        console.error('Failed to load XP data:', error);
+        logger.error('Failed to load XP data:', error);
       } finally {
         setLoading(false);
       }

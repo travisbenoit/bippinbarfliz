@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Settings, Edit3, MapPin, Heart, LogOut, DollarSign, Trophy, Flame, CheckCircle2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Settings, CreditCard as Edit3, MapPin, Heart, LogOut, DollarSign, Trophy, Flame, CircleCheck as CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -8,6 +8,7 @@ import { xpService, UserStats } from '../../services/xpService';
 import TonightStatusModal from '../TonightStatus/TonightStatusModal';
 import { XPProfile } from '../Community/XPProfile';
 import type { Database } from '../../lib/database.types';
+import { logger } from '../../lib/logger';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
 type TonightStatus = 'going_out' | 'maybe' | 'staying_in' | null;
@@ -49,7 +50,7 @@ export default function ProfileView() {
         .maybeSingle();
 
       if (error) {
-        console.error('Error loading profile:', error);
+        logger.error('Error loading profile:', error);
       }
 
       if (data) {
@@ -61,7 +62,7 @@ export default function ProfileView() {
         else setCurrentStatus(null);
       }
     } catch (err) {
-      console.error('Unexpected error:', err);
+      logger.error('Unexpected error:', err);
     } finally {
       setLoading(false);
     }
@@ -240,7 +241,7 @@ export default function ProfileView() {
                   <span className="text-sm font-semibold text-gray-900">Profile {pct}% complete</span>
                 </div>
                 <button onClick={() => navigate('/settings/edit-profile')} className="text-xs text-[#E91E63] font-semibold">
-                  Complete →
+                  Complete \u2192
                 </button>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
@@ -425,7 +426,7 @@ export default function ProfileView() {
                 className="flex items-center gap-3 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl hover:from-pink-100 hover:to-purple-100 transition-colors"
               >
                 <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl">📷</span>
+                  <span className="text-white text-xl">\uD83D\uDCF7</span>
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Instagram</p>
@@ -441,7 +442,7 @@ export default function ProfileView() {
                 className="flex items-center gap-3 p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors"
               >
                 <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl">🎵</span>
+                  <span className="text-white text-xl">\uD83C\uDFB5</span>
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Spotify</p>
@@ -462,7 +463,7 @@ export default function ProfileView() {
               <Trophy size={20} className="text-yellow-300" />
               <span className="font-bold text-white text-lg">Nightlife XP</span>
             </div>
-            <span className="text-purple-200 text-sm">View all →</span>
+            <span className="text-purple-200 text-sm">View all \u2192</span>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white/10 rounded-xl p-3 text-center">
@@ -478,7 +479,7 @@ export default function ProfileView() {
             </div>
             <div className="bg-white/10 rounded-xl p-3 text-center">
               <p className="text-2xl font-black text-yellow-300">{coinBalance}</p>
-              <p className="text-xs text-purple-200 mt-0.5">🪙 Coins</p>
+              <p className="text-xs text-purple-200 mt-0.5">\uD83E\uDE99 Coins</p>
             </div>
           </div>
         </button>
@@ -490,7 +491,7 @@ export default function ProfileView() {
                 onClick={() => setShowXPProfile(false)}
                 className="mb-4 flex items-center gap-2 text-gray-600 font-medium hover:text-gray-900"
               >
-                ← Back to Profile
+                \u2190 Back to Profile
               </button>
               <XPProfile userId={user?.id} />
             </div>

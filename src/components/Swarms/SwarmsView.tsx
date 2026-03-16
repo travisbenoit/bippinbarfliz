@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Clock, Sparkles, X, Trash2, MessageCircle, Share2, Receipt, Pencil } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -9,6 +9,7 @@ import type { Database } from '../../lib/database.types';
 import SwarmDateFilter, { DateFilterOption, filterSwarmsByDate } from './SwarmDateFilter';
 import { GroupSplit } from '../Payments/GroupSplit';
 import EditSwarm from './EditSwarm';
+import { logger } from '../../lib/logger';
 
 type Swarm = Database['public']['Tables']['swarms']['Row'];
 
@@ -31,7 +32,6 @@ export default function SwarmsView() {
     loadSwarms();
   }, [filter, user]);
 
-  // Auto-open swarm from push notification deep-link (?id=swarm-uuid&tab=chat)
   useEffect(() => {
     const deepLinkId = searchParams.get('id');
     const deepLinkTab = searchParams.get('tab');
@@ -48,43 +48,51 @@ export default function SwarmsView() {
 
   const loadSwarms = async () => {
     setLoading(true);
+    try {
+      let query = supabase
+        .from('swarms')
+        .select('*')
+        .eq('status', 'active')
+        .order('start_time', { ascending: true });
 
-    let query = supabase
-      .from('swarms')
-      .select('*')
-      .eq('status', 'active')
-      .order('start_time', { ascending: true });
-
-    if (filter === 'my-swarms' && user) {
-      query = query.eq('host_user_id', user.id);
-    }
-
-    const { data } = await query;
-
-    if (data) {
-      const now = new Date();
-      const expiredIds: string[] = [];
-      const activeSwarms = data.filter((s) => {
-        const endTime = s.end_time ? new Date(s.end_time) : null;
-        if (endTime && endTime < now) {
-          expiredIds.push(s.id);
-          return false;
-        }
-        return true;
-      });
-
-      if (expiredIds.length > 0) {
-        supabase
-          .from('swarms')
-          .update({ status: 'completed' })
-          .in('id', expiredIds)
-          .then(() => {});
+      if (filter === 'my-swarms' && user) {
+        query = query.eq('host_user_id', user.id);
       }
 
-      setSwarms(activeSwarms);
-    }
+      const { data, error } = await query;
 
-    setLoading(false);
+      if (error) throw error;
+
+      if (data) {
+        const now = new Date();
+        const expiredIds: string[] = [];
+        const activeSwarms = data.filter((s) => {
+          const endTime = s.end_time ? new Date(s.end_time) : null;
+          if (endTime && endTime < now) {
+            expiredIds.push(s.id);
+            return false;
+          }
+          return true;
+        });
+
+        if (expiredIds.length > 0) {
+          supabase
+            .from('swarms')
+            .update({ status: 'completed' })
+            .in('id', expiredIds)
+            .then(({ error: expErr }) => {
+              if (expErr) logger.error('Error expiring swarms:', expErr);
+            });
+        }
+
+        setSwarms(activeSwarms);
+      }
+    } catch (err) {
+      logger.error('Error loading swarms:', err);
+      showError('Failed to load swarms. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatTime = (dateString: string) => {
@@ -149,7 +157,7 @@ export default function SwarmsView() {
           throw error;
         }
       } else {
-        showSuccess(`Joined "${swarm.title}"! +5 🪙`);
+        showSuccess(`Joined "${swarm.title}"! +5 \uD83E\uDE99`);
         if (user) xpService.onSwarmJoined(user.id).catch(() => null);
       }
     } catch {
@@ -294,7 +302,7 @@ export default function SwarmsView() {
                   <span>{swarm.start_time ? `${formatDate(swarm.start_time)} at ${formatTime(swarm.start_time)}` : 'Tonight'}</span>
                   {swarm.join_mode && (
                     <>
-                      <span className="text-xs text-gray-400">•</span>
+                      <span className="text-xs text-gray-400">&bull;</span>
                       <span className="text-xs capitalize">{swarm.join_mode.replace('_', ' ')}</span>
                     </>
                   )}

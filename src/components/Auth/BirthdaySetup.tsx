@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { getMinDrinkingAge, getCountryByCode } from '../../services/geoLocationService';
 import { useToast } from '../../contexts/ToastContext';

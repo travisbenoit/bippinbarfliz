@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Camera, X, Upload, Sparkles, Music as MusicIcon, MessageCircle, Briefcase, GraduationCap, Instagram, DollarSign, Wallet, CheckCircle, ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Camera, X, Upload, Sparkles, Music as MusicIcon, MessageCircle, Briefcase, GraduationCap, Instagram, DollarSign, Wallet, CircleCheck as CheckCircle, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import type { Database } from '../../lib/database.types';
 import DrinkSelector from '../DrinkSelector';
 import { usePaymentProvider } from '../../hooks/usePaymentProvider';
+import { logger } from '../../lib/logger';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
 
@@ -165,7 +166,7 @@ export default function EditProfile() {
         .eq('id', user!.id);
 
     } catch (error: any) {
-      console.error('Error uploading image:', error);
+      logger.error('Error uploading image:', error);
       showError('Failed to upload image. Please try again.');
     } finally {
       setUploadingImage(false);

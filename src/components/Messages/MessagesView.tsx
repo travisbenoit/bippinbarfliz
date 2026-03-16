@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { Search, MessageCircle, User, Sparkles, SquarePen as PenSquare } from 'lucide-react';
 import ChatView from './ChatView';
 import NewChatModal from './NewChatModal';

@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ArrowLeft, MapPin, Users, Wine, UserPlus, UserCheck, RefreshCw } from 'lucide-react';
-import { WingmanPanel } from '../AI/WingmanPanel';
 import { useAuth } from '../../contexts/AuthContext';
 import locationService from '../../services/locationService';
 import type { RealTimeUser } from '../../services/locationService';
@@ -10,6 +9,7 @@ import { supabase } from '../../lib/supabase';
 import { friendsService } from '../../services/friendsService';
 import { useToast } from '../../contexts/ToastContext';
 import type { Database } from '../../lib/database.types';
+import { logger } from '../../lib/logger';
 
 type UserProfileDB = Database['public']['Tables']['users']['Row'];
 
@@ -75,7 +75,7 @@ export default function PeopleNearbyView() {
       );
       setFriendStatuses(statuses);
     } catch (error) {
-      console.error('Error loading nearby people:', error);
+      logger.error('Error loading nearby people:', error);
     } finally {
       setLoading(false);
     }
@@ -190,10 +190,10 @@ export default function PeopleNearbyView() {
             };
 
             return (
-              <div
+              <button
                 key={person.id}
                 onClick={() => handleUserClick(person.id)}
-                className="w-full bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-left cursor-pointer"
+                className="w-full bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-left"
               >
                 <div className="flex items-start gap-4">
                   <div className="relative">
@@ -279,12 +279,7 @@ export default function PeopleNearbyView() {
                     )}
                   </div>
                 </div>
-                {person.id !== userProfile?.id && (
-                  <div onClick={e => e.stopPropagation()}>
-                    <WingmanPanel targetUserId={person.id} targetName={person.name} />
-                  </div>
-                )}
-              </div>
+              </button>
             );
           })
         )}

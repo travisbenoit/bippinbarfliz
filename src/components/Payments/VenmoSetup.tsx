@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ExternalLink, CheckCircle, Wallet, ArrowRight, RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { ChevronLeft, ExternalLink, CircleCheck as CheckCircle, Wallet, ArrowRight, RefreshCw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePaymentProvider } from '../../hooks/usePaymentProvider';

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { UserPlus, ArrowRight } from 'lucide-react';
 
 export default function ContactsPermission() {

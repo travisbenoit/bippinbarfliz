@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Users, UserCheck, Clock, UserPlus, X, Check, Trash2, MessageCircle, ShieldOff, Shield, ChevronRight, AlertTriangle, Search } from 'lucide-react';
+import { Users, UserCheck, Clock, UserPlus, X, Check, Trash2, MessageCircle, ShieldOff, Shield, ChevronRight, TriangleAlert as AlertTriangle, Search } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { friendsService, Friendship, FriendUser } from '../../services/friendsService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../lib/database.types';
 import UserProfileModal from '../Profile/UserProfileModal';

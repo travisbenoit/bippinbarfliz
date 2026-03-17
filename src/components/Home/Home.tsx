@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import { Settings, MessageCircle, User as UserIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -12,6 +12,7 @@ import UserProfileModal from '../Profile/UserProfileModal';
 import { NotificationBell, NotificationCenter } from '../Notifications/NotificationCenter';
 import type { DateFilterOption } from '../Swarms/SwarmDateFilter';
 import { messagesService } from '../../services/messagesService';
+import { logger } from '../../lib/logger';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -36,27 +37,7 @@ export default function Home() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
-  useEffect(() => {
-    loadProfile();
-    updateLocation();
-    loadUnreadCount();
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(updateLocation, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const subscription = messagesService.subscribeToAllMessages(() => {
-      loadUnreadCount();
-    });
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     if (!user) return;
     try {
       const { data, error } = await supabase
@@ -76,9 +57,9 @@ export default function Home() {
     } catch {
       showError('Failed to load your profile. Please refresh.');
     }
-  };
+  }, [user, showError]);
 
-  const loadData = async (lat?: number, lng?: number) => {
+  const loadData = useCallback(async (lat?: number, lng?: number) => {
     setLoading(true);
     try {
       const RADIUS_KM = 50;
@@ -131,10 +112,53 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  }, [user, showError]);
+
+  const fetchNearbyVenues = async () => {
+    if (!('geolocation' in navigator)) { loadData(); return; }
+
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { data: session } = await supabase.auth.getSession();
+          const countryCode = localStorage.getItem('userCountryCode') || 'US';
+          const response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-venues`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${session.session?.access_token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                radius: searchRadius,
+                country: countryCode,
+              }),
+            }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            if (data.venues) {
+              setVenues(data.venues);
+              showSuccess(`Found ${data.venues.length} venues nearby`);
+            }
+          } else {
+            showError('Could not fetch venues. Try again.');
+          }
+        } catch {
+          showError('Venue search failed. Check your connection.');
+        } finally {
+          setLoading(false);
+        }
+      },
+      () => { setLoading(false); loadData(); }
+    );
   };
 
-
-  const updateLocation = async () => {
+  const updateLocation = useCallback(async () => {
     if (!('geolocation' in navigator)) {
       loadData();
       return;
@@ -157,7 +181,7 @@ export default function Home() {
             })
             .eq('id', user!.id);
         } catch (err) {
-          console.debug('Background location update failed:', err);
+          logger.log('Background location update failed:', err);
         }
       },
       () => {
@@ -165,7 +189,7 @@ export default function Home() {
       },
       { timeout: 8000, maximumAge: 60000 }
     );
-  };
+  }, [user, showError, loadData]);
 
   const handleSelectUser = async (userId: string) => {
     const found = nearbyUsers.find(u => u.id === userId);
@@ -190,15 +214,35 @@ export default function Home() {
     setShowProfileModal(true);
   };
 
-  const loadUnreadCount = async () => {
+  const loadUnreadCount = useCallback(async () => {
     if (!user) return;
     try {
       const count = await messagesService.getUnreadCount();
       setUnreadMessageCount(count);
     } catch (error) {
-      console.error('Error loading unread count:', error);
+      logger.error('Error loading unread count:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadProfile();
+    updateLocation();
+    loadUnreadCount();
+  }, [loadProfile, updateLocation, loadUnreadCount]);
+
+  useEffect(() => {
+    const interval = setInterval(updateLocation, 60000);
+    return () => clearInterval(interval);
+  }, [updateLocation]);
+
+  useEffect(() => {
+    const subscription = messagesService.subscribeToAllMessages(() => {
+      loadUnreadCount();
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [loadUnreadCount]);
 
   return (
     <div className="min-h-screen bg-[#FFF5F0] flex flex-col">

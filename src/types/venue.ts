@@ -15,7 +15,7 @@ export interface Venue {
   google_place_id: string | null;
   foursquare_id: string | null;
   verified_flag: boolean;
-  geofence_radius_m: number;
+  geofence_radius_meters: number;
   created_at: string;
   updated_at: string;
 }

@@ -1,5 +1,5 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState, useCallback, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { useAuth } from './contexts/AuthContext';
 import { supabase } from './lib/supabase';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -65,17 +65,11 @@ function AppRouter() {
   const [hasProfile, setHasProfile] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [ghostMode, setGhostMode] = useState(false);
+  const checkingRef = useRef(false);
 
-  useEffect(() => {
-    if (!loading && user) {
-      checkUserProfile();
-    } else if (!loading && !user) {
-      setCheckingProfile(false);
-    }
-  }, [user, loading]);
-
-  const checkUserProfile = async () => {
-    if (!user) return;
+  const checkUserProfile = useCallback(async () => {
+    if (!user || checkingRef.current) return;
+    checkingRef.current = true;
 
     const isDemoMode = localStorage.getItem('demo_mode') === 'true';
 
@@ -117,6 +111,7 @@ function AppRouter() {
       setHasProfile(true);
       setGhostMode(false);
       setCheckingProfile(false);
+      checkingRef.current = false;
       return;
     }
 
@@ -146,7 +141,16 @@ function AppRouter() {
     setHasProfile(!!profileComplete);
     setGhostMode(data?.ghost_mode === true);
     setCheckingProfile(false);
-  };
+    checkingRef.current = false;
+  }, [user]);
+
+  useEffect(() => {
+    if (!loading && user) {
+      checkUserProfile();
+    } else if (!loading && !user) {
+      setCheckingProfile(false);
+    }
+  }, [user, loading, checkUserProfile]);
 
   if (loading || checkingProfile) {
     return (

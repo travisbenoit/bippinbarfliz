@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import Radar from 'radar-sdk-js';
 import { radarService } from '../services/radarService';
 
 interface AuthContextType {
@@ -27,7 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const publishableKey = import.meta.env.VITE_RADAR_PUBLISHABLE_KEY;
     if (publishableKey) {
-      Radar.initialize(publishableKey);
       radarService.initialize().catch(() => {});
     }
 
@@ -37,11 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
 
       if (session?.user && publishableKey) {
-        Radar.setUserId(session.user.id);
         if (radarService.isInitialized()) {
-          radarService.setUserId(session.user.id);
+          radarService.setUserId(session.user.id).catch(() => {});
         }
       }
+    }).catch(() => {
+      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -50,15 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user && publishableKey) {
-          Radar.setUserId(session.user.id);
           if (!radarService.isInitialized()) {
             await radarService.initialize().catch(() => {});
           }
           if (radarService.isInitialized()) {
-            radarService.setUserId(session.user.id);
+            await radarService.setUserId(session.user.id).catch(() => {});
           }
-        } else {
-          Radar.setUserId(null);
         }
       })();
     });
@@ -212,7 +208,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    Radar.setUserId(null);
     localStorage.removeItem('demo_mode');
     localStorage.removeItem('pendingUserName');
     localStorage.removeItem('pendingUserBirthday');

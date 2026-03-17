@@ -1,3 +1,5 @@
+import { logger } from '../lib/logger';
+
 export async function detectCountryCode(): Promise<string> {
   return new Promise((resolve) => {
     if ('geolocation' in navigator) {
@@ -18,7 +20,7 @@ export async function detectCountryCode(): Promise<string> {
               resolve('US');
             }
           } catch (error) {
-            console.error('Error reverse geocoding:', error);
+            logger.error('Error reverse geocoding:', error);
             resolve('US');
           }
         },

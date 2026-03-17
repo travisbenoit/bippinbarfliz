@@ -7,6 +7,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { initCapacitor } from './services/capacitorService';
 import { CRYPTO_ENABLED } from './lib/featureFlags';
+import { logger } from './lib/logger';
 import './index.css';
 
 // Lazy-load crypto providers only when feature is enabled
@@ -15,7 +16,7 @@ const CryptoProviders = CRYPTO_ENABLED
   : ({ children }: { children: ReactNode }) => <>{children}</>;
 
 // Initialize Capacitor plugins (no-op on web)
-initCapacitor().catch(console.error);
+initCapacitor().catch(logger.error);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -37,6 +38,6 @@ createRoot(document.getElementById('root')!).render(
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js').catch(err => {
-    console.log('Service Worker registration failed:', err);
+    logger.log('Service Worker registration failed:', err);
   });
 }

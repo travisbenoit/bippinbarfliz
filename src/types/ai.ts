@@ -1,5 +1,3 @@
-/** AI feature response types */
-
 export interface VibeRecommendation {
   venue_id: string;
   venue_name: string;

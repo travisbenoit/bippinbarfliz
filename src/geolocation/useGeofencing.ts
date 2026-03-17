@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 import type {
   Coordinates,
   Venue,
@@ -88,7 +89,7 @@ export function useGeofencing(config: Partial<GeofenceConfig> = {}) {
           created_at: '',
         }));
       } catch (err) {
-        console.error('Error fetching nearby venues:', err);
+        logger.error('Error fetching nearby venues:', err);
         return [];
       }
     },
@@ -145,7 +146,7 @@ export function useGeofencing(config: Partial<GeofenceConfig> = {}) {
             }
           : null;
       } catch (err) {
-        console.error('Error entering venue:', err);
+        logger.error('Error entering venue:', err);
         throw err;
       }
     },
@@ -185,7 +186,7 @@ export function useGeofencing(config: Partial<GeofenceConfig> = {}) {
           throw new Error(result.error || 'Failed to leave venue');
         }
       } catch (err) {
-        console.error('Error leaving venue:', err);
+        logger.error('Error leaving venue:', err);
         throw err;
       }
     },
@@ -238,7 +239,7 @@ export function useGeofencing(config: Partial<GeofenceConfig> = {}) {
               });
             }
           } catch (err) {
-            console.error('Failed to enter venue:', err);
+            logger.error('Failed to enter venue:', err);
           }
         }, fullConfig.minDwellTimeSeconds * 1000);
       } else if (!activeGeofence && currentVenueRef.current) {
@@ -270,7 +271,7 @@ export function useGeofencing(config: Partial<GeofenceConfig> = {}) {
                   currentPresence: undefined,
                 }));
               } catch (err) {
-                console.error('Failed to leave venue:', err);
+                logger.error('Failed to leave venue:', err);
               }
             }
             exitTimerRef.current = null;

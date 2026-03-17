@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { CRYPTO_ENABLED } from '../lib/featureFlags';
-import { mintLushCoins, burnLushCoins } from './lushCoinService';
+import { activityService } from './activityService';
 
 export interface UserStats {
   user_id: string;
@@ -73,15 +72,15 @@ export const RARITY_COIN_COST: Record<string, number> = {
 };
 
 const BADGE_DEFINITIONS_FALLBACK: Record<string, Omit<BadgeDefinition, 'badge_key' | 'sort_order'>> = {
-  first_checkin:        { name: 'First Check-In',       emoji: '🎯', requirement: 'Check in once' },
-  regular:              { name: 'Regular',               emoji: '⭐', requirement: '10 check-ins' },
-  night_owl:            { name: 'Night Owl',             emoji: '🦉', requirement: '25 check-ins' },
-  venue_explorer:       { name: 'Venue Explorer',        emoji: '🗺️', requirement: 'Visit 10 unique venues' },
-  social_butterfly:     { name: 'Social Butterfly',      emoji: '🦋', requirement: '5 swarms joined' },
-  dive_bar_legend:      { name: 'Dive Bar Legend',       emoji: '🍺', requirement: 'Visit 5 pubs' },
-  cocktail_connoisseur: { name: 'Cocktail Connoisseur',  emoji: '🍸', requirement: 'Visit 5 lounges' },
-  weekend_warrior:      { name: 'Weekend Warrior',       emoji: '🔥', requirement: '4-week streak' },
-  barfliz_og:           { name: 'Barfliz OG',            emoji: '👑', requirement: '12-week streak' },
+  first_checkin:        { name: 'First Check-In',       emoji: '\ud83c\udfaf', requirement: 'Check in once' },
+  regular:              { name: 'Regular',               emoji: '\u2b50', requirement: '10 check-ins' },
+  night_owl:            { name: 'Night Owl',             emoji: '\ud83e\udd89', requirement: '25 check-ins' },
+  venue_explorer:       { name: 'Venue Explorer',        emoji: '\ud83d\uddfa\ufe0f', requirement: 'Visit 10 unique venues' },
+  social_butterfly:     { name: 'Social Butterfly',      emoji: '\ud83e\udd8b', requirement: '5 swarms joined' },
+  dive_bar_legend:      { name: 'Dive Bar Legend',       emoji: '\ud83c\udf7a', requirement: 'Visit 5 pubs' },
+  cocktail_connoisseur: { name: 'Cocktail Connoisseur',  emoji: '\ud83c\udf78', requirement: 'Visit 5 lounges' },
+  weekend_warrior:      { name: 'Weekend Warrior',       emoji: '\ud83d\udd25', requirement: '4-week streak' },
+  barfliz_og:           { name: 'Barfliz OG',            emoji: '\ud83d\udc51', requirement: '12-week streak' },
 };
 
 const CHALLENGE_DEFINITIONS_FALLBACK: Record<string, Omit<ChallengeDefinition, 'challenge_key' | 'sort_order' | 'expiry_days'>> = {
@@ -96,7 +95,7 @@ let _badgeDefsCache: BadgeDefinition[] | null = null;
 let _challengeDefsCache: ChallengeDefinition[] | null = null;
 
 export const xpService = {
-  // ─── Core XP ───────────────────────────────────────────────────────────────
+  // \u2500\u2500\u2500 Core XP \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
   async awardXP(userId: string, amount: number): Promise<UserStats> {
     const { data: stats } = await supabase
@@ -168,24 +167,15 @@ export const xpService = {
     return data || [];
   },
 
-  // ─── Coins ─────────────────────────────────────────────────────────────────
+  // \u2500\u2500\u2500 Coins \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
-  async earnCoins(userId: string, amount: number, event = 'generic'): Promise<number> {
-    // On-chain path: mint LUSH via edge function (also updates DB as cache)
-    if (CRYPTO_ENABLED) {
-      const result = await mintLushCoins(userId, amount, event);
-      if (result.success && result.new_balance !== undefined) {
-        return result.new_balance;
-      }
-      // Fall through to DB path on failure
-    }
-
-    // DB path (default, or fallback when chain fails)
+  async earnCoins(userId: string, amount: number): Promise<number> {
     const { data, error } = await supabase.rpc('increment_lush_coins', {
       p_user_id: userId,
       p_amount: amount,
     });
 
+    // Fallback: manual read-increment-write if RPC doesn't exist
     if (error) {
       const { data: u } = await supabase
         .from('users')
@@ -199,22 +189,7 @@ export const xpService = {
     return data as number;
   },
 
-  async spendCoins(userId: string, amount: number, itemId?: string): Promise<{ success: boolean; newBalance: number }> {
-    // On-chain path: burn LUSH via edge function (also updates DB)
-    if (CRYPTO_ENABLED) {
-      const result = await burnLushCoins(userId, amount, itemId);
-      if (result.success) {
-        const balance = await this.getCoinBalance(userId);
-        return { success: true, newBalance: balance };
-      }
-      if (result.error === 'Insufficient balance') {
-        const balance = await this.getCoinBalance(userId);
-        return { success: false, newBalance: balance };
-      }
-      // Fall through to DB path on other failures
-    }
-
-    // DB path (default)
+  async spendCoins(userId: string, amount: number): Promise<{ success: boolean; newBalance: number }> {
     const { data: u } = await supabase
       .from('users')
       .select('lush_coin_balance')
@@ -240,7 +215,7 @@ export const xpService = {
     return Number(data?.lush_coin_balance) || 0;
   },
 
-  // ─── Challenges ────────────────────────────────────────────────────────────
+  // \u2500\u2500\u2500 Challenges \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
   async getActiveChallenges(userId: string): Promise<Challenge[]> {
     const { data, error } = await supabase
@@ -333,13 +308,8 @@ export const xpService = {
     );
   },
 
-  // ─── Check-in (main entry point) ───────────────────────────────────────────
+  // \u2500\u2500\u2500 Check-in (main entry point) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
-  /**
-   * Called every time a user enters a venue via geofence.
-   * Awards XP, updates streaks (both tables), checks badges, advances challenges.
-   * Returns newBadges earned and streak info for toast display.
-   */
   async recordCheckin(
     userId: string,
     venueId: string,
@@ -355,7 +325,6 @@ export const xpService = {
     let xpAwarded = 10;
     let coinsAwarded = COIN_REWARDS.checkin;
 
-    // Load current stats
     const { data: stats } = await supabase
       .from('user_stats')
       .select('*')
@@ -364,7 +333,6 @@ export const xpService = {
 
     const newCheckins = (stats?.total_checkins || 0) + 1;
 
-    // ── Streak logic ──
     const today = new Date().toISOString().split('T')[0];
     const lastAt = stats?.last_streak_at ? stats.last_streak_at.split('T')[0] : null;
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
@@ -373,25 +341,22 @@ export const xpService = {
     let isFirstCheckinToday = false;
 
     if (lastAt === today) {
-      // Already checked in today — don't change streak
       newStreak = stats?.current_streak ?? 1;
     } else {
       isFirstCheckinToday = true;
       if (lastAt === yesterday) {
         newStreak = (stats?.current_streak ?? 0) + 1;
       } else {
-        newStreak = 1; // streak broken or first ever
+        newStreak = 1;
       }
     }
 
     const newLongest = Math.max(newStreak, stats?.longest_streak ?? 0);
 
-    // Bonus coins for first check-in of the night
     if (isFirstCheckinToday) {
       coinsAwarded += COIN_REWARDS.first_checkin_night;
     }
 
-    // Streak milestone bonuses
     const streakMilestone = isFirstCheckinToday && [7, 14, 30, 60, 100].includes(newStreak);
     if (streakMilestone) {
       const bonusMap: Record<number, number> = { 7: 50, 14: 100, 30: 250, 60: 500, 100: 1000 };
@@ -399,7 +364,6 @@ export const xpService = {
       xpAwarded += bonusMap[newStreak] ?? 50;
     }
 
-    // ── Unique venues ──
     const { data: venueVisits } = await supabase
       .from('venue_sessions')
       .select('venue_id')
@@ -410,7 +374,6 @@ export const xpService = {
     if (venueId) distinctVenueIds.add(venueId);
     const uniqueCount = distinctVenueIds.size;
 
-    // ── Write user_stats ──
     await supabase.from('user_stats').upsert({
       user_id: userId,
       total_checkins: newCheckins,
@@ -422,10 +385,8 @@ export const xpService = {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' });
 
-    // ── Award coins ──
     await this.earnCoins(userId, coinsAwarded);
 
-    // ── Checkin badges ──
     if (newCheckins === 1) {
       const b = await this.awardBadge(userId, 'first_checkin');
       if (b) newBadges.push('first_checkin');
@@ -439,13 +400,11 @@ export const xpService = {
       if (b) newBadges.push('night_owl');
     }
 
-    // ── Unique venue badge ──
     if (uniqueCount >= 10) {
       const b = await this.awardBadge(userId, 'venue_explorer');
       if (b) newBadges.push('venue_explorer');
     }
 
-    // ── Category-based badges ──
     if (venueCategory === 'bar' || venueCategory === 'brewery' || venueCategory === 'pub') {
       const { count } = await supabase
         .from('venue_sessions')
@@ -478,7 +437,6 @@ export const xpService = {
       }
     }
 
-    // ── Streak badges ──
     if (newStreak >= 4) {
       const b = await this.awardBadge(userId, 'weekend_warrior');
       if (b) newBadges.push('weekend_warrior');
@@ -488,7 +446,6 @@ export const xpService = {
       if (b) newBadges.push('barfliz_og');
     }
 
-    // ── Challenge progress: new_horizons + venue_hopper ──
     const { data: existingChallenges } = await supabase
       .from('user_challenges')
       .select('challenge_key, progress')
@@ -500,7 +457,6 @@ export const xpService = {
         await this.updateChallengeProgress(userId, 'new_horizons', c.progress + 1).catch(() => null);
       }
       if (c.challenge_key === 'venue_hopper' && isFirstCheckinToday) {
-        // Count how many distinct venues checked in today
         const todayStart = new Date(today).toISOString();
         const { data: todayPresence } = await supabase
           .from('user_venue_presence')
@@ -520,16 +476,26 @@ export const xpService = {
       }
     }
 
+    activityService.logActivity('venue_enter', {
+      venueId,
+      metadata: {
+        xp_awarded: xpAwarded,
+        coins_awarded: coinsAwarded,
+        streak_day: newStreak,
+        new_badges: newBadges,
+        venue_category: venueCategory,
+      },
+    }).catch(() => {});
+
     return { xpAwarded, coinsAwarded, newBadges, streakDay: newStreak, streakMilestone };
   },
 
-  // ─── Swarm events ──────────────────────────────────────────────────────────
+  // \u2500\u2500\u2500 Swarm events \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
   async onSwarmJoined(userId: string): Promise<void> {
     await this.earnCoins(userId, COIN_REWARDS.swarm_joined).catch(() => null);
     await this.awardXP(userId, 5).catch(() => null);
 
-    // social_butterfly badge: 5 swarms joined
     const { count } = await supabase
       .from('swarm_members')
       .select('*', { count: 'exact', head: true })
@@ -538,9 +504,6 @@ export const xpService = {
     if ((count || 0) >= 5) {
       await this.awardBadge(userId, 'social_butterfly').catch(() => null);
     }
-
-    // challenge: swarm_leader counts swarms created (not joined), skip here
-    // update challenge new_horizons? No - that's venue-based
   },
 
   async onSwarmCreated(userId: string, memberCount: number): Promise<void> {
@@ -556,7 +519,7 @@ export const xpService = {
     await this.earnCoins(userId, COIN_REWARDS.cheer_sent).catch(() => null);
   },
 
-  // ─── Definitions ───────────────────────────────────────────────────────────
+  // \u2500\u2500\u2500 Definitions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
   async getAllBadgeDefinitions(): Promise<BadgeDefinition[]> {
     if (_badgeDefsCache) return _badgeDefsCache;

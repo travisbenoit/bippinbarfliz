@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { radarService } from '../services/radarService';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 import type { Coordinates, Venue, GeofenceEvent } from './types';
 
 interface RadarGeofenceState {
@@ -59,10 +60,16 @@ export function useRadarGeofencing(config: RadarGeofenceConfig = {}) {
   const fetchNearbyVenues = useCallback(
     async (location: Coordinates): Promise<Venue[]> => {
       try {
+        const degreeBuffer = (searchRadius / 1000) / 111;
         const { data, error: queryError } = await supabase
           .from('venues')
           .select('*')
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .gte('lat', location.lat - degreeBuffer)
+          .lte('lat', location.lat + degreeBuffer)
+          .gte('lng', location.lng - degreeBuffer)
+          .lte('lng', location.lng + degreeBuffer)
+          .limit(200);
 
         if (queryError) throw queryError;
 
@@ -81,7 +88,7 @@ export function useRadarGeofencing(config: RadarGeofenceConfig = {}) {
 
         return venues;
       } catch (err) {
-        console.error('Error fetching nearby venues:', err);
+        logger.error('Error fetching nearby venues:', err);
         return [];
       }
     },
@@ -102,7 +109,7 @@ export function useRadarGeofencing(config: RadarGeofenceConfig = {}) {
         lastUpdate: Date.now(),
       }));
     } catch (err) {
-      console.error('Error updating location:', err);
+      logger.error('Error updating location:', err);
       setError('Failed to update location');
     }
   }, [fetchNearbyVenues]);
@@ -175,7 +182,7 @@ export function useRadarGeofencing(config: RadarGeofenceConfig = {}) {
 
       setState((prev) => ({ ...prev, isTracking: true }));
     } catch (err) {
-      console.error('Error starting tracking:', err);
+      logger.error('Error starting tracking:', err);
       setError('Failed to start tracking');
     } finally {
       setIsLoading(false);
@@ -199,10 +206,22 @@ export function useRadarGeofencing(config: RadarGeofenceConfig = {}) {
       setIsLoading(true);
       setError(null);
 
-      const { data: venues, error: queryError } = await supabase
+      const location = state.currentLocation;
+      let query = supabase
         .from('venues')
         .select('*')
         .eq('is_active', true);
+
+      if (location) {
+        const degreeBuffer = (searchRadius / 1000) / 111;
+        query = query
+          .gte('lat', location.lat - degreeBuffer)
+          .lte('lat', location.lat + degreeBuffer)
+          .gte('lng', location.lng - degreeBuffer)
+          .lte('lng', location.lng + degreeBuffer);
+      }
+
+      const { data: venues, error: queryError } = await query.limit(500);
 
       if (queryError) throw queryError;
 
@@ -210,13 +229,13 @@ export function useRadarGeofencing(config: RadarGeofenceConfig = {}) {
 
       return result;
     } catch (err) {
-      console.error('Error syncing venues:', err);
+      logger.error('Error syncing venues:', err);
       setError('Failed to sync venues');
       return { success: 0, failed: 0 };
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [state.currentLocation, searchRadius]);
 
   useEffect(() => {
     if (autoStart) {
@@ -251,7 +270,7 @@ async function fetchVenueDetails(venueId: string): Promise<Venue | null> {
     if (error) throw error;
     return data;
   } catch (err) {
-    console.error('Error fetching venue details:', err);
+    logger.error('Error fetching venue details:', err);
     return null;
   }
 }
@@ -263,14 +282,14 @@ function calculateDistance(
   lng2: number
 ): number {
   const R = 6371e3;
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-  const Δλ = ((lng2 - lng1) * Math.PI) / 180;
+  const \u03c61 = (lat1 * Math.PI) / 180;
+  const \u03c62 = (lat2 * Math.PI) / 180;
+  const \u0394\u03c6 = ((lat2 - lat1) * Math.PI) / 180;
+  const \u0394\u03bb = ((lng2 - lng1) * Math.PI) / 180;
 
   const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    Math.sin(\u0394\u03c6 / 2) * Math.sin(\u0394\u03c6 / 2) +
+    Math.cos(\u03c61) * Math.cos(\u03c62) * Math.sin(\u0394\u03bb / 2) * Math.sin(\u0394\u03bb / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;

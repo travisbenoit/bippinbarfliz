@@ -21,7 +21,7 @@ export interface VibeStats {
 
 export const vibeService = {
   async castVote(venueId: string, vibe: VibeType): Promise<VibeVote> {
-    const { data: session } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) throw new Error('Not authenticated');
 
     const { data: existing } = await supabase
@@ -89,7 +89,7 @@ export const vibeService = {
   },
 
   async getUserVoteForToday(venueId: string): Promise<VibeType | null> {
-    const { data: session } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) return null;
 
     const todayStart = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();

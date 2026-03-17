@@ -106,7 +106,7 @@ export const reactionsService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from('emoji_reactions')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
@@ -115,6 +115,6 @@ export const reactionsService = {
       .eq('emoji', emoji);
 
     if (error) return false;
-    return (data?.length || 0) > 0;
+    return (count || 0) > 0;
   },
 };

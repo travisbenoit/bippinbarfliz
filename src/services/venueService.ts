@@ -9,6 +9,7 @@ import type {
   OSMImportRequest,
   OSMImportResult,
 } from '../types/venue';
+import { logger } from '../lib/logger';
 
 export async function getVenuesInBounds(
   minLat: number,
@@ -65,7 +66,7 @@ export async function getVenueStats(venueId: string): Promise<VenueStats> {
   });
 
   if (error) {
-    console.error('Error fetching venue stats:', error);
+    logger.error('Error fetching venue stats:', error);
     return { avg_rating: 0, review_count: 0, photo_count: 0 };
   }
 

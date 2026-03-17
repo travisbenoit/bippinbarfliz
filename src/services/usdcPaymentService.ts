@@ -3,17 +3,12 @@
  *
  * One-Way Model: Only this service touches SPL token transfer logic.
  * Components call this through action handlers, never directly.
+ *
+ * Solana packages are optional — imported dynamically to avoid build errors
+ * when @solana/web3.js and @solana/spl-token are not installed.
  */
 
-import { PublicKey, Transaction } from '@solana/web3.js';
-import {
-  createTransferInstruction,
-  getAssociatedTokenAddressSync,
-  createAssociatedTokenAccountInstruction,
-  getAccount,
-} from '@solana/spl-token';
-import { USDC_MINT_ADDRESS, USDC_DECIMALS } from './tokenConfig';
-import { buildConnection } from './walletService';
+import { USDC_MINT_ADDRESS, USDC_DECIMALS, SOLANA_RPC_URL } from './tokenConfig';
 import { supabase } from '../lib/supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -32,8 +27,16 @@ export async function buildUSDCTransferTx(
   fromAddress: string,
   toAddress: string,
   amountUSD: number,
-): Promise<Transaction> {
-  const connection = buildConnection();
+): Promise<unknown> {
+  const { PublicKey, Transaction, Connection } = await import(/* @vite-ignore */ '@solana/web3.js');
+  const {
+    createTransferInstruction,
+    getAssociatedTokenAddressSync,
+    createAssociatedTokenAccountInstruction,
+    getAccount,
+  } = await import(/* @vite-ignore */ '@solana/spl-token');
+
+  const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
   const mint = new PublicKey(USDC_MINT_ADDRESS);
   const sender = new PublicKey(fromAddress);
   const recipient = new PublicKey(toAddress);
@@ -43,14 +46,12 @@ export async function buildUSDCTransferTx(
 
   const tx = new Transaction();
 
-  // Create recipient ATA if it doesn't exist
   try {
     await getAccount(connection, recipientAta);
   } catch {
     tx.add(createAssociatedTokenAccountInstruction(sender, recipientAta, recipient, mint));
   }
 
-  // Amount in USDC smallest unit (6 decimals)
   const rawAmount = Math.round(amountUSD * 10 ** USDC_DECIMALS);
 
   tx.add(

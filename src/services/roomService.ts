@@ -66,6 +66,22 @@ export interface RoomPresenceUser {
   };
 }
 
+export interface WallPhoto {
+  id: string;
+  venue_id: string;
+  user_id: string;
+  photo_url: string;
+  caption: string | null;
+  like_count: number;
+  report_count: number;
+  created_at: string;
+  user?: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  };
+}
+
 export interface RoomStats {
   message_count: number;
   active_users: number;
@@ -411,6 +427,85 @@ export const roomService = {
         event: '*',
         schema: 'public',
         table: 'venue_room_vibe_polls',
+        filter: `venue_id=eq.${venueId}`,
+      }, callback)
+      .subscribe();
+  },
+
+  async getWallPhotos(venueId: string, page = 0, pageSize = 24): Promise<WallPhoto[]> {
+    const { data, error } = await supabase
+      .from('venue_wall_photos')
+      .select('*, user:users!venue_wall_photos_user_id_fkey(id, name, avatar_url)')
+      .eq('venue_id', venueId)
+      .order('created_at', { ascending: false })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+    if (error) throw error;
+    return (data || []) as WallPhoto[];
+  },
+
+  async postWallPhoto(venueId: string, photoUrl: string, caption: string): Promise<WallPhoto> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await supabase
+      .from('venue_wall_photos')
+      .insert([{ venue_id: venueId, user_id: user.id, photo_url: photoUrl, caption: caption || null }])
+      .select('*, user:users!venue_wall_photos_user_id_fkey(id, name, avatar_url)')
+      .single();
+    if (error) throw error;
+    return data as WallPhoto;
+  },
+
+  async deleteWallPhoto(photoId: string): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { error } = await supabase
+      .from('venue_wall_photos')
+      .delete()
+      .eq('id', photoId)
+      .eq('user_id', user.id);
+    if (error) throw error;
+  },
+
+  async toggleWallPhotoLike(photoId: string): Promise<{ liked: boolean }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await supabase.rpc('toggle_wall_photo_like', {
+      p_photo_id: photoId,
+      p_user_id: user.id,
+    });
+    if (error) throw error;
+    return data as { liked: boolean };
+  },
+
+  async reportWallPhoto(photoId: string): Promise<void> {
+    const { error } = await supabase.rpc('report_wall_photo', { p_photo_id: photoId });
+    if (error) throw error;
+  },
+
+  async getUserWallPhotoLikes(venueId: string): Promise<Set<string>> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return new Set();
+    const photoIds = await supabase
+      .from('venue_wall_photos')
+      .select('id')
+      .eq('venue_id', venueId)
+      .then(r => (r.data || []).map((p: any) => p.id));
+    if (photoIds.length === 0) return new Set();
+    const { data } = await supabase
+      .from('venue_wall_photo_likes')
+      .select('photo_id')
+      .eq('user_id', user.id)
+      .in('photo_id', photoIds);
+    return new Set((data || []).map((r: any) => r.photo_id));
+  },
+
+  subscribeToWallPhotos(venueId: string, callback: () => void) {
+    return supabase
+      .channel(`wall-photos:${venueId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'venue_wall_photos',
         filter: `venue_id=eq.${venueId}`,
       }, callback)
       .subscribe();

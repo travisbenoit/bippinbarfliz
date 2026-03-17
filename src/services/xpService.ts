@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { CRYPTO_ENABLED } from '../lib/featureFlags';
-import { mintLushCoins, burnLushCoins } from './lushCoinService';
+import { activityService } from './activityService';
 
 export interface UserStats {
   user_id: string;
@@ -73,15 +72,15 @@ export const RARITY_COIN_COST: Record<string, number> = {
 };
 
 const BADGE_DEFINITIONS_FALLBACK: Record<string, Omit<BadgeDefinition, 'badge_key' | 'sort_order'>> = {
-  first_checkin:        { name: 'First Check-In',       emoji: '🎯', requirement: 'Check in once' },
-  regular:              { name: 'Regular',               emoji: '⭐', requirement: '10 check-ins' },
-  night_owl:            { name: 'Night Owl',             emoji: '🦉', requirement: '25 check-ins' },
-  venue_explorer:       { name: 'Venue Explorer',        emoji: '🗺️', requirement: 'Visit 10 unique venues' },
-  social_butterfly:     { name: 'Social Butterfly',      emoji: '🦋', requirement: '5 swarms joined' },
-  dive_bar_legend:      { name: 'Dive Bar Legend',       emoji: '🍺', requirement: 'Visit 5 pubs' },
-  cocktail_connoisseur: { name: 'Cocktail Connoisseur',  emoji: '🍸', requirement: 'Visit 5 lounges' },
-  weekend_warrior:      { name: 'Weekend Warrior',       emoji: '🔥', requirement: '4-week streak' },
-  barfliz_og:           { name: 'Barfliz OG',            emoji: '👑', requirement: '12-week streak' },
+  first_checkin:        { name: 'First Check-In',       emoji: '\uD83C\uDFAF', requirement: 'Check in once' },
+  regular:              { name: 'Regular',               emoji: '\u2B50', requirement: '10 check-ins' },
+  night_owl:            { name: 'Night Owl',             emoji: '\uD83E\uDD89', requirement: '25 check-ins' },
+  venue_explorer:       { name: 'Venue Explorer',        emoji: '\uD83D\uDDFA\uFE0F', requirement: 'Visit 10 unique venues' },
+  social_butterfly:     { name: 'Social Butterfly',      emoji: '\uD83E\uDD8B', requirement: '5 swarms joined' },
+  dive_bar_legend:      { name: 'Dive Bar Legend',       emoji: '\uD83C\uDF7A', requirement: 'Visit 5 pubs' },
+  cocktail_connoisseur: { name: 'Cocktail Connoisseur',  emoji: '\uD83C\uDF78', requirement: 'Visit 5 lounges' },
+  weekend_warrior:      { name: 'Weekend Warrior',       emoji: '\uD83D\uDD25', requirement: '4-week streak' },
+  barfliz_og:           { name: 'Barfliz OG',            emoji: '\uD83D\uDC51', requirement: '12-week streak' },
 };
 
 const CHALLENGE_DEFINITIONS_FALLBACK: Record<string, Omit<ChallengeDefinition, 'challenge_key' | 'sort_order' | 'expiry_days'>> = {
@@ -170,22 +169,13 @@ export const xpService = {
 
   // ─── Coins ─────────────────────────────────────────────────────────────────
 
-  async earnCoins(userId: string, amount: number, event = 'generic'): Promise<number> {
-    // On-chain path: mint LUSH via edge function (also updates DB as cache)
-    if (CRYPTO_ENABLED) {
-      const result = await mintLushCoins(userId, amount, event);
-      if (result.success && result.new_balance !== undefined) {
-        return result.new_balance;
-      }
-      // Fall through to DB path on failure
-    }
-
-    // DB path (default, or fallback when chain fails)
+  async earnCoins(userId: string, amount: number): Promise<number> {
     const { data, error } = await supabase.rpc('increment_lush_coins', {
       p_user_id: userId,
       p_amount: amount,
     });
 
+    // Fallback: manual read-increment-write if RPC doesn't exist
     if (error) {
       const { data: u } = await supabase
         .from('users')
@@ -199,22 +189,7 @@ export const xpService = {
     return data as number;
   },
 
-  async spendCoins(userId: string, amount: number, itemId?: string): Promise<{ success: boolean; newBalance: number }> {
-    // On-chain path: burn LUSH via edge function (also updates DB)
-    if (CRYPTO_ENABLED) {
-      const result = await burnLushCoins(userId, amount, itemId);
-      if (result.success) {
-        const balance = await this.getCoinBalance(userId);
-        return { success: true, newBalance: balance };
-      }
-      if (result.error === 'Insufficient balance') {
-        const balance = await this.getCoinBalance(userId);
-        return { success: false, newBalance: balance };
-      }
-      // Fall through to DB path on other failures
-    }
-
-    // DB path (default)
+  async spendCoins(userId: string, amount: number): Promise<{ success: boolean; newBalance: number }> {
     const { data: u } = await supabase
       .from('users')
       .select('lush_coin_balance')
@@ -519,6 +494,17 @@ export const xpService = {
         }
       }
     }
+
+    activityService.logActivity('venue_enter', {
+      venueId,
+      metadata: {
+        xp_awarded: xpAwarded,
+        coins_awarded: coinsAwarded,
+        streak_day: newStreak,
+        new_badges: newBadges,
+        venue_category: venueCategory,
+      },
+    }).catch(() => {});
 
     return { xpAwarded, coinsAwarded, newBadges, streakDay: newStreak, streakMilestone };
   },

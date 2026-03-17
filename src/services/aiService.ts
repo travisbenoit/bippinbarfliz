@@ -1,6 +1,3 @@
-/**
- * AI Service — calls Edge Functions for Vibe Matchmaker, Smart Night Planner, and Wingman.
- */
 import { supabase } from '../lib/supabase';
 import type {
   AIResponse,
@@ -33,7 +30,6 @@ async function callEdgeFunction<T>(
 }
 
 export const aiService = {
-  /** Get AI-powered venue recommendations based on user's history and preferences */
   getVibeRecommendations(
     userLat: number,
     userLng: number,
@@ -46,7 +42,6 @@ export const aiService = {
     });
   },
 
-  /** Generate a multi-stop night plan from a natural language prompt */
   getSmartNightPlan(
     userLat: number,
     userLng: number,
@@ -62,7 +57,6 @@ export const aiService = {
     });
   },
 
-  /** Get wingman insights and ice breakers for a target user */
   getWingmanInsights(targetUserId: string): Promise<AIResponse<WingmanResult>> {
     return callEdgeFunction('ai-wingman', { target_user_id: targetUserId });
   },

@@ -54,7 +54,6 @@ export function VibeMatchmaker({ isOpen, onClose, userLocation, onVenueSelect }:
         className="relative mt-auto bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
@@ -80,7 +79,6 @@ export function VibeMatchmaker({ isOpen, onClose, userLocation, onVenueSelect }:
           </div>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-3">
           {loading && (
             <div className="flex flex-col items-center justify-center py-16 gap-3">

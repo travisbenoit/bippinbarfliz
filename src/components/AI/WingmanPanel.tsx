@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Zap, MapPin, Users, Music, Sparkles, Loader2, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import { aiService } from '../../services/aiService';
-import type { WingmanResult, WingmanInsight } from '../../types/ai';
+import type { WingmanResult } from '../../types/ai';
 
 interface Props {
   targetUserId: string;
@@ -93,7 +93,6 @@ export function WingmanPanel({ targetUserId, targetName }: Props) {
 
           {result && (
             <>
-              {/* Insights */}
               {result.insights.length > 0 && (
                 <div className="space-y-1.5">
                   {result.insights.map((insight, i) => {
@@ -114,7 +113,6 @@ export function WingmanPanel({ targetUserId, targetName }: Props) {
                 </div>
               )}
 
-              {/* Ice Breakers */}
               {result.ice_breakers.length > 0 && (
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl p-3">
                   <div className="flex items-center gap-1.5 mb-2">

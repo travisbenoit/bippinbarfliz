@@ -1,9 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import 'leaflet/dist/leaflet.css';
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../tailwind.config.js";
 
 @layer base {
   html {
@@ -17,7 +16,6 @@
     color: #1f2937;
   }
 
-  /* ── Dark Mode Global Overrides ── */
   html.dark body {
     background-color: #0f1219;
     color: #e5e7eb;
@@ -163,27 +161,24 @@
   }
 }
 
-@layer utilities {
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 20px);
-  }
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
 
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
     display: none;
   }
+}
 
-  .text-shadow {
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  }
+@utility text-shadow {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
 
-  .text-shadow-lg {
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  }
+@utility text-shadow-lg {
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .animate-slide-up {
@@ -475,40 +470,29 @@ html.dark .leaflet-tile-pane {
   filter: saturate(1) brightness(1);
 }
 
-/* ── Dark Mode: Global Component Overrides ──
-   Targets common Tailwind utility classes used across all components
-   so dark mode works without modifying every file individually. */
-
-/* Page backgrounds */
 html.dark .bg-\[\#FFF5F0\] { background-color: #0f1219 !important; }
 
-/* Cards and sections */
 html.dark .bg-white { background-color: #1a1f2e !important; }
 html.dark .bg-gray-50 { background-color: #151a26 !important; }
 html.dark .bg-gray-100 { background-color: #1a1f2e !important; }
 
-/* Text colors */
 html.dark .text-gray-900 { color: #f3f4f6 !important; }
 html.dark .text-gray-800 { color: #e5e7eb !important; }
 html.dark .text-gray-700 { color: #d1d5db !important; }
 html.dark .text-gray-600 { color: #9ca3af !important; }
 html.dark .text-gray-500 { color: #9ca3af !important; }
 
-/* Borders & dividers */
 html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: #2a3040 !important; }
 html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: #2a3040 !important; }
 html.dark .border-gray-100 { border-color: #2a3040 !important; }
 html.dark .border-gray-200 { border-color: #2a3040 !important; }
 html.dark .border-gray-300 { border-color: #364456 !important; }
 
-/* Hover states */
 html.dark .hover\:bg-gray-50:hover { background-color: #1e2536 !important; }
 html.dark .hover\:bg-gray-100:hover { background-color: #1e2536 !important; }
 
-/* Shadows on dark backgrounds */
 html.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important; }
 
-/* Inputs */
 html.dark input, html.dark textarea, html.dark select {
   background-color: #1a1f2e;
   color: #e5e7eb;
@@ -521,11 +505,9 @@ html.dark input:focus, html.dark textarea:focus {
   border-color: #E91E63;
 }
 
-/* Modals & overlays */
 html.dark .bg-white.rounded-2xl { background-color: #1a1f2e !important; }
 html.dark .bg-white.rounded-3xl { background-color: #1a1f2e !important; }
 
-/* User location dot — brighter on dark maps */
 html.dark .user-location-pulse,
 .dark-map .user-location-pulse {
   background: rgba(0, 217, 255, 0.35);

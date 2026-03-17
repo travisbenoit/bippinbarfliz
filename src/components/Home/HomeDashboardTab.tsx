@@ -1,5 +1,5 @@
-import { MapPin, Users, Building2, Sparkles, User as UserIcon, Clock, Flame, Trophy, Activity, Zap } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { MapPin, Users, Building2, Sparkles, User as UserIcon, Clock, Flame, Trophy, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
 import type { Database } from '../../lib/database.types';
 import WeatherCard from '../Weather/WeatherCard';
@@ -12,9 +12,9 @@ import { SafeArrivalButton, FriendSafeArrivals } from '../Safety/SafeArrival';
 import { SwarmSuggestion } from '../Social/SwarmSuggestion';
 import { TrendingVenues } from '../Venues/TrendingVenues';
 import { NightRoutePlanner } from '../Social/NightRoutePlanner';
-import { VibeMatchmaker } from '../AI/VibeMatchmaker';
 import { xpService, UserStats } from '../../services/xpService';
 import { ActivityFeed } from '../Activity/ActivityFeed';
+import { NightRecapBanner } from '../Social/NightRecapBanner';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -55,7 +55,6 @@ export default function HomeDashboardTab({
 }: Props) {
   const navigate = useNavigate();
   const [showPlanner, setShowPlanner] = useState(false);
-  const [showVibeMatchmaker, setShowVibeMatchmaker] = useState(false);
   const [xpStats, setXpStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
@@ -65,6 +64,7 @@ export default function HomeDashboardTab({
 
   return (
     <div className="p-4 space-y-4 pb-24">
+      <NightRecapBanner />
       <NightSummary />
 
       <SwarmSuggestion />
@@ -80,7 +80,7 @@ export default function HomeDashboardTab({
             onClick={onShowActivityHistory}
             className="text-xs text-[#E91E63] font-semibold"
           >
-            See all →
+            See all \u2192
           </button>
         </div>
         <ActivityFeed maxItems={5} compact />
@@ -99,9 +99,9 @@ export default function HomeDashboardTab({
                   <CheckInStreakBadge userId={userProfile.id} />
                 </div>
                 <p className="text-white/80 text-sm">
-                  {userProfile.tonight_status === 'out_now' && '🟢 Out now'}
-                  {userProfile.tonight_status === 'going_out_soon' && '🟡 Going out soon'}
-                  {userProfile.tonight_status === 'staying_in' && '⚪ Staying in'}
+                  {userProfile.tonight_status === 'out_now' && '\ud83d\udfe2 Out now'}
+                  {userProfile.tonight_status === 'going_out_soon' && '\ud83d\udfe1 Going out soon'}
+                  {userProfile.tonight_status === 'staying_in' && '\u26aa Staying in'}
                 </p>
               </div>
             </div>
@@ -122,7 +122,7 @@ export default function HomeDashboardTab({
               <p className="text-xs text-white/80 mt-1">Fav Drinks</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold">{userProfile.venmo_linked ? '✓' : '○'}</p>
+              <p className="text-2xl font-bold">{userProfile.venmo_linked ? '\u2713' : '\u25cb'}</p>
               <p className="text-xs text-white/80 mt-1">Venmo</p>
             </div>
           </div>
@@ -140,12 +140,12 @@ export default function HomeDashboardTab({
               <div>
                 <p className="font-bold text-base">{xpStats.total_xp} XP</p>
                 <p className="text-white/80 text-xs">
-                  {xpStats.current_streak > 0 ? `🔥 ${xpStats.current_streak}-night streak · ` : ''}
+                  {xpStats.current_streak > 0 ? `\ud83d\udd25 ${xpStats.current_streak}-night streak \u00b7 ` : ''}
                   {xpStats.total_checkins} check-ins
                 </p>
               </div>
             </div>
-            <div className="text-white/70 text-sm font-medium">Leaderboard →</div>
+            <div className="text-white/70 text-sm font-medium">Leaderboard \u2192</div>
           </div>
         </button>
       )}
@@ -314,7 +314,7 @@ export default function HomeDashboardTab({
                 <p className="text-xs text-gray-500 truncate capitalize">{venue.category}</p>
               </div>
               {venue.verified && (
-                <span className="text-blue-500 flex-shrink-0">✓</span>
+                <span className="text-blue-500 flex-shrink-0">\u2713</span>
               )}
             </div>
           ))}
@@ -356,19 +356,6 @@ export default function HomeDashboardTab({
       </div>
 
       <button
-        onClick={() => setShowVibeMatchmaker(true)}
-        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition-all"
-      >
-        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-white" />
-        </div>
-        <div className="text-left">
-          <p className="font-bold">Vibe Matchmaker</p>
-          <p className="text-xs text-white/80">AI-picked spots based on your vibe</p>
-        </div>
-      </button>
-
-      <button
         onClick={() => setShowPlanner(true)}
         className="w-full bg-gradient-to-r from-[#E91E63] to-[#C2185B] text-white rounded-2xl p-4 flex items-center gap-3 hover:shadow-lg transition-all"
       >
@@ -377,16 +364,11 @@ export default function HomeDashboardTab({
         </div>
         <div className="text-left">
           <p className="font-bold">Plan Tonight's Route</p>
-          <p className="text-xs text-white/80">Build a bar crawl or let AI plan it</p>
+          <p className="text-xs text-white/80">Build a bar crawl and invite friends</p>
         </div>
       </button>
 
-      <VibeMatchmaker
-        isOpen={showVibeMatchmaker}
-        onClose={() => setShowVibeMatchmaker(false)}
-        userLocation={userLocation}
-      />
-      <NightRoutePlanner isOpen={showPlanner} onClose={() => setShowPlanner(false)} userLocation={userLocation} />
+      <NightRoutePlanner isOpen={showPlanner} onClose={() => setShowPlanner(false)} />
 
       <div className="bg-white rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
@@ -416,7 +398,7 @@ export default function HomeDashboardTab({
                     minute: '2-digit'
                   })}
                 </span>
-                <span className="mx-1">•</span>
+                <span className="mx-1">\u2022</span>
                 <span>Max {swarm.max_attendees}</span>
               </div>
             </div>

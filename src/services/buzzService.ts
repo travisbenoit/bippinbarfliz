@@ -17,7 +17,7 @@ export interface BuzzMessage {
 
 export const buzzService = {
   async postBuzz(venueId: string, body: string): Promise<BuzzMessage> {
-    const { data: session } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) throw new Error('Not authenticated');
 
     const { data, error } = await supabase
@@ -50,7 +50,7 @@ export const buzzService = {
   },
 
   async deleteBuzz(buzzId: string): Promise<void> {
-    const { data: session } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) throw new Error('Not authenticated');
 
     const { error } = await supabase

@@ -1,3 +1,5 @@
+import { logger } from '../lib/logger';
+
 export interface BeemUser {
   username: string;
   linkedAt: string;
@@ -19,7 +21,7 @@ export async function linkBeemAccount(username: string): Promise<boolean> {
 
     return response.ok;
   } catch (error) {
-    console.error('Failed to link Beem account:', error);
+    logger.error('Failed to link Beem account:', error);
     return false;
   }
 }
@@ -45,7 +47,7 @@ export async function sendBeemPayment(
 
     return response.ok;
   } catch (error) {
-    console.error('Failed to send Beem payment:', error);
+    logger.error('Failed to send Beem payment:', error);
     return false;
   }
 }
@@ -71,7 +73,7 @@ export async function requestBeemPayment(
 
     return response.ok;
   } catch (error) {
-    console.error('Failed to request Beem payment:', error);
+    logger.error('Failed to request Beem payment:', error);
     return false;
   }
 }

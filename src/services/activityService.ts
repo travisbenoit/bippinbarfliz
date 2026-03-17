@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface ActivityEvent {
@@ -69,7 +70,7 @@ class ActivityService {
       .limit(limit);
 
     if (error) {
-      console.error('Error fetching activity feed:', error);
+      logger.error('Error fetching activity feed:', error);
       return [];
     }
 
@@ -108,7 +109,7 @@ class ActivityService {
       .limit(50);
 
     if (error) {
-      console.error('Error fetching notifications:', error);
+      logger.error('Error fetching notifications:', error);
       return [];
     }
 

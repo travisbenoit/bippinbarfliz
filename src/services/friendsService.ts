@@ -34,8 +34,8 @@ export interface CrossingPath {
     id: string;
     name: string;
     address: string | null;
-    place_type: string | null;
-    google_place_id: string | null;
+    category: string | null;
+    place_id: string | null;
   };
   other_user?: FriendUser & { dob?: string; bio?: string; ghost_mode?: boolean };
 }
@@ -48,8 +48,8 @@ export interface VenueHistory {
     id: string;
     name: string;
     address: string | null;
-    place_type: string | null;
-    google_place_id: string | null;
+    category: string | null;
+    place_id: string | null;
   };
   crossing_paths?: CrossingPath[];
 }
@@ -276,7 +276,7 @@ export const friendsService = {
         venue_id,
         entered_at,
         left_at,
-        venue:bars(id, name, address, place_type, google_place_id)
+        venue:venues(id, name, address, category, place_id)
       `)
       .eq('user_id', user.id)
       .gte('entered_at', since)

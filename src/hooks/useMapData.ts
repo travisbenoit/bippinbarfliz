@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import locationService, { RealTimeUser, RealTimeVenue } from '../services/locationService';
 import type { VibeTag } from '../data/dummyData';
+import { logger } from '../lib/logger';
 
 export interface MapSwarm {
   id: string;
@@ -34,7 +35,7 @@ export function useMapData(
   const [venues, setVenues] = useState<RealTimeVenue[]>([]);
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
-  const enrichUserProfiles = async (rawUsers: RealTimeUser[]): Promise<MapUserProfile[]> => {
+  const enrichUserProfiles = useCallback(async (rawUsers: RealTimeUser[]): Promise<MapUserProfile[]> => {
     const userIds = rawUsers.map(u => u.id);
     if (userIds.length === 0) return [];
 
@@ -49,7 +50,7 @@ export function useMapData(
       ...user,
       avatar_url: profileMap.get(user.id)?.avatar_url,
     }));
-  };
+  }, []);
 
   const fetchSwarms = async () => {
     try {
@@ -118,13 +119,15 @@ export function useMapData(
             .from('swarms')
             .update({ status: 'completed' })
             .in('id', expiredIds)
-            .then(() => {});
+            .then(({ error: expErr }) => {
+              if (expErr) logger.error('Error expiring swarms:', expErr);
+            });
         }
 
         setSwarms(mapped);
       }
     } catch (err) {
-      console.error('Error fetching swarms:', err);
+      logger.error('Error fetching swarms:', err);
     }
   };
 
@@ -157,16 +160,23 @@ export function useMapData(
       const enriched = await enrichUserProfiles(merged);
       setUsers(enriched);
     } catch (err) {
-      console.error('Error fetching venues and users:', err);
+      logger.error('Error fetching venues and users:', err);
     }
   };
+
+  const userLocationRef = useRef(userLocation);
+  const distanceFilterRef = useRef(distanceFilter);
+  userLocationRef.current = userLocation;
+  distanceFilterRef.current = distanceFilter;
 
   useEffect(() => {
     fetchSwarms();
 
     const unsubscribePresence = locationService.subscribeToVenuePresence(async (venueUsers) => {
-      const nearbyUsers = userLocation
-        ? await locationService.fetchNearbyUsers(userLocation.lat, userLocation.lng, distanceFilter)
+      const loc = userLocationRef.current;
+      const dist = distanceFilterRef.current;
+      const nearbyUsers = loc
+        ? await locationService.fetchNearbyUsers(loc.lat, loc.lng, dist)
         : [];
       const venueUserIds = new Set(venueUsers.map(u => u.id));
       const merged = [...venueUsers, ...nearbyUsers.filter(u => !venueUserIds.has(u.id))];
@@ -177,7 +187,7 @@ export function useMapData(
     const unsubscribeLocation = locationService.subscribeToUserLocation((location) => {
       if (location) {
         const countryCode = localStorage.getItem('userCountryCode') || 'US';
-        locationService.fetchNearbyVenues(location.lat, location.lng, distanceFilter, countryCode).then(setVenues);
+        locationService.fetchNearbyVenues(location.lat, location.lng, distanceFilterRef.current, countryCode).then(setVenues);
       }
     });
 
@@ -187,7 +197,7 @@ export function useMapData(
     };
 
     return () => { unsubscribeRef.current?.(); };
-  }, []);
+  }, [enrichUserProfiles]);
 
   useEffect(() => {
     const interval = setInterval(fetchVenuesAndUsers, 10000);

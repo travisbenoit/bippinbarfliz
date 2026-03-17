@@ -1,6 +1,17 @@
-import Radar from 'radar-sdk-js';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 import type { Coordinates, Venue } from '../geolocation/types';
+
+type RadarSDK = typeof import('radar-sdk-js').default;
+let _radar: RadarSDK | null = null;
+
+async function getRadar(): Promise<RadarSDK> {
+  if (!_radar) {
+    const mod = await import('radar-sdk-js');
+    _radar = mod.default;
+  }
+  return _radar;
+}
 
 interface RadarLocation {
   latitude: number;
@@ -36,20 +47,22 @@ class RadarService {
       throw new Error('Radar publishable key not configured');
     }
 
+    const Radar = await getRadar();
     Radar.initialize(publishableKey);
     this.initialized = true;
 
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      this.setUserId(session.user.id);
+      await this.setUserId(session.user.id);
     }
   }
 
-  setUserId(userId: string) {
+  async setUserId(userId: string) {
     if (!this.initialized) {
       throw new Error('Radar not initialized');
     }
     this.userId = userId;
+    const Radar = await getRadar();
     Radar.setUserId(userId);
   }
 
@@ -59,6 +72,7 @@ class RadarService {
     }
 
     try {
+      const Radar = await getRadar();
       let result;
 
       if (location) {
@@ -77,12 +91,12 @@ class RadarService {
 
       return null;
     } catch (error) {
-      console.error('Radar trackOnce error:', error);
+      logger.error('Radar trackOnce error:', error);
       return null;
     }
   }
 
-  startTracking(options?: {
+  async startTracking(options?: {
     desiredStoppedUpdateInterval?: number;
     desiredMovingUpdateInterval?: number;
     desiredSyncInterval?: number;
@@ -91,6 +105,7 @@ class RadarService {
       throw new Error('Radar not initialized');
     }
 
+    const Radar = await getRadar();
     Radar.startTrackingContinuous({
       desiredStoppedUpdateInterval: options?.desiredStoppedUpdateInterval || 60,
       desiredMovingUpdateInterval: options?.desiredMovingUpdateInterval || 30,
@@ -98,8 +113,9 @@ class RadarService {
     });
   }
 
-  stopTracking() {
+  async stopTracking() {
     if (!this.initialized) return;
+    const Radar = await getRadar();
     Radar.stopTracking();
   }
 
@@ -107,7 +123,7 @@ class RadarService {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
-        console.error('No active session');
+        logger.error('No active session');
         return false;
       }
 
@@ -137,14 +153,14 @@ class RadarService {
 
       if (!response.ok) {
         const error = await response.json();
-        console.error('Failed to create Radar geofence:', error);
+        logger.error('Failed to create Radar geofence:', error);
         return false;
       }
 
       const result = await response.json();
       return result.success;
     } catch (error) {
-      console.error('Error creating Radar geofence:', error);
+      logger.error('Error creating Radar geofence:', error);
       return false;
     }
   }
@@ -170,7 +186,7 @@ class RadarService {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
-        console.error('No active session');
+        logger.error('No active session');
         return false;
       }
 
@@ -196,7 +212,7 @@ class RadarService {
       const result = await response.json();
       return result.success;
     } catch (error) {
-      console.error('Error deleting Radar geofence:', error);
+      logger.error('Error deleting Radar geofence:', error);
       return false;
     }
   }
@@ -211,6 +227,7 @@ class RadarService {
     }
 
     try {
+      const Radar = await getRadar();
       const result = await Radar.searchPlaces({
         near: {
           latitude: location.lat,
@@ -223,7 +240,7 @@ class RadarService {
 
       return result?.places || [];
     } catch (error) {
-      console.error('Radar searchPlaces error:', error);
+      logger.error('Radar searchPlaces error:', error);
       return [];
     }
   }
@@ -287,7 +304,7 @@ class RadarService {
         }
       );
     } catch (error) {
-      console.error('Error handling venue entry:', error);
+      logger.error('Error handling venue entry:', error);
     }
   }
 
@@ -325,7 +342,7 @@ class RadarService {
         );
       }
     } catch (error) {
-      console.error('Error handling venue exit:', error);
+      logger.error('Error handling venue exit:', error);
     }
   }
 
@@ -333,7 +350,7 @@ class RadarService {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
-        console.error('No active session');
+        logger.error('No active session');
         return [];
       }
 
@@ -358,7 +375,7 @@ class RadarService {
       const data = await response.json();
       return data.geofences || [];
     } catch (error) {
-      console.error('Error fetching geofences:', error);
+      logger.error('Error fetching geofences:', error);
       return [];
     }
   }

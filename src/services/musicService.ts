@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 
 export type MusicPlatform = 'spotify' | 'apple_music' | 'youtube_music';
 
@@ -110,52 +111,10 @@ class MusicService {
       .single();
 
     if (error) {
-      console.error('Error sending music share:', error);
+      logger.error('Error sending music share:', error);
       return null;
     }
 
-    return data;
-  }
-
-  async shareMusic(
-    recipientId: string,
-    songData: {
-      songId: string;
-      songTitle: string;
-      artistName: string;
-      platform: MusicPlatform;
-      externalUrl: string;
-      albumArtUrl?: string;
-      previewUrl?: string;
-    },
-    message?: string,
-    swarmId?: string,
-    venueId?: string
-  ) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
-    const { data, error } = await supabase
-      .from('music_shares')
-      .insert({
-        sender_id: user.id,
-        recipient_id: recipientId,
-        song_id: songData.songId,
-        song_title: songData.songTitle,
-        artist_name: songData.artistName,
-        platform: songData.platform,
-        external_url: songData.externalUrl,
-        album_art_url: songData.albumArtUrl,
-        preview_url: songData.previewUrl,
-        message,
-        swarm_id: swarmId,
-        venue_id: venueId,
-        status: 'pending',
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
     return data;
   }
 
@@ -167,7 +126,7 @@ class MusicService {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching music shares:', error);
+      logger.error('Error fetching music shares:', error);
       return [];
     }
 
@@ -183,7 +142,7 @@ class MusicService {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching received music shares:', error);
+      logger.error('Error fetching received music shares:', error);
       return [];
     }
 
@@ -247,31 +206,11 @@ class MusicService {
       .eq('id', shareId);
 
     if (error) {
-      console.error('Error updating music share status:', error);
+      logger.error('Error updating music share status:', error);
       return false;
     }
 
     return true;
-  }
-
-  async updateMusicStatus(
-    musicId: string,
-    status: 'pending' | 'played' | 'saved' | 'expired'
-  ) {
-    const updateData: Record<string, unknown> = { status };
-    if (status === 'played') {
-      updateData.played_at = new Date().toISOString();
-    }
-
-    const { data, error } = await supabase
-      .from('music_shares')
-      .update(updateData)
-      .eq('id', musicId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
   }
 
   async getReceivedMusicCount() {

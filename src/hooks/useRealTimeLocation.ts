@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 
 const MIN_UPDATE_INTERVAL_MS = 3000;
 const MIN_DISTANCE_METERS = 5;
@@ -48,7 +49,7 @@ export function useRealTimeLocation() {
         is_background: false,
       });
     } catch (error) {
-      console.error('Location write error:', error);
+      logger.error('Location write error:', error);
     }
   }, []);
 
@@ -56,9 +57,13 @@ export function useRealTimeLocation() {
     if (!('geolocation' in navigator)) return;
 
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      userIdRef.current = user.id;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        userIdRef.current = user.id;
+      } catch (error) {
+        logger.error('Failed to get user for location tracking:', error);
+      }
     })();
 
     watchIdRef.current = navigator.geolocation.watchPosition(
@@ -68,7 +73,7 @@ export function useRealTimeLocation() {
         writeToDb(latitude, longitude, accuracy);
       },
       (error) => {
-        console.error('Geolocation error:', error);
+        logger.error('Geolocation error:', error);
       },
       {
         enableHighAccuracy: true,

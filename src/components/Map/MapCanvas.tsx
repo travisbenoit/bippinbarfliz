@@ -27,25 +27,25 @@ interface Props {
 }
 
 const CATEGORY_ICONS: Record<string, { emoji: string; color: string }> = {
-  club: { emoji: '🎵', color: '#8B5CF6' },
-  brewery: { emoji: '🍺', color: '#F59E0B' },
-  rooftop: { emoji: '🌆', color: '#06B6D4' },
-  lounge: { emoji: '🍸', color: '#EC4899' },
-  sports_bar: { emoji: '🏈', color: '#10B981' },
-  bar: { emoji: '🍻', color: '#E91E63' },
-  restaurant: { emoji: '🍽️', color: '#6B7280' },
-  nightclub: { emoji: '💃', color: '#A855F7' },
-  pub: { emoji: '🍺', color: '#D97706' },
-  wine_bar: { emoji: '🍷', color: '#DC2626' },
+  club: { emoji: '\uD83C\uDFB5', color: '#8B5CF6' },
+  brewery: { emoji: '\uD83C\uDF7A', color: '#F59E0B' },
+  rooftop: { emoji: '\uD83C\uDF06', color: '#06B6D4' },
+  lounge: { emoji: '\uD83C\uDF78', color: '#EC4899' },
+  sports_bar: { emoji: '\uD83C\uDFC8', color: '#10B981' },
+  bar: { emoji: '\uD83C\uDF7B', color: '#E91E63' },
+  restaurant: { emoji: '\uD83C\uDF7D\uFE0F', color: '#6B7280' },
+  nightclub: { emoji: '\uD83D\uDC83', color: '#A855F7' },
+  pub: { emoji: '\uD83C\uDF7A', color: '#D97706' },
+  wine_bar: { emoji: '\uD83C\uDF77', color: '#DC2626' },
 };
 
 function getCategoryIcon(category: string) {
-  const data = CATEGORY_ICONS[category.toLowerCase()] || { emoji: '🍻', color: '#E91E63' };
+  const data = CATEGORY_ICONS[category.toLowerCase()] || { emoji: '\uD83C\uDF7B', color: '#E91E63' };
   return data.emoji;
 }
 
 function getCategoryColor(category: string) {
-  const data = CATEGORY_ICONS[category.toLowerCase()] || { emoji: '🍻', color: '#E91E63' };
+  const data = CATEGORY_ICONS[category.toLowerCase()] || { emoji: '\uD83C\uDF7B', color: '#E91E63' };
   return data.color;
 }
 

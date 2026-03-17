@@ -3,6 +3,7 @@ import { useGeofencing } from './useGeofencing';
 import { activityService } from '../services/activityService';
 import { xpService } from '../services/xpService';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 import type {
   Coordinates,
   Venue,
@@ -57,7 +58,7 @@ export function GeofenceProvider({
 
   const requestLocationPermission = useCallback(async (): Promise<boolean> => {
     if (!navigator.geolocation) {
-      console.error('Geolocation is not supported by this browser');
+      logger.error('Geolocation is not supported by this browser');
       return false;
     }
 
@@ -75,7 +76,7 @@ export function GeofenceProvider({
               resolve(true);
             },
             (error) => {
-              console.error('Location permission denied:', error);
+              logger.error('Location permission denied:', error);
               setIsLocationEnabled(false);
               resolve(false);
             }
@@ -86,7 +87,7 @@ export function GeofenceProvider({
         return false;
       }
     } catch (error) {
-      console.error('Error checking location permission:', error);
+      logger.error('Error checking location permission:', error);
 
       return new Promise((resolve) => {
         navigator.geolocation.getCurrentPosition(
@@ -95,7 +96,7 @@ export function GeofenceProvider({
             resolve(true);
           },
           (error) => {
-            console.error('Location permission denied:', error);
+            logger.error('Location permission denied:', error);
             setIsLocationEnabled(false);
             resolve(false);
           }
@@ -106,7 +107,7 @@ export function GeofenceProvider({
 
   const startLocationWatching = useCallback(() => {
     if (!navigator.geolocation) {
-      console.error('Geolocation is not supported');
+      logger.error('Geolocation is not supported');
       return;
     }
 
@@ -124,7 +125,7 @@ export function GeofenceProvider({
         geofencing.updateLocation(location);
       },
       (error) => {
-        console.error('Location error:', error);
+        logger.error('Location error:', error);
       },
       {
         enableHighAccuracy: true,
@@ -180,15 +181,6 @@ export function GeofenceProvider({
             { venueId: event.venue.id }
           );
 
-          // Push to each friend (non-blocking)
-          supabase
-            .from('friendships')
-            .select('user_id, friend_id')
-            .eq('status', 'accepted')
-            .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
-            .then(({ data: friendships }) => {
-              // push notifications removed
-            });
         }
 
         const today = new Date().toISOString().split('T')[0];
@@ -249,7 +241,7 @@ export function GeofenceProvider({
     return () => {
       stopLocationWatching();
     };
-  }, [autoStart]);
+  }, [autoStart, handleStartTracking, stopLocationWatching]);
 
   const value: GeofenceContextValue = {
     state: geofencing.state,

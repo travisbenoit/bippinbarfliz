@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapPin, Maximize2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRegionalSettings } from '../../contexts/RegionalSettingsContext';
+import { logger } from '../../lib/logger';
 
 interface RadiusControlProps {
   currentRadius: number;
@@ -33,7 +34,7 @@ export default function RadiusControl({ currentRadius, onRadiusChange }: RadiusC
           .eq('id', user.id);
       }
     } catch (error) {
-      console.error('Error saving radius preference:', error);
+      logger.error('Error saving radius preference:', error);
     } finally {
       setIsSaving(false);
     }

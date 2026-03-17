@@ -93,7 +93,6 @@ export function WingmanPanel({ targetUserId, targetName }: Props) {
 
           {result && (
             <>
-              {/* Insights */}
               {result.insights.length > 0 && (
                 <div className="space-y-1.5">
                   {result.insights.map((insight, i) => {
@@ -114,7 +113,6 @@ export function WingmanPanel({ targetUserId, targetName }: Props) {
                 </div>
               )}
 
-              {/* Ice Breakers */}
               {result.ice_breakers.length > 0 && (
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl p-3">
                   <div className="flex items-center gap-1.5 mb-2">
@@ -124,7 +122,7 @@ export function WingmanPanel({ targetUserId, targetName }: Props) {
                   <div className="space-y-1.5">
                     {result.ice_breakers.map((breaker, i) => (
                       <p key={i} className="text-sm text-gray-700 pl-2 border-l-2 border-amber-300">
-                        "{breaker}"
+                        \"{breaker}\"
                       </p>
                     ))}
                   </div>

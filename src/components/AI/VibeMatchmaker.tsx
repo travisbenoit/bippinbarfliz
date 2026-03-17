@@ -11,9 +11,9 @@ interface Props {
 }
 
 const CATEGORY_EMOJI: Record<string, string> = {
-  club: '🎵', brewery: '🍺', rooftop: '🌆', lounge: '🍸',
-  sports_bar: '🏈', bar: '🍻', restaurant: '🍽️', nightclub: '💃',
-  pub: '🍺', wine_bar: '🍷',
+  club: '\ud83c\udfb5', brewery: '\ud83c\udf7a', rooftop: '\ud83c\udf06', lounge: '\ud83c\udf78',
+  sports_bar: '\ud83c\udfc8', bar: '\ud83c\udf7b', restaurant: '\ud83c\udf7d\ufe0f', nightclub: '\ud83d\udc83',
+  pub: '\ud83c\udf7a', wine_bar: '\ud83c\udf77',
 };
 
 export function VibeMatchmaker({ isOpen, onClose, userLocation, onVenueSelect }: Props) {
@@ -54,7 +54,6 @@ export function VibeMatchmaker({ isOpen, onClose, userLocation, onVenueSelect }:
         className="relative mt-auto bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
@@ -80,7 +79,6 @@ export function VibeMatchmaker({ isOpen, onClose, userLocation, onVenueSelect }:
           </div>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-3">
           {loading && (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -114,7 +112,7 @@ export function VibeMatchmaker({ isOpen, onClose, userLocation, onVenueSelect }:
             >
               <div className="flex items-start gap-3">
                 <div className="w-11 h-11 bg-white rounded-xl border border-gray-200 flex items-center justify-center flex-shrink-0 text-xl">
-                  {CATEGORY_EMOJI[rec.category?.toLowerCase()] || '🍻'}
+                  {CATEGORY_EMOJI[rec.category?.toLowerCase()] || '\ud83c\udf7b'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

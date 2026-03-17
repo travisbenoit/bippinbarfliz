@@ -29,7 +29,6 @@ Deno.serve(async (req: Request) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Auth
     const token = req.headers.get("Authorization")?.replace("Bearer ", "");
     if (!token) {
       return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
@@ -51,7 +50,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // 1. Nearby venues
     const { data: venues } = await supabase
       .from("venues")
       .select("id, name, category, address, lat, lng, rating, user_ratings_total")
@@ -67,7 +65,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // 2. Live occupancy counts
     const venueIds = venues.map(v => v.id);
     const { data: presences } = await supabase
       .from("user_venue_presence")
@@ -80,7 +77,6 @@ Deno.serve(async (req: Request) => {
       occupancy[p.venue_id] = (occupancy[p.venue_id] || 0) + 1;
     }
 
-    // 3. Historical busyness (last 30 days, same day-of-week)
     const today = new Date();
     const dow = today.getDay();
     const { data: historicalData } = await supabase
@@ -89,7 +85,6 @@ Deno.serve(async (req: Request) => {
       .in("venue_id", venueIds)
       .gte("entered_at", new Date(Date.now() - 30 * 86400000).toISOString());
 
-    // Aggregate by venue + hour for same day-of-week
     const busyness: Record<string, Record<number, number>> = {};
     for (const h of historicalData || []) {
       const d = new Date(h.entered_at);
@@ -99,7 +94,6 @@ Deno.serve(async (req: Request) => {
       busyness[h.venue_id][hour] = (busyness[h.venue_id][hour] || 0) + 1;
     }
 
-    // 4. Recent vibe votes
     const { data: vibeVotes } = await supabase
       .from("vibe_votes")
       .select("venue_id, vibe")
@@ -112,7 +106,6 @@ Deno.serve(async (req: Request) => {
       vibeByVenue[vv.venue_id].push(vv.vibe);
     }
 
-    // 5. Friends going out
     const { data: friendships } = await supabase
       .from("friendships")
       .select("user_id, friend_id")
@@ -130,7 +123,6 @@ Deno.serve(async (req: Request) => {
       friendsOut = (goingOut || []).map(u => u.name);
     }
 
-    // Build prompt
     const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const currentDay = dayNames[dow];
     const currentHour = today.getHours();
@@ -150,7 +142,7 @@ Deno.serve(async (req: Request) => {
 Consider:
 - Venue categories and vibes matching the request
 - Logical geographic ordering (minimize travel)
-- Time progression (chill → energetic typically)
+- Time progression (chill \u2192 energetic typically)
 - Historical busyness patterns for optimal arrival times
 - Current occupancy levels
 

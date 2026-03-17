@@ -1,8 +1,3 @@
-/**
- * Shared Claude API helper for Supabase Edge Functions.
- * Reads ANTHROPIC_API_KEY from environment.
- */
-
 interface ClaudeMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -45,13 +40,8 @@ export async function callClaude(req: ClaudeRequest): Promise<string> {
   return textBlock?.text ?? '';
 }
 
-/**
- * Call Claude and parse JSON from the response.
- * Strips markdown code fences if present.
- */
 export async function callClaudeJSON<T>(req: ClaudeRequest): Promise<T> {
   const raw = await callClaude(req);
-  // Strip ```json ... ``` fences
   const cleaned = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
   return JSON.parse(cleaned) as T;
 }

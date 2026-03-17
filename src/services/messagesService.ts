@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
+import { sendPushToUser } from './pushService';
+import { logger } from '../lib/logger';
 
 type Message = Database['public']['Tables']['messages']['Row'];
 type MessageInsert = Database['public']['Tables']['messages']['Insert'];
@@ -18,7 +20,7 @@ export const messagesService = {
       );
 
     if (error) {
-      console.error('Error checking block status:', error);
+      logger.error('Error checking block status:', error);
       return false;
     }
 
@@ -54,7 +56,18 @@ export const messagesService = {
 
     if (error) throw error;
 
-
+    const { data: senderProfile } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', user.id)
+      .maybeSingle();
+    const senderName = senderProfile?.name || 'Someone';
+    sendPushToUser(recipientId, {
+      title: senderName,
+      body: body.length > 100 ? body.slice(0, 97) + '\u2026' : body,
+      url: '/messages',
+      tag: `dm-${user.id}`,
+    }).catch(() => null);
 
     return data;
   },

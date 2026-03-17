@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database.types';
+import { activityService } from './activityService';
 
 type UserGift = Database['public']['Tables']['user_gifts']['Row'];
 type UserGiftInsert = Database['public']['Tables']['user_gifts']['Insert'];
@@ -31,7 +32,15 @@ export const giftsService = {
 
     if (error) throw error;
 
-
+    activityService.logActivity('status_update', {
+      metadata: {
+        type: 'gift_sent',
+        gift_id: data.id,
+        item_id: itemId,
+        to_user_id: toUserId,
+        context_type: contextType || 'profile',
+      },
+    }).catch(() => {});
 
     return data;
   },

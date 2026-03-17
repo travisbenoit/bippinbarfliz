@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface RealTimeUser {
@@ -67,7 +68,7 @@ class LocationService {
       const { data: venues, error } = await query.limit(500);
 
       if (error) {
-        console.error('Error fetching venues:', error);
+        logger.error('Error fetching venues:', error);
         return [];
       }
 
@@ -107,7 +108,7 @@ class LocationService {
         user_ratings_total: venue.user_ratings_total,
       }));
     } catch (error) {
-      console.error('Error in fetchNearbyVenues:', error);
+      logger.error('Error in fetchNearbyVenues:', error);
       return [];
     }
   }
@@ -125,7 +126,7 @@ class LocationService {
         .limit(100);
 
       if (error) {
-        console.error('Error fetching nearby users:', error);
+        logger.error('Error fetching nearby users:', error);
         return [];
       }
 
@@ -148,7 +149,7 @@ class LocationService {
           vibes: u.vibe_tags || [],
         }));
     } catch (error) {
-      console.error('Error in fetchNearbyUsers:', error);
+      logger.error('Error in fetchNearbyUsers:', error);
       return [];
     }
   }
@@ -183,7 +184,7 @@ class LocationService {
         .eq('is_visible_in_venue', true);
 
       if (error) {
-        console.error('Error fetching venue presences:', error);
+        logger.error('Error fetching venue presences:', error);
         return [];
       }
 
@@ -201,7 +202,7 @@ class LocationService {
         dwellSeconds: presence.dwell_seconds,
       })) || [];
     } catch (error) {
-      console.error('Error in fetchUsersAtVenues:', error);
+      logger.error('Error in fetchUsersAtVenues:', error);
       return [];
     }
   }
@@ -244,7 +245,7 @@ class LocationService {
 
       return null;
     } catch (error) {
-      console.error('Error fetching current user location:', error);
+      logger.error('Error fetching current user location:', error);
       return null;
     }
   }
@@ -309,13 +310,13 @@ class LocationService {
         .eq('is_visible_in_venue', true);
 
       if (error) {
-        console.error('Error fetching venue user count:', error);
+        logger.error('Error fetching venue user count:', error);
         return 0;
       }
 
       return count || 0;
     } catch (error) {
-      console.error('Error in fetchVenueUserCount:', error);
+      logger.error('Error in fetchVenueUserCount:', error);
       return 0;
     }
   }

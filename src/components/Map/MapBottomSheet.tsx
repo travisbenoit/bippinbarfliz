@@ -292,7 +292,7 @@ export default function MapBottomSheet({
                         {venue.rating && (
                           <div className="flex items-center gap-2 mt-0.5">
                             <div className="flex items-center gap-1">
-                              <span className="text-amber-500 text-sm">★</span>
+                              <span className="text-amber-500 text-sm">\u2605</span>
                               <span className="text-sm font-semibold text-gray-900">{venue.rating.toFixed(1)}</span>
                             </div>
                             {venue.user_ratings_total && (
@@ -311,7 +311,7 @@ export default function MapBottomSheet({
                           <span className="text-xs text-gray-400 capitalize">{venue.category}</span>
                           {(venue as any).distance !== undefined && (
                             <>
-                              <span className="text-gray-300">•</span>
+                              <span className="text-gray-300">\u2022</span>
                               <span className="text-xs text-gray-400">{formatDistanceRegional(((venue as any).distance || 0) * 1000)}</span>
                             </>
                           )}

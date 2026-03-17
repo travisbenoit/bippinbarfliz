@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { X, MapPin, Star, Users, User, MessageCircle, ExternalLink, CheckCircle, Radio, Phone, Globe, Clock, Navigation, Footprints, Car } from 'lucide-react';
 import type { RealTimeVenue } from '../../services/locationService';
 import type { MapUserProfile } from '../../hooks/useMapData';
@@ -39,7 +39,6 @@ export default function VenueDetailsModal({
   const [roomStats, setRoomStats] = useState<RoomStats>({ message_count: 0, active_users: 0, top_drink: null, top_music: null });
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showDirectionsMenu, setShowDirectionsMenu] = useState(false);
-  const directionsRef = useRef<HTMLDivElement>(null);
 
   const isAutoCheckedIn = geofenceState.currentVenue?.id === venue?.id;
 
@@ -55,17 +54,6 @@ export default function VenueDetailsModal({
       setShowDirectionsMenu(false);
     }
   }, [isOpen, venue?.id, isAutoCheckedIn]);
-
-  useEffect(() => {
-    if (!showDirectionsMenu) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (directionsRef.current && !directionsRef.current.contains(e.target as Node)) {
-        setShowDirectionsMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showDirectionsMenu]);
 
   const getUserLocation = async () => {
     if (navigator.geolocation) {
@@ -123,15 +111,15 @@ export default function VenueDetailsModal({
 
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
-      club: '🎵',
-      brewery: '🍺',
-      rooftop: '🌆',
-      lounge: '🍸',
-      sports_bar: '🏈',
-      bar: '🍻',
-      restaurant: '🍽️',
+      club: '\uD83C\uDFB5',
+      brewery: '\uD83C\uDF7A',
+      rooftop: '\uD83C\uDF06',
+      lounge: '\uD83C\uDF78',
+      sports_bar: '\uD83C\uDFC8',
+      bar: '\uD83C\uDF7B',
+      restaurant: '\uD83C\uDF7D\uFE0F',
     };
-    return icons[category] || '🍻';
+    return icons[category] || '\uD83C\uDF7B';
   };
 
   const publicUsers = usersAtVenue.filter(u => u.visibilityMode !== 'private');
@@ -235,7 +223,7 @@ export default function VenueDetailsModal({
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              💬 Buzz
+              \uD83D\uDCAC Buzz
             </button>
           </div>
 
@@ -250,7 +238,7 @@ export default function VenueDetailsModal({
                   </div>
                 )}
               </div>
-              <div className="relative" ref={directionsRef}>
+              <div className="relative">
                 <button
                   onClick={() => setShowDirectionsMenu(!showDirectionsMenu)}
                   className="flex items-center gap-2 px-4 py-2 bg-[#E91E63] text-white rounded-xl text-sm font-semibold hover:bg-[#C2185B] transition-colors"
@@ -413,32 +401,32 @@ export default function VenueDetailsModal({
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                   <span className="text-green-400 text-xs font-bold uppercase tracking-wider">The Room</span>
                   <span className="ml-auto text-xs text-amber-500 font-semibold group-hover:translate-x-0.5 transition-transform">
-                    Enter →
+                    Enter \u2192
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div className="text-center">
                     <p className="text-2xl font-black text-white">{roomStats.active_users}</p>
-                    <p className="text-xs text-gray-400">🔥 here now</p>
+                    <p className="text-xs text-gray-400">\uD83D\uDD25 here now</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-black text-white">{roomStats.message_count}</p>
-                    <p className="text-xs text-gray-400">💬 tonight</p>
+                    <p className="text-xs text-gray-400">\uD83D\uDCAC tonight</p>
                   </div>
                 </div>
                 {(roomStats.top_drink || roomStats.top_music) && (
                   <div className="flex gap-3 text-xs border-t border-gray-800 pt-2">
                     {roomStats.top_drink && (
-                      <span className="text-gray-400">🍸 <span className="text-white capitalize">{roomStats.top_drink.replace(/_/g, ' ')}</span></span>
+                      <span className="text-gray-400">\uD83C\uDF78 <span className="text-white capitalize">{roomStats.top_drink.replace(/_/g, ' ')}</span></span>
                     )}
                     {roomStats.top_music && (
-                      <span className="text-gray-400">🎵 <span className="text-white capitalize">{roomStats.top_music.replace(/_/g, ' ')}</span></span>
+                      <span className="text-gray-400">\uD83C\uDFB5 <span className="text-white capitalize">{roomStats.top_music.replace(/_/g, ' ')}</span></span>
                     )}
                   </div>
                 )}
                 {!isAutoCheckedIn && !checkedIn && (
                   <p className="text-xs text-gray-500 mt-2 border-t border-gray-800 pt-2">
-                    Viewing remotely — check in to post
+                    Viewing remotely \u2014 check in to post
                   </p>
                 )}
               </div>

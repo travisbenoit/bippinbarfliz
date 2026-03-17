@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { getUserCountryCode } from '../services/regionService';
+import { logger } from '../lib/logger';
 
 interface RegionalSettings {
   locale: string;
@@ -110,7 +111,7 @@ export function RegionalSettingsProvider({ children }: { children: ReactNode }) 
         localStorage.setItem('userTemperatureUnit', tu);
       }
     } catch (error) {
-      console.error('Error loading regional settings:', error);
+      logger.error('Error loading regional settings:', error);
       setSettings({ ...defaultSettings, loading: false });
     }
   };
@@ -160,9 +161,9 @@ export function RegionalSettingsProvider({ children }: { children: ReactNode }) 
     const unit = getActiveTemperatureUnit();
     if (unit === 'F') {
       const fahrenheit = Math.round((celsius * 9) / 5 + 32);
-      return includeUnit ? `${fahrenheit}°F` : fahrenheit.toString();
+      return includeUnit ? `${fahrenheit}\u00b0F` : fahrenheit.toString();
     } else {
-      return includeUnit ? `${Math.round(celsius)}°C` : Math.round(celsius).toString();
+      return includeUnit ? `${Math.round(celsius)}\u00b0C` : Math.round(celsius).toString();
     }
   };
 
@@ -187,7 +188,7 @@ export function RegionalSettingsProvider({ children }: { children: ReactNode }) 
           .eq('id', user.id);
       }
     } catch (err) {
-      console.error('Error saving unit preference:', err);
+      logger.error('Error saving unit preference:', err);
     }
   };
 

@@ -24,7 +24,6 @@ Deno.serve(async (req: Request) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Auth
     const token = req.headers.get("Authorization")?.replace("Bearer ", "");
     if (!token) {
       return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
@@ -45,7 +44,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Privacy checks: ghost mode and blocks
     const { data: targetUser } = await supabase
       .from("users")
       .select("id, name, vibe_tags, favorite_drinks, bio, ghost_mode")
@@ -67,7 +65,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Check blocks
     const { data: block } = await supabase
       .from("user_blocks")
       .select("id")
@@ -80,14 +77,12 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Current user's profile
     const { data: myProfile } = await supabase
       .from("users")
       .select("name, vibe_tags, favorite_drinks, bio")
       .eq("id", user.id)
       .maybeSingle();
 
-    // 1. Shared venue history (venues both visited in last 90 days)
     const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString();
 
     const { data: myCheckins } = await supabase
@@ -115,7 +110,6 @@ Deno.serve(async (req: Request) => {
       sharedVenues = (venueNames || []).map(v => v.name);
     }
 
-    // 2. Mutual friends
     const { data: myFriends } = await supabase
       .from("friendships")
       .select("user_id, friend_id")
@@ -141,7 +135,6 @@ Deno.serve(async (req: Request) => {
       mutualFriendNames = (names || []).map(u => u.name);
     }
 
-    // 3. Shared music taste
     const { data: myMusic } = await supabase
       .from("music_shares")
       .select("artist_name")
@@ -160,11 +153,9 @@ Deno.serve(async (req: Request) => {
       .map(m => m.artist_name);
     const uniqueSharedArtists = [...new Set(sharedArtists)].slice(0, 5);
 
-    // 4. Overlapping vibe tags
     const myVibes = new Set(myProfile?.vibe_tags || []);
     const sharedVibes = (targetUser.vibe_tags || []).filter((v: string) => myVibes.has(v));
 
-    // Build prompt
     const system = `You are Wingman, the social AI for Barfliz nightlife app. Given data about two users' shared interests, generate insights and ice-breaker conversation starters.
 
 Rules:
@@ -188,9 +179,9 @@ Respond with ONLY JSON:
 
 Return 2-4 insights and exactly 3 ice breakers. If there's no shared data, generate generic but contextual ice breakers for a nightlife setting.`;
 
-    const userMessage = `You: ${myProfile?.name || "User"} — bio: ${myProfile?.bio || "none"}, vibes: ${(myProfile?.vibe_tags || []).join(", ") || "none"}, drinks: ${(myProfile?.favorite_drinks || []).join(", ") || "none"}
+    const userMessage = `You: ${myProfile?.name || "User"} \u2014 bio: ${myProfile?.bio || "none"}, vibes: ${(myProfile?.vibe_tags || []).join(", ") || "none"}, drinks: ${(myProfile?.favorite_drinks || []).join(", ") || "none"}
 
-Them: ${targetUser.name} — bio: ${targetUser.bio || "none"}, vibes: ${(targetUser.vibe_tags || []).join(", ") || "none"}, drinks: ${(targetUser.favorite_drinks || []).join(", ") || "none"}
+Them: ${targetUser.name} \u2014 bio: ${targetUser.bio || "none"}, vibes: ${(targetUser.vibe_tags || []).join(", ") || "none"}, drinks: ${(targetUser.favorite_drinks || []).join(", ") || "none"}
 
 Shared venues: ${sharedVenues.length > 0 ? sharedVenues.join(", ") : "none found"}
 Mutual friends: ${mutualFriendNames.length > 0 ? mutualFriendNames.join(", ") : "none"}

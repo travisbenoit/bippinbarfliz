@@ -1,10 +1,3 @@
-/**
- * One-time migration: downloads all venue photos currently stored as Google API URLs
- * and re-uploads them to Supabase Storage. Updates venues.photo_url to the new URL.
- *
- * Run via: POST /functions/v1/migrate-venue-photos (admin-only)
- * Optional body: { "limit": 50, "dry_run": true }
- */
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { corsHeaders } from '../_shared/cors.ts';
 
@@ -20,7 +13,6 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Auth check — admin only
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -47,7 +39,6 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
 
     if (!profile?.is_admin) {
-      // Fallback: check users table
       const { data: userRow } = await userSupabase
         .from('users')
         .select('is_admin')
@@ -67,7 +58,6 @@ Deno.serve(async (req: Request) => {
 
     const adminSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Find venues with Google API photo URLs
     const { data: venues, error: queryError } = await adminSupabase
       .from('venues')
       .select('id, name, photo_url')
@@ -101,7 +91,6 @@ Deno.serve(async (req: Request) => {
           continue;
         }
 
-        // Download the photo from the existing Google URL
         const response = await fetch(venue.photo_url, { redirect: 'follow' });
         if (!response.ok) {
           results.push({ id: venue.id, name: venue.name, status: `fetch_failed_${response.status}` });
@@ -121,7 +110,6 @@ Deno.serve(async (req: Request) => {
         const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
         const fileName = `${venue.id}/photo.${ext}`;
 
-        // Upload to Supabase Storage
         const { error: uploadError } = await adminSupabase.storage
           .from(BUCKET)
           .upload(fileName, imageBuffer, { contentType, upsert: true });
@@ -135,7 +123,6 @@ Deno.serve(async (req: Request) => {
         const { data } = adminSupabase.storage.from(BUCKET).getPublicUrl(fileName);
         const newUrl = data.publicUrl;
 
-        // Update venue record
         const { error: updateError } = await adminSupabase
           .from('venues')
           .update({ photo_url: newUrl, updated_at: new Date().toISOString() })
@@ -150,7 +137,6 @@ Deno.serve(async (req: Request) => {
         results.push({ id: venue.id, name: venue.name, status: 'migrated', new_url: newUrl });
         migrated++;
 
-        // Rate limit: 200ms between downloads
         await new Promise(r => setTimeout(r, 200));
       } catch (err) {
         results.push({

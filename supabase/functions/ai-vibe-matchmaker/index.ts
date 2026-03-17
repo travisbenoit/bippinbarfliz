@@ -21,7 +21,6 @@ Deno.serve(async (req: Request) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Auth
     const token = req.headers.get("Authorization")?.replace("Bearer ", "");
     if (!token) {
       return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
@@ -37,14 +36,12 @@ Deno.serve(async (req: Request) => {
 
     const { user_lat, user_lng, radius_meters = 8000 } = await req.json();
 
-    // 1. User profile
     const { data: profile } = await supabase
       .from("users")
       .select("name, vibe_tags, favorite_drinks, bio")
       .eq("id", user.id)
       .maybeSingle();
 
-    // 2. Check-in history (last 90 days)
     const { data: checkins } = await supabase
       .from("user_venue_presence")
       .select("venue_id, entered_at, dwell_seconds")
@@ -53,7 +50,6 @@ Deno.serve(async (req: Request) => {
       .order("entered_at", { ascending: false })
       .limit(150);
 
-    // Get unique venue IDs from check-ins for enrichment
     const checkinVenueIds = [...new Set((checkins || []).map(c => c.venue_id))];
     let checkinVenues: Record<string, any> = {};
     if (checkinVenueIds.length > 0) {
@@ -64,7 +60,6 @@ Deno.serve(async (req: Request) => {
       if (vData) checkinVenues = Object.fromEntries(vData.map(v => [v.id, v]));
     }
 
-    // Build check-in summary
     const categoryFreq: Record<string, number> = {};
     const dayOfWeekFreq: Record<number, number> = {};
     for (const c of checkins || []) {
@@ -74,14 +69,12 @@ Deno.serve(async (req: Request) => {
       dayOfWeekFreq[dow] = (dayOfWeekFreq[dow] || 0) + 1;
     }
 
-    // 3. Nearby venues with live occupancy
     const { data: nearbyVenues } = await supabase.rpc("get_nearby_venues_with_count", {
       p_lat: user_lat,
       p_lng: user_lng,
       p_radius: radius_meters,
     }).limit(40);
 
-    // If the RPC doesn't exist, fall back to a simple query
     let venues = nearbyVenues;
     if (!venues || venues.length === 0) {
       const { data: fallback } = await supabase
@@ -101,7 +94,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // 4. Recent vibe votes
     const venueIds = venues.map((v: any) => v.id);
     const { data: vibeVotes } = await supabase
       .from("vibe_votes")
@@ -115,7 +107,6 @@ Deno.serve(async (req: Request) => {
       vibeByVenue[vv.venue_id].push(vv.vibe);
     }
 
-    // Build prompt
     const now = new Date();
     const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const currentDay = dayNames[now.getDay()];
@@ -164,7 +155,6 @@ ${venueList}`;
       temperature: 0.7,
     });
 
-    // Enrich with address and occupancy
     const venueMap = Object.fromEntries(venues.map((v: any) => [v.id, v]));
     const enriched = recommendations.map(r => ({
       ...r,

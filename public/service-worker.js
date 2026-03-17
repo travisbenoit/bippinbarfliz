@@ -98,7 +98,7 @@ async function staleWhileRevalidate(request) {
   return cached || fetchPromise || new Response('Offline', { status: 503 });
 }
 
-// ── Push Notifications ────────────────────────────────────────────────────────
+// \u2500\u2500 Push Notifications (Pushy.io) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 self.addEventListener('push', (event) => {
   let data = {};
@@ -119,6 +119,22 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'PUSHY_NOTIFY') {
+    const data = event.data.payload || {};
+    const title = data.title || 'Barfliz';
+    const options = {
+      body: data.body || '',
+      icon: '/app-icon-192.png',
+      badge: '/app-icon-96.png',
+      tag: data.tag || 'barfliz',
+      data: { url: data.url || '/' },
+      vibrate: [100, 50, 100],
+    };
+    self.registration.showNotification(title, options);
+  }
 });
 
 self.addEventListener('notificationclick', (event) => {

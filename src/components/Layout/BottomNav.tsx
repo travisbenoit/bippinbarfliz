@@ -67,20 +67,21 @@ export default function BottomNav() {
                 <button
                   key={tab.path}
                   onClick={() => navigate(tab.path)}
-                  className={`relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[56px] ${
-                    isActive ? 'bg-[#E91E63]/10' : 'hover:bg-gray-50 active:bg-gray-100'
+                  className={`press-scale relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[56px] ${
+                    isActive ? 'bg-[#E91E63]/10' : 'hover:bg-gray-50'
                   }`}
                 >
                   <div className="relative">
                     <Icon
                       size={22}
                       className={`transition-all duration-200 ${
-                        isActive ? 'text-[#E91E63]' : 'text-gray-400'
+                        isActive ? 'text-[#E91E63] scale-110' : 'text-gray-400'
                       }`}
+                      style={isActive ? { transform: 'scale(1.1)' } : undefined}
                       strokeWidth={isActive ? 2.5 : 2}
                     />
                     {badge > 0 && (
-                      <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-[#E91E63] rounded-full text-[9px] font-bold text-white flex items-center justify-center px-1 leading-none">
+                      <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-[#E91E63] rounded-full text-[9px] font-bold text-white flex items-center justify-center px-1 leading-none animate-badge-pop">
                         {badge > 99 ? '99+' : badge}
                       </span>
                     )}

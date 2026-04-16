@@ -143,30 +143,73 @@ function footerBar(slide) {
   const s = pptx.addSlide();
   addBackground(s);
   titleText(s, 'LUSH Token Overview');
-  const rows = [
-    [
-      { text: 'Property', options: { bold: true, color: DARK, fill: { color: PINK } } },
-      { text: 'Value', options: { bold: true, color: DARK, fill: { color: PINK } } },
-    ],
-    ['Name', 'Lush Coin'],
-    ['Symbol', 'LUSH'],
-    ['Blockchain', 'Solana'],
-    ['Standard', 'SPL Token'],
-    ['Decimals', '0 (whole coins only)'],
-    ['Mint Authority', 'Server-side (Edge Functions)'],
-    ['Wallet Provider', 'Privy embedded wallets (email/phone login)'],
-  ];
-  s.addTable(rows, {
-    x: 0.8, y: 1.4, w: 11.7,
-    fontSize: 15, fontFace: 'Arial',
-    color: WHITE,
-    border: { type: 'solid', pt: 0.5, color: '444466' },
-    rowH: 0.55,
-    colW: [4, 7.7],
+
+  // Token icon — large coin graphic (left side)
+  // Outer ring
+  s.addShape(pptx.ShapeType.ellipse, {
+    x: 0.8, y: 1.6, w: 3.6, h: 3.6,
+    fill: { color: 'E91E63' },
   });
+  // Inner circle
+  s.addShape(pptx.ShapeType.ellipse, {
+    x: 1.1, y: 1.9, w: 3.0, h: 3.0,
+    fill: { color: '1A1A2E' },
+    line: { color: 'F8BBD0', width: 1.5 },
+  });
+  // Coin letter
+  s.addText('L', {
+    x: 0.8, y: 2.1, w: 3.6, h: 2.6,
+    fontSize: 72, bold: true, color: GOLD,
+    fontFace: 'Arial', align: 'center', valign: 'middle',
+  });
+  // Coin label
+  s.addText('LUSH', {
+    x: 0.8, y: 4.4, w: 3.6, h: 0.5,
+    fontSize: 14, bold: true, color: LIGHT_PINK,
+    fontFace: 'Arial', align: 'center',
+  });
+  // Solana badge
+  s.addShape(pptx.ShapeType.roundRect, {
+    x: 1.8, y: 5.1, w: 1.6, h: 0.4,
+    fill: { color: '9945FF' }, rectRadius: 0.1,
+  });
+  s.addText('SOLANA', {
+    x: 1.8, y: 5.1, w: 1.6, h: 0.4,
+    fontSize: 11, bold: true, color: WHITE,
+    fontFace: 'Arial', align: 'center', valign: 'middle',
+  });
+
+  // Token details (right side)
+  const props = [
+    { label: 'Name', value: 'Lush Coin', accent: WHITE },
+    { label: 'Symbol', value: 'LUSH', accent: GOLD },
+    { label: 'Blockchain', value: 'Solana', accent: '9945FF' },
+    { label: 'Standard', value: 'SPL Token', accent: WHITE },
+    { label: 'Decimals', value: '0 (whole coins)', accent: WHITE },
+    { label: 'Mint Authority', value: 'Server-side Edge Functions', accent: WHITE },
+    { label: 'Wallets', value: 'Privy embedded (email/phone)', accent: WHITE },
+  ];
+  props.forEach((p, i) => {
+    const y = 1.6 + i * 0.6;
+    s.addText(p.label, {
+      x: 5.2, y, w: 3, h: 0.5,
+      fontSize: 14, color: GRAY, fontFace: 'Arial',
+    });
+    s.addText(p.value, {
+      x: 8.2, y, w: 4.5, h: 0.5,
+      fontSize: 15, color: p.accent, fontFace: 'Arial', bold: true,
+    });
+    // Separator line
+    if (i < props.length - 1) {
+      s.addShape(pptx.ShapeType.rect, {
+        x: 5.2, y: y + 0.5, w: 7.5, h: 0.01, fill: { color: '333355' },
+      });
+    }
+  });
+
   s.addText('Controlled Inflation + Deflationary Burns\nNo fixed supply cap — tokens minted on earn, burned on spend.', {
-    x: 0.8, y: 5.8, w: 11.7, h: 0.9,
-    fontSize: 15, color: LIGHT_PINK, fontFace: 'Arial', bold: true,
+    x: 0.8, y: 5.9, w: 11.7, h: 0.8,
+    fontSize: 14, color: LIGHT_PINK, fontFace: 'Arial', bold: true,
     lineSpacingMultiple: 1.3,
   });
   footerBar(s);
@@ -630,20 +673,20 @@ function footerBar(slide) {
   const s = pptx.addSlide();
   addBackground(s);
   s.addText('BARFLIZ', {
-    x: 0, y: 1.5, w: 13.33, h: 1,
+    x: 0, y: 0.8, w: 13.33, h: 1.2,
     fontSize: 60, bold: true, color: PINK,
-    fontFace: 'Arial', align: 'center',
+    fontFace: 'Arial', align: 'center', valign: 'middle',
   });
   s.addText('The nightlife industry has no social infrastructure.\nWe\'re building it.', {
-    x: 0, y: 3, w: 13.33, h: 1.2,
+    x: 0, y: 2.6, w: 13.33, h: 1.4,
     fontSize: 24, color: WHITE,
-    fontFace: 'Arial', align: 'center',
+    fontFace: 'Arial', align: 'center', valign: 'top',
     lineSpacingMultiple: 1.5,
   });
   s.addText('LUSH Coin — earned by showing up, spent on social expression.\nUSDC — real payments. Privy — invisible wallets. Solana — instant and free.', {
-    x: 0, y: 4.8, w: 13.33, h: 1,
+    x: 0, y: 4.6, w: 13.33, h: 1.2,
     fontSize: 16, color: GRAY,
-    fontFace: 'Arial', align: 'center',
+    fontFace: 'Arial', align: 'center', valign: 'top',
     lineSpacingMultiple: 1.5,
   });
   footerBar(s);

@@ -13,42 +13,53 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Auth check — service role key OR admin user
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const token = authHeader?.replace('Bearer ', '') || '';
+    // Decode JWT payload to check role claim
+    let isServiceRole = false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1] || ''));
+      isServiceRole = payload.role === 'service_role';
+    } catch { /* not a valid JWT */ }
+
+    if (!isServiceRole) {
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const userSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: authHeader } },
       });
-    }
+      const { data: { user }, error: authError } = await userSupabase.auth.getUser();
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
-    const userSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user }, error: authError } = await userSupabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const { data: profile } = await userSupabase
-      .from('user_profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (!profile?.is_admin) {
-      const { data: userRow } = await userSupabase
-        .from('users')
+      const { data: profile } = await userSupabase
+        .from('user_profiles')
         .select('is_admin')
         .eq('id', user.id)
         .maybeSingle();
-      if (!userRow?.is_admin) {
-        return new Response(JSON.stringify({ error: 'Admin access required' }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+
+      if (!profile?.is_admin) {
+        const { data: userRow } = await userSupabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (!userRow?.is_admin) {
+          return new Response(JSON.stringify({ error: 'Admin access required' }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
       }
     }
 

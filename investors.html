@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUSH Coin — Investor Overview | Barfliz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #E91E63;
+    --pink-glow: rgba(233, 30, 99, 0.35);
+    --cyan: #00D9FF;
+    --cyan-glow: rgba(0, 217, 255, 0.25);
+    --dark: #0f1219;
+    --darker: #080b10;
+    --card: #12161f;
+    --card-hover: #181d2a;
+    --border: #1e2433;
+    --border-light: #2a3040;
+    --text: #c8ccd4;
+    --text-bright: #e5e7eb;
+    --muted: #6b7280;
+    --white: #ffffff;
+    --green: #10B981;
+    --amber: #F59E0B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--darker);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+    overflow-x: hidden;
+  }
+
+  /* ── Noise grain overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.028;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 180px;
+  }
+
+  /* ── Scroll-triggered animations ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-d1 { transition-delay: 0.08s; }
+  .reveal-d2 { transition-delay: 0.16s; }
+  .reveal-d3 { transition-delay: 0.24s; }
+  .reveal-d4 { transition-delay: 0.32s; }
+  .reveal-d5 { transition-delay: 0.40s; }
+  .reveal-d6 { transition-delay: 0.48s; }
+
+  /* ── Navigation ── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 18px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(8, 11, 16, 0.7);
+    border-bottom: 1px solid rgba(30, 36, 51, 0.5);
+    transition: background 0.3s;
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--white);
+    letter-spacing: -0.5px;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--pink); }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: color 0.25s;
+  }
+  .nav-links a:hover { color: var(--white); }
+
+  .nav-cta {
+    background: var(--pink);
+    color: var(--white) !important;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 12px !important;
+    letter-spacing: 0.8px !important;
+    transition: background 0.25s, transform 0.25s !important;
+  }
+  .nav-cta:hover {
+    background: #d81557 !important;
+    transform: translateY(-1px);
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 120px 40px 80px;
+    overflow: hidden;
+  }
+
+  /* Atmospheric glow orbs */
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--pink-glow) 0%, transparent 70%);
+    top: -10%;
+    left: -15%;
+    filter: blur(100px);
+    animation: pulse-slow 8s ease-in-out infinite alternate;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%);
+    bottom: -10%;
+    right: -10%;
+    filter: blur(100px);
+    animation: pulse-slow 8s ease-in-out 4s infinite alternate;
+  }
+
+  @keyframes pulse-slow {
+    0% { opacity: 0.5; transform: scale(1); }
+    100% { opacity: 0.8; transform: scale(1.15); }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(233, 30, 99, 0.1);
+    border: 1px solid rgba(233, 30, 99, 0.25);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pink);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 32px;
+    animation: fade-in-down 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--pink);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  @keyframes fade-in-down {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(42px, 6.5vw, 80px);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 24px;
+    animation: fade-in-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+  }
+  .hero h1 .accent { color: var(--pink); }
+  .hero h1 .accent-cyan { color: var(--cyan); }
+
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--text);
+    max-width: 620px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+    animation: fade-in-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+  }
+  .hero-sub strong { color: var(--white); }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fade-in-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.65s both;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--pink);
+    color: var(--white);
+    box-shadow: 0 4px 24px var(--pink-glow);
+  }
+  .btn-primary:hover {
+    background: #d81557;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px var(--pink-glow);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--text-bright);
+    border: 1px solid var(--border-light);
+  }
+  .btn-outline:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    transform: translateY(-2px);
+  }
+
+  /* ── Stats strip ── */
+  .stats-strip {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 880px;
+    margin: -40px auto 0;
+    animation: fade-in-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both;
+  }
+
+  .stat-card {
+    background: var(--card);
+    padding: 28px 24px;
+    text-align: center;
+    transition: background 0.3s;
+  }
+  .stat-card:hover { background: var(--card-hover); }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+  .stat-value .unit {
+    font-size: 16px;
+    color: var(--pink);
+    font-weight: 500;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+
+  /* ── Sections ── */
+  section {
+    padding: 100px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--pink);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 3.5vw, 42px);
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .section-desc {
+    font-size: 16px;
+    color: var(--text);
+    max-width: 600px;
+    line-height: 1.75;
+    margin-bottom: 48px;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+  .divider-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-light) 20%, var(--border-light) 80%, transparent);
+  }
+
+  /* ── Why Different — Advantage Grid ── */
+  .advantage-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .advantage-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.35s, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .advantage-card:hover {
+    border-color: var(--pink);
+    transform: translateY(-3px);
+  }
+  .advantage-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--pink), var(--cyan));
+    opacity: 0;
+    transition: opacity 0.35s;
+  }
+  .advantage-card:hover::before { opacity: 1; }
+
+  .advantage-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 16px;
+    background: rgba(233, 30, 99, 0.1);
+    border: 1px solid rgba(233, 30, 99, 0.15);
+  }
+
+  .advantage-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .advantage-card p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .advantage-card .tag {
+    display: inline-block;
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--cyan);
+    background: rgba(0, 217, 255, 0.08);
+    border: 1px solid rgba(0, 217, 255, 0.15);
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Spotlight card (full-width) ── */
+  .spotlight {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+    background: linear-gradient(135deg, var(--card) 0%, rgba(233, 30, 99, 0.05) 100%);
+    border: 1px solid rgba(233, 30, 99, 0.15);
+  }
+  .spotlight:hover { border-color: var(--pink); }
+  .spotlight-text h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .spotlight-text p {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .spotlight-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .spotlight-metric {
+    background: rgba(8, 11, 16, 0.5);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .spotlight-metric .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--white);
+  }
+  .spotlight-metric .lbl {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 2px;
+  }
+
+  /* ── Tokenomics ── */
+  .tokenomics-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .token-model {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px;
+  }
+  .token-model h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 20px;
+  }
+
+  .flow-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    position: relative;
+  }
+  .flow-step:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .flow-node {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .flow-node.mint {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+  .flow-node.burn {
+    background: rgba(233, 30, 99, 0.12);
+    border: 1px solid rgba(233, 30, 99, 0.2);
+  }
+  .flow-node.hold {
+    background: rgba(0, 217, 255, 0.1);
+    border: 1px solid rgba(0, 217, 255, 0.15);
+  }
+
+  .flow-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 3px;
+  }
+  .flow-info p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Distribution bars */
+  .dist-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .dist-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dist-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .dist-label span:first-child { color: var(--text-bright); font-weight: 500; }
+  .dist-label span:last-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .dist-bar-track {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .dist-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 0;
+  }
+  .dist-bar-fill.active { /* set via JS */ }
+  .dist-bar-fill.c-pink { background: var(--pink); }
+  .dist-bar-fill.c-cyan { background: var(--cyan); }
+  .dist-bar-fill.c-green { background: var(--green); }
+  .dist-bar-fill.c-amber { background: var(--amber); }
+  .dist-bar-fill.c-muted { background: var(--muted); }
+
+  .genesis-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 217, 255, 0.08);
+    border: 1px solid rgba(0, 217, 255, 0.15);
+    padding: 8px 14px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--cyan);
+    font-weight: 500;
+  }
+
+  /* ── Architecture ── */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .arch-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .arch-card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+  }
+
+  .arch-card .arch-icon {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--cyan);
+    background: rgba(0, 217, 255, 0.08);
+    border: 1px solid rgba(0, 217, 255, 0.12);
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .arch-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .arch-card p {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Two-token visual */
+  .two-token {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .token-half {
+    padding: 32px;
+  }
+  .token-half h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .token-half.lush-side h4 { color: var(--pink); }
+  .token-half.usdc-side h4 { color: var(--cyan); }
+
+  .token-half .token-desc {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .token-half ul {
+    list-style: none;
+    padding: 0;
+  }
+  .token-half li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 5px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+  .token-half.lush-side li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--pink);
+  }
+  .token-half.usdc-side li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+  }
+
+  .token-divider {
+    width: 1px;
+    height: 100%;
+    min-height: 200px;
+    background: linear-gradient(180deg, transparent, var(--border-light) 30%, var(--border-light) 70%, transparent);
+    position: relative;
+  }
+  .token-divider::after {
+    content: '+';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--muted);
+    background: var(--card);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid var(--border-light);
+  }
+
+  /* ── Grants Table ── */
+  .grants-table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .grants-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .grants-table thead {
+    background: rgba(233, 30, 99, 0.08);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .grants-table th {
+    padding: 14px 20px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--pink);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .grants-table td {
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .grants-table tbody tr:last-child td { border-bottom: none; }
+
+  .grants-table tbody tr {
+    transition: background 0.25s;
+  }
+  .grants-table tbody tr:hover {
+    background: rgba(233, 30, 99, 0.03);
+  }
+
+  .grants-table .program-name {
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .grants-table .amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    color: var(--cyan);
+    font-size: 13px;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .status-badge.open {
+    color: var(--green);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+  .status-badge.watch {
+    color: var(--amber);
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+  .status-badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .status-badge.open::before { background: var(--green); }
+  .status-badge.watch::before { background: var(--amber); }
+
+  .priority-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--pink);
+    background: rgba(233, 30, 99, 0.08);
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 8px;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
+
+  .grants-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: rgba(0, 217, 255, 0.04);
+    border-top: 1px solid var(--border);
+  }
+  .grants-total .label {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .grants-total .total {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cyan);
+  }
+
+  /* ── CTA Section ── */
+  .cta-section {
+    text-align: center;
+    padding: 80px 40px 100px;
+    position: relative;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--pink-glow) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(120px);
+    opacity: 0.4;
+  }
+
+  .cta-content {
+    position: relative;
+    z-index: 2;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .cta-content h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .cta-content p {
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 32px;
+    line-height: 1.7;
+  }
+
+  .cta-links {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px;
+    text-align: center;
+  }
+  footer .footer-brand {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  footer .footer-brand span { color: var(--pink); }
+  footer p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  footer .disclaimer {
+    max-width: 700px;
+    margin: 16px auto 0;
+    font-size: 11px;
+    color: var(--muted);
+    opacity: 0.7;
+    line-height: 1.7;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .stats-strip { grid-template-columns: repeat(2, 1fr); }
+    .advantage-grid { grid-template-columns: 1fr; }
+    .spotlight { grid-template-columns: 1fr; }
+    .tokenomics-layout { grid-template-columns: 1fr; }
+    .arch-grid { grid-template-columns: 1fr; }
+    .two-token { grid-template-columns: 1fr; }
+    .token-divider {
+      width: 100%;
+      height: 1px;
+      min-height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-light) 30%, var(--border-light) 70%, transparent);
+    }
+    .token-divider::after { display: none; }
+    nav { padding: 14px 20px; }
+    .nav-links { display: none; }
+    section { padding: 60px 20px; }
+    .hero { padding: 100px 20px 60px; }
+    .grants-table { font-size: 13px; }
+    .grants-table th, .grants-table td { padding: 12px 14px; }
+  }
+
+  @media (max-width: 600px) {
+    .stats-strip { grid-template-columns: 1fr 1fr; }
+    .stat-value { font-size: 22px; }
+    .hero-actions { flex-direction: column; align-items: center; }
+    .cta-links { flex-direction: column; align-items: center; }
+    .spotlight-metrics { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <a href="#" class="nav-logo">Barfliz<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#advantages">Why Us</a></li>
+    <li><a href="#tokenomics">Tokenomics</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#grants">Funding</a></li>
+    <li><a href="LUSH_Whitepaper.html" class="nav-cta">Read Whitepaper</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Live Production App — Seeking Grant Funding</div>
+    <h1>The <span class="accent">Nightlife Economy</span> Is Going <span class="accent-cyan">On-Chain</span></h1>
+    <p class="hero-sub">
+      <strong>LUSH</strong> is a Solana SPL utility token powering Barfliz — a live, deployed nightlife social platform with GPS-verified engagement, embedded wallets, and a burn-on-spend economy. <strong>Most applicants pitch ideas. We ship product.</strong>
+    </p>
+    <div class="hero-actions">
+      <a href="LUSH_Whitepaper.html" class="btn btn-primary">Read Full Whitepaper &rarr;</a>
+      <a href="#grants" class="btn btn-outline">View Grant Targets</a>
+    </div>
+  </div>
+
+  <div class="stats-strip">
+    <div class="stat-card">
+      <div class="stat-value">v1.6<span class="unit">.0</span></div>
+      <div class="stat-label">Live in Production</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">70<span class="unit">+</span></div>
+      <div class="stat-label">Database Tables</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">25<span class="unit">+</span></div>
+      <div class="stat-label">Edge Functions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">3<span class="unit"> mkts</span></div>
+      <div class="stat-label">Miami · Austin · Nashville</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<!-- Why We're Different -->
+<section id="advantages">
+  <div class="reveal">
+    <div class="section-label">Competitive Edge</div>
+    <div class="section-title">Why Barfliz Wins Grants</div>
+    <p class="section-desc">Most grant applicants have a pitch deck. We have a live product, real users, and verifiable on-chain engagement. Here's what makes us competitive.</p>
+  </div>
+
+  <div class="advantage-grid">
+    <div class="advantage-card reveal reveal-d1">
+      <div class="advantage-icon">&#9889;</div>
+      <h3>Live Production App</h3>
+      <p>Barfliz is deployed and functional — PWA, iOS, and Android via Capacitor. 70+ database tables, 25+ Edge Functions, 15+ features in production. Not a prototype.</p>
+      <span class="tag">SHIPPED</span>
+    </div>
+
+    <div class="advantage-card reveal reveal-d2">
+      <div class="advantage-icon">&#128241;</div>
+      <h3>Mobile-First Consumer Crypto</h3>
+      <p>Exactly what Solana Foundation and Colosseum want to showcase. Real consumers using blockchain without knowing it — zero-friction embedded wallets via Privy.</p>
+      <span class="tag">SOLANA THESIS</span>
+    </div>
+
+    <div class="advantage-card reveal reveal-d3">
+      <div class="advantage-icon">&#128293;</div>
+      <h3>Burn-on-Spend Deflation</h3>
+      <p>LUSH tokens are permanently destroyed when users buy virtual gifts. No hoarding incentive — the economy is designed for consumptive use, not speculation.</p>
+      <span class="tag">DEFLATIONARY</span>
+    </div>
+
+    <div class="advantage-card reveal reveal-d4">
+      <div class="advantage-icon">&#128205;</div>
+      <h3>GPS-Verified Engagement</h3>
+      <p>Radar.io geofencing validates every check-in. No fake metrics — users must be physically present at a venue to earn LUSH. Verifiable on-chain activity.</p>
+      <span class="tag">ANTI-FRAUD</span>
+    </div>
+
+    <div class="advantage-card spotlight reveal reveal-d5">
+      <div class="spotlight-text">
+        <h3>We're Not Just Grant-Ready — We're Demo-Ready</h3>
+        <p>Barfliz was built product-first, token-second. The app is feature-complete and deployed before any blockchain integration. This sequencing is intentional — it satisfies regulatory positioning and proves real utility exists independent of the token.</p>
+      </div>
+      <div class="spotlight-metrics">
+        <div class="spotlight-metric">
+          <div class="val">29</div>
+          <div class="lbl">Gift Items</div>
+        </div>
+        <div class="spotlight-metric">
+          <div class="val">5</div>
+          <div class="lbl">Rarity Tiers</div>
+        </div>
+        <div class="spotlight-metric">
+          <div class="val">USDC</div>
+          <div class="lbl">Circle Eligible</div>
+        </div>
+        <div class="spotlight-metric">
+          <div class="val">Privy</div>
+          <div class="lbl">Stripe-Acquired</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<!-- Tokenomics -->
+<section id="tokenomics">
+  <div class="reveal">
+    <div class="section-label">Token Economics</div>
+    <div class="section-title">How LUSH Works</div>
+    <p class="section-desc">A controlled inflation model with deflationary burns. Users earn LUSH through verified engagement and spend it on virtual gifts that permanently destroy the tokens.</p>
+  </div>
+
+  <div class="tokenomics-layout">
+    <div class="token-model reveal reveal-d1">
+      <h3>Mint &amp; Burn Flow</h3>
+      <div class="flow-diagram">
+        <div class="flow-step">
+          <div class="flow-node mint">&#8593;</div>
+          <div class="flow-info">
+            <h4>Mint — Earn Events</h4>
+            <p>GPS check-in (+10), first nightly check-in (+25), streak bonuses (+50–1,000), swarm activity (+5–15), challenges (+25–75)</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-node hold">&#8596;</div>
+          <div class="flow-info">
+            <h4>Hold — User Wallet</h4>
+            <p>Privy embedded wallet (non-custodial, MPC key sharding). Users see "Lush Coins: 47" — never wallet addresses or transaction hashes</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-node burn">&#8595;</div>
+          <div class="flow-info">
+            <h4>Burn — Virtual Gifts</h4>
+            <p>21 paid gift items (10–1,000 LUSH). Tokens are permanently destroyed on purchase. Future: cosmetics, promoted events, venue drink redemptions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="token-model reveal reveal-d2">
+      <h3>Genesis Distribution</h3>
+      <div class="genesis-badge">10,000,000 LUSH — Initial Supply</div>
+      <div class="dist-chart">
+        <div class="dist-row">
+          <div class="dist-label">
+            <span>Community Rewards Pool</span>
+            <span>40% — 4,000,000</span>
+          </div>
+          <div class="dist-bar-track">
+            <div class="dist-bar-fill c-pink" data-width="40"></div>
+          </div>
+        </div>
+        <div class="dist-row">
+          <div class="dist-label">
+            <span>Team & Founders</span>
+            <span>20% — 2,000,000</span>
+          </div>
+          <div class="dist-bar-track">
+            <div class="dist-bar-fill c-cyan" data-width="20"></div>
+          </div>
+        </div>
+        <div class="dist-row">
+          <div class="dist-label">
+            <span>Strategic Partners & Venues</span>
+            <span>15% — 1,500,000</span>
+          </div>
+          <div class="dist-bar-track">
+            <div class="dist-bar-fill c-green" data-width="15"></div>
+          </div>
+        </div>
+        <div class="dist-row">
+          <div class="dist-label">
+            <span>Treasury Reserve</span>
+            <span>15% — 1,500,000</span>
+          </div>
+          <div class="dist-bar-track">
+            <div class="dist-bar-fill c-amber" data-width="15"></div>
+          </div>
+        </div>
+        <div class="dist-row">
+          <div class="dist-label">
+            <span>Early Investors</span>
+            <span>10% — 1,000,000</span>
+          </div>
+          <div class="dist-bar-track">
+            <div class="dist-bar-fill c-muted" data-width="10"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<!-- Architecture -->
+<section id="architecture">
+  <div class="reveal">
+    <div class="section-label">Technical Stack</div>
+    <div class="section-title">Built for Production, Not Demo Day</div>
+    <p class="section-desc">A battle-tested stack designed for real-world nightlife with instant blockchain fallback. Every component is live and deployed.</p>
+  </div>
+
+  <div class="arch-grid">
+    <div class="arch-card reveal reveal-d1">
+      <div class="arch-icon">SOLANA</div>
+      <h3>SPL Token on Solana</h3>
+      <p>~400ms finality, ~$0.003/tx. Standard SPL token program — audited, battle-tested. No custom smart contracts, no attack surface.</p>
+    </div>
+    <div class="arch-card reveal reveal-d2">
+      <div class="arch-icon">PRIVY</div>
+      <h3>Embedded Wallets</h3>
+      <p>MPC key sharding via Privy (acquired by Stripe). Auto-created on signup, invisible to users. Non-custodial, recoverable, no seed phrases.</p>
+    </div>
+    <div class="arch-card reveal reveal-d3">
+      <div class="arch-icon">RADAR</div>
+      <h3>GPS Geofencing</h3>
+      <p>Radar.io validates every venue check-in. No fake engagement — LUSH is only minted when a user is physically verified at a registered venue.</p>
+    </div>
+    <div class="arch-card reveal reveal-d4">
+      <div class="arch-icon">SUPABASE</div>
+      <h3>Edge Functions</h3>
+      <p>25+ deployed Edge Functions. Server-side mint authority — the client can never mint tokens. All minting requires verified earn events with anti-fraud checks.</p>
+    </div>
+    <div class="arch-card reveal reveal-d5">
+      <div class="arch-icon">FEATURE FLAG</div>
+      <h3>Instant Fallback</h3>
+      <p>VITE_CRYPTO_ENABLED toggles blockchain on/off. App works identically with database-only accounting. Zero user impact during Solana outages.</p>
+    </div>
+    <div class="arch-card reveal reveal-d6">
+      <div class="arch-icon">CAPACITOR</div>
+      <h3>Cross-Platform</h3>
+      <p>PWA + native iOS + Android via Capacitor. Single React/TypeScript codebase. App Store and Google Play submission-ready.</p>
+    </div>
+
+    <!-- Two-token visual -->
+    <div class="two-token reveal">
+      <div class="token-half lush-side">
+        <h4>LUSH</h4>
+        <p class="token-desc">Gamified engagement token — earn & burn</p>
+        <ul>
+          <li>Minted on verified GPS check-ins</li>
+          <li>Burned on virtual gift purchases</li>
+          <li>No fixed exchange rate</li>
+          <li>Not a security or payment instrument</li>
+        </ul>
+      </div>
+      <div class="token-divider"></div>
+      <div class="token-half usdc-side">
+        <h4>USDC</h4>
+        <p class="token-desc">Stable payments — peer-to-peer transfers</p>
+        <ul>
+          <li>Friend-to-friend drink payments</li>
+          <li>Tab splitting via embedded wallet</li>
+          <li>Circle-issued, 1:1 USD-backed</li>
+          <li>Sub-second settlement on Solana</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<!-- Grant Funding -->
+<section id="grants">
+  <div class="reveal">
+    <div class="section-label">Funding Strategy</div>
+    <div class="section-title">Target Grant Programs</div>
+    <p class="section-desc">We've identified six high-fit grant programs for minting and launching LUSH on Solana mainnet. Total accessible funding exceeds $2.5M across all programs.</p>
+  </div>
+
+  <div class="grants-table-wrap reveal reveal-d1">
+    <table class="grants-table">
+      <thead>
+        <tr>
+          <th>Program</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Fit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <span class="program-name">Colosseum Eternal</span><span class="priority-tag">#1</span>
+            <br><span style="font-size:12px;color:var(--muted);">4-week sprint, rewards live products</span>
+          </td>
+          <td><span class="amount">$25K USDC + $250K accelerator</span></td>
+          <td><span class="status-badge open">Always Open</span></td>
+          <td style="color:var(--green);font-weight:600;">Excellent</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="program-name">Solana Foundation Convertible Grant</span><span class="priority-tag">#2</span>
+            <br><span style="font-size:12px;color:var(--muted);">Rolling review, fits for-profit apps</span>
+          </td>
+          <td><span class="amount">Up to $1M</span></td>
+          <td><span class="status-badge open">Rolling</span></td>
+          <td style="color:var(--green);font-weight:600;">Excellent</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="program-name">Google Cloud Web3 Program</span>
+            <br><span style="font-size:12px;color:var(--muted);">Cloud credits + Solana ecosystem grants</span>
+          </td>
+          <td><span class="amount">$200K credits + up to $1M</span></td>
+          <td><span class="status-badge open">Open, Rolling</span></td>
+          <td style="color:var(--green);font-weight:600;">Strong</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="program-name">Superteam USA Grants</span>
+            <br><span style="font-size:12px;color:var(--muted);">Fast turnaround — 48-72hr decisions</span>
+          </td>
+          <td><span class="amount">$200 – $15K</span></td>
+          <td><span class="status-badge open">Open</span></td>
+          <td style="color:var(--cyan);font-weight:600;">Good</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="program-name">Solana Mobile Builder Grants</span>
+            <br><span style="font-size:12px;color:var(--muted);">Tied to hackathon windows</span>
+          </td>
+          <td><span class="amount">Up to $10K</span></td>
+          <td><span class="status-badge open">Periodic</span></td>
+          <td style="color:var(--cyan);font-weight:600;">Good</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="program-name">Circle Developer Grants</span>
+            <br><span style="font-size:12px;color:var(--muted);">USDC integration makes us eligible</span>
+          </td>
+          <td><span class="amount">$5K – $100K USDC</span></td>
+          <td><span class="status-badge watch">2026 Reopening</span></td>
+          <td style="color:var(--amber);font-weight:600;">Watch</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="grants-total">
+      <span class="label">Total accessible funding across all programs</span>
+      <span class="total">&gt; $2.5M+</span>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;display:flex;gap:16px;flex-wrap:wrap;" class="reveal reveal-d2">
+    <div style="flex:1;min-width:280px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--pink);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;font-weight:600;">Immediate Actions</div>
+      <ol style="padding-left:20px;font-size:14px;color:var(--text);line-height:2;">
+        <li>Apply to <strong style="color:var(--white);">Colosseum Eternal</strong> — no deadlines</li>
+        <li>Apply to <strong style="color:var(--white);">Solana Foundation</strong> — convertible grant track</li>
+        <li>Apply to <strong style="color:var(--white);">Superteam USA</strong> — fast milestone funding</li>
+        <li>Monitor <strong style="color:var(--white);">Circle</strong> for 2026 reopening</li>
+      </ol>
+    </div>
+    <div style="flex:1;min-width:280px;background:var(--card);border:1px solid rgba(233,30,99,0.15);border-radius:12px;padding:24px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;font-weight:600;">Key Date</div>
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--white);margin-bottom:4px;">May 5, 2026</div>
+      <div style="font-size:14px;color:var(--text);margin-bottom:12px;">Solana Accelerate — Miami</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;">Barfliz's primary target market. Networking opportunity with Solana Foundation, Colosseum, and ecosystem partners. Live demo-ready.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div></div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-content reveal">
+    <div class="section-label" style="text-align:center;">Next Steps</div>
+    <h2>Ready to Fund the Nightlife Economy?</h2>
+    <p>LUSH is the economic layer for a live, production-grade nightlife platform. Read the full whitepaper for token specifications, legal analysis, and technical architecture.</p>
+    <div class="cta-links">
+      <a href="LUSH_Whitepaper.html" class="btn btn-primary">Read Full Whitepaper &rarr;</a>
+      <a href="mailto:travis@barfliz.com" class="btn btn-outline">Contact Founders</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-brand">Barfliz<span>,</span> Inc<span>.</span></div>
+  <p>Miami &middot; Austin &middot; Nashville</p>
+  <p style="margin-top:4px;">
+    <a href="LUSH_Whitepaper.html" style="color:var(--pink);text-decoration:none;font-size:12px;">Whitepaper</a>
+    &nbsp;&middot;&nbsp;
+    <a href="privacy-policy.html" style="color:var(--muted);text-decoration:none;font-size:12px;">Privacy</a>
+    &nbsp;&middot;&nbsp;
+    <a href="terms-of-service.html" style="color:var(--muted);text-decoration:none;font-size:12px;">Terms</a>
+  </p>
+  <div class="disclaimer">
+    LUSH is a utility token. It is not a security, equity, debt instrument, or investment contract. This page is for informational purposes only and does not constitute an offer to sell or a solicitation of an offer to buy any token or security. See the full whitepaper for complete legal disclaimers.
+  </div>
+  <p style="margin-top:16px;opacity:0.4;">&copy; 2026 Barfliz, Inc. All rights reserved.</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+
+        // Animate distribution bars when tokenomics section is visible
+        const bars = entry.target.querySelectorAll('.dist-bar-fill[data-width]');
+        bars.forEach((bar, i) => {
+          setTimeout(() => {
+            bar.style.width = bar.dataset.width + '%';
+          }, i * 120);
+        });
+
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Animate stat counters on load
+  function animateCounters() {
+    const counters = document.querySelectorAll('.stat-value');
+    counters.forEach(counter => {
+      const text = counter.textContent;
+      const match = text.match(/^(\d+)/);
+      if (match) {
+        const target = parseInt(match[1]);
+        const suffix = text.replace(match[1], '');
+        let current = 0;
+        const step = Math.max(1, Math.floor(target / 30));
+        const interval = setInterval(() => {
+          current += step;
+          if (current >= target) {
+            current = target;
+            clearInterval(interval);
+          }
+          counter.innerHTML = current + suffix;
+        }, 30);
+      }
+    });
+  }
+
+  // Nav background on scroll
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 80) {
+      nav.style.background = 'rgba(8, 11, 16, 0.92)';
+    } else {
+      nav.style.background = 'rgba(8, 11, 16, 0.7)';
+    }
+  }, { passive: true });
+
+  // Start counter animation after a brief delay
+  setTimeout(animateCounters, 600);
+</script>
+</body>
+</html>

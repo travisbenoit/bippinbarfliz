@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Users, Wine, UserPlus, UserCheck, RefreshCw } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, Wine, UserPlus, UserCheck, RefreshCw, X, Heart, Sparkles, ChevronDown } from 'lucide-react';
 import { WingmanPanel } from '../AI/WingmanPanel';
 import { useAuth } from '../../contexts/AuthContext';
 import locationService from '../../services/locationService';
@@ -10,6 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { friendsService } from '../../services/friendsService';
 import { useToast } from '../../contexts/ToastContext';
 import type { Database } from '../../lib/database.types';
+import { CardSkeleton } from '../UI/Skeleton';
 
 type UserProfileDB = Database['public']['Tables']['users']['Row'];
 
@@ -28,6 +29,15 @@ export default function PeopleNearbyView() {
   const [searchRadius, setSearchRadius] = useState(5);
   const [friendStatuses, setFriendStatuses] = useState<Record<string, 'none' | 'pending' | 'accepted'>>({});
   const [addingFriend, setAddingFriend] = useState<string | null>(null);
+
+  // Swipe card state
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [expandedCard, setExpandedCard] = useState(false);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadNearbyPeople();
@@ -64,8 +74,8 @@ export default function PeopleNearbyView() {
       }));
 
       setNearbyPeople(enriched);
+      setCurrentIndex(0);
 
-      // Load friendship status for each nearby person
       const statuses: Record<string, 'none' | 'pending' | 'accepted'> = {};
       await Promise.all(
         enriched.map(async (person) => {
@@ -81,8 +91,7 @@ export default function PeopleNearbyView() {
     }
   };
 
-  const handleAddFriend = useCallback(async (e: React.MouseEvent, userId: string) => {
-    e.stopPropagation();
+  const handleAddFriend = useCallback(async (userId: string) => {
     setAddingFriend(userId);
     try {
       await friendsService.sendFriendRequest(userId);
@@ -95,200 +104,336 @@ export default function PeopleNearbyView() {
     }
   }, []);
 
+  const handleSwipe = useCallback((direction: 'left' | 'right') => {
+    const person = nearbyPeople[currentIndex];
+    if (!person) return;
+
+    setSwipeDirection(direction);
+
+    if (direction === 'right' && friendStatuses[person.id] === 'none') {
+      handleAddFriend(person.id);
+    }
+
+    setTimeout(() => {
+      setSwipeDirection(null);
+      setCurrentIndex(prev => prev + 1);
+      setExpandedCard(false);
+    }, 400);
+  }, [currentIndex, nearbyPeople, friendStatuses, handleAddFriend]);
+
+  // Touch/mouse drag handlers
+  const handleDragStart = useCallback((clientX: number, clientY: number) => {
+    dragStart.current = { x: clientX, y: clientY };
+    setIsDragging(true);
+  }, []);
+
+  const handleDragMove = useCallback((clientX: number, clientY: number) => {
+    if (!dragStart.current || !isDragging) return;
+    const dx = clientX - dragStart.current.x;
+    const dy = clientY - dragStart.current.y;
+    setDragOffset({ x: dx, y: dy * 0.3 });
+  }, [isDragging]);
+
+  const handleDragEnd = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    dragStart.current = null;
+
+    const threshold = 100;
+    if (dragOffset.x > threshold) {
+      handleSwipe('right');
+    } else if (dragOffset.x < -threshold) {
+      handleSwipe('left');
+    }
+    setDragOffset({ x: 0, y: 0 });
+  }, [isDragging, dragOffset, handleSwipe]);
+
+  const handleUserClick = async (userId: string) => {
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+    if (data) setSelectedUser(data);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'going_out':
-        return 'bg-green-500';
-      case 'staying_in':
-        return 'bg-gray-400';
-      default:
-        return 'bg-yellow-500';
+      case 'going_out': return 'bg-green-500';
+      case 'staying_in': return 'bg-gray-400';
+      default: return 'bg-yellow-500';
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'going_out':
-        return 'Out Now';
-      default:
-        return 'Going Out Soon';
+      case 'going_out': return 'Out Now';
+      default: return 'Going Out Soon';
     }
   };
 
+  const currentPerson = nearbyPeople[currentIndex];
+  const nextPerson = nearbyPeople[currentIndex + 1];
+  const isDone = currentIndex >= nearbyPeople.length;
+
+  const distance = currentPerson && userLocation
+    ? locationService.calculateDistance(userLocation.lat, userLocation.lng, currentPerson.lat, currentPerson.lng)
+    : 0;
+
+  // Card tilt based on drag
+  const rotation = isDragging ? dragOffset.x * 0.08 : 0;
+  const likeOpacity = Math.min(Math.max(dragOffset.x / 100, 0), 1);
+  const nopeOpacity = Math.min(Math.max(-dragOffset.x / 100, 0), 1);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#E91E63] via-[#9C27B0] to-[#673AB7] flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Finding people nearby...</p>
+      <div className="min-h-screen bg-[#FFF5F0]">
+        <div className="bg-gradient-to-br from-[#E91E63] via-[#9C27B0] to-[#673AB7] text-white p-6 pb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <ArrowLeft size={24} />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold">People Nearby</h1>
+              <div className="skeleton-shimmer h-3 w-32 rounded-full mt-2" style={{ background: 'rgba(255,255,255,0.2)' }} />
+            </div>
+          </div>
+        </div>
+        <div className="p-4 space-y-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-br from-[#E91E63] via-[#9C27B0] to-[#673AB7] text-white p-6 pb-8">
-        <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold">People Nearby</h1>
-            <p className="text-white/80 text-sm">
-              {nearbyPeople.length} {nearbyPeople.length === 1 ? 'person' : 'people'} within {searchRadius}km
-            </p>
+    <div className="min-h-screen bg-[#FFF5F0] flex flex-col">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-[#E91E63] via-[#9C27B0] to-[#673AB7] text-white px-6 pt-6 pb-4 flex-shrink-0">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors press-scale">
+              <ArrowLeft size={24} />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold">People Nearby</h1>
+              <p className="text-white/70 text-sm">
+                {nearbyPeople.length} {nearbyPeople.length === 1 ? 'person' : 'people'} within {searchRadius}km
+              </p>
+            </div>
           </div>
+          <button
+            onClick={() => { setCurrentIndex(0); loadNearbyPeople(); }}
+            className="p-2.5 bg-white/15 rounded-full hover:bg-white/25 transition-colors press-scale"
+          >
+            <RefreshCw size={18} />
+          </button>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-          <label className="text-sm text-white/90 mb-2 block">Search Radius</label>
+        {/* Radius slider */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
           <div className="flex items-center gap-4">
             <input
-              type="range"
-              min="1"
-              max="50"
-              value={searchRadius}
+              type="range" min="1" max="50" value={searchRadius}
               onChange={(e) => setSearchRadius(Number(e.target.value))}
-              className="flex-1"
+              className="flex-1 accent-white"
             />
-            <span className="text-lg font-bold min-w-[60px]">{searchRadius}km</span>
+            <span className="text-sm font-bold min-w-[48px]">{searchRadius}km</span>
           </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-3">
-        {nearbyPeople.length === 0 ? (
-          <div className="bg-white rounded-xl p-8 text-center">
-            <Users size={48} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="font-bold text-gray-900 mb-2">No One Nearby</h3>
-            <p className="text-gray-600 text-sm">
-              Try increasing your search radius or check back later when more people are out!
+      {/* Card Stack Area */}
+      <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
+        {isDone ? (
+          /* Empty / done state */
+          <div className="text-center animate-scale-in px-8">
+            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center">
+              <Users size={40} className="text-[#E91E63]" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              {nearbyPeople.length === 0 ? 'No One Nearby' : "You've Seen Everyone"}
+            </h3>
+            <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+              {nearbyPeople.length === 0
+                ? 'Try increasing your search radius or check back later!'
+                : 'Come back later to discover new people in your area.'}
             </p>
+            <button
+              onClick={() => { setCurrentIndex(0); loadNearbyPeople(); }}
+              className="px-8 py-3 bg-gradient-to-r from-[#E91E63] to-[#9C27B0] text-white rounded-full font-semibold shadow-lg press-scale"
+            >
+              <RefreshCw size={16} className="inline mr-2" />
+              Refresh
+            </button>
           </div>
         ) : (
-          nearbyPeople.map((person) => {
-            const distance = userLocation
-              ? locationService.calculateDistance(
-                  userLocation.lat,
-                  userLocation.lng,
-                  person.lat,
-                  person.lng
-                )
-              : 0;
+          <div className="relative w-full max-w-sm" style={{ height: expandedCard ? '85vh' : '70vh' }}>
+            {/* Next card (peek behind) */}
+            {nextPerson && !swipeDirection && (
+              <div className="absolute inset-0 rounded-3xl overflow-hidden bg-white shadow-lg scale-[0.95] opacity-60 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#E91E63] to-[#9C27B0]">
+                  {nextPerson.avatar_url && (
+                    <img src={nextPerson.avatar_url} alt="" className="w-full h-full object-cover" />
+                  )}
+                </div>
+              </div>
+            )}
 
-            const handleUserClick = async (userId: string) => {
-              const { data } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', userId)
-                .maybeSingle();
-              if (data) setSelectedUser(data);
-            };
-
-            return (
+            {/* Current card */}
+            {currentPerson && (
               <div
-                key={person.id}
-                onClick={() => handleUserClick(person.id)}
-                className="w-full bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-left cursor-pointer"
+                ref={cardRef}
+                className={`absolute inset-0 rounded-3xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing select-none transition-shadow ${
+                  swipeDirection === 'right' ? 'animate-card-exit-right' :
+                  swipeDirection === 'left' ? 'animate-card-exit-left' : ''
+                }`}
+                style={{
+                  transform: isDragging
+                    ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`
+                    : swipeDirection ? undefined : 'translateX(0) rotate(0deg)',
+                  transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                  willChange: 'transform',
+                }}
+                onPointerDown={(e) => {
+                  if (expandedCard) return;
+                  e.preventDefault();
+                  (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                  handleDragStart(e.clientX, e.clientY);
+                }}
+                onPointerMove={(e) => handleDragMove(e.clientX, e.clientY)}
+                onPointerUp={handleDragEnd}
+                onPointerCancel={handleDragEnd}
               >
-                <div className="flex items-start gap-4">
-                  <div className="relative">
-                    {person.avatar_url ? (
-                      <img
-                        src={person.avatar_url}
-                        alt={person.name}
-                        className="w-16 h-16 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#E91E63] to-[#9C27B0] flex items-center justify-center text-white text-xl font-bold">
-                        {person.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div
-                      className={`absolute -bottom-1 -right-1 w-5 h-5 ${getStatusColor(
-                        person.tonightStatus
-                      )} rounded-full border-2 border-white`}
-                    ></div>
+                {/* Photo / avatar background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#E91E63] via-[#9C27B0] to-[#673AB7]">
+                  {currentPerson.avatar_url && (
+                    <img
+                      src={currentPerson.avatar_url}
+                      alt={currentPerson.name}
+                      className="w-full h-full object-cover"
+                      draggable={false}
+                    />
+                  )}
+                  {/* Gradient overlay for text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                </div>
+
+                {/* LIKE / NOPE overlays */}
+                <div className="swipe-overlay-like" style={{ opacity: likeOpacity }}>ADD</div>
+                <div className="swipe-overlay-nope" style={{ opacity: nopeOpacity }}>SKIP</div>
+
+                {/* Status badge */}
+                <div className="absolute top-5 left-5 z-10">
+                  <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-xs font-bold backdrop-blur-md bg-black/30`}>
+                    <span className={`w-2 h-2 rounded-full ${getStatusColor(currentPerson.tonightStatus)}`} />
+                    {getStatusLabel(currentPerson.tonightStatus)}
+                  </span>
+                </div>
+
+                {/* Distance badge */}
+                <div className="absolute top-5 right-5 z-10">
+                  <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-white text-xs font-bold backdrop-blur-md bg-black/30">
+                    <MapPin size={12} />
+                    {distance.toFixed(1)}km
+                  </span>
+                </div>
+
+                {/* Friend status badge */}
+                {friendStatuses[currentPerson.id] === 'accepted' && (
+                  <div className="absolute top-14 right-5 z-10">
+                    <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-white text-xs font-bold bg-green-500/80 backdrop-blur-md">
+                      <UserCheck size={12} /> Friends
+                    </span>
                   </div>
+                )}
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h3 className="font-bold text-gray-900">{person.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          {getStatusLabel(person.tonightStatus)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 text-gray-500 text-sm">
-                          <MapPin size={14} />
-                          <span>{distance.toFixed(1)}km</span>
-                        </div>
-                        {person.id !== userProfile?.id && (
-                          friendStatuses[person.id] === 'accepted' ? (
-                            <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                              <UserCheck size={12} /> Friends
-                            </span>
-                          ) : friendStatuses[person.id] === 'pending' ? (
-                            <span className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-medium">
-                              Pending
-                            </span>
-                          ) : (
-                            <button
-                              onClick={(e) => handleAddFriend(e, person.id)}
-                              disabled={addingFriend === person.id}
-                              className="flex items-center gap-1 px-2 py-1 bg-[#E91E63] text-white rounded-full text-xs font-medium hover:bg-[#C2185B] transition-colors disabled:opacity-50"
-                            >
-                              {addingFriend === person.id
-                                ? <RefreshCw size={12} className="animate-spin" />
-                                : <UserPlus size={12} />}
-                              Add
-                            </button>
-                          )
-                        )}
-                      </div>
-                    </div>
+                {/* Bottom info section */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+                  <div className="mb-4" onClick={() => handleUserClick(currentPerson.id)}>
+                    <h2 className="text-3xl font-extrabold text-white drop-shadow-lg">
+                      {currentPerson.name}
+                    </h2>
 
-                    {person.vibes.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {person.vibes.slice(0, 3).map((vibe, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700"
-                          >
+                    {currentPerson.vibes.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {currentPerson.vibes.slice(0, 4).map((vibe, idx) => (
+                          <span key={idx} className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
                             {vibe}
                           </span>
                         ))}
-                        {person.vibes.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
-                            +{person.vibes.length - 3}
+                        {currentPerson.vibes.length > 4 && (
+                          <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
+                            +{currentPerson.vibes.length - 4}
                           </span>
                         )}
                       </div>
                     )}
 
-                    {person.favoriteDrinks.length > 0 && (
-                      <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
+                    {currentPerson.favoriteDrinks.length > 0 && (
+                      <div className="flex items-center gap-2 mt-2 text-white/80 text-sm">
                         <Wine size={14} />
-                        <span>{person.favoriteDrinks.slice(0, 2).join(', ')}</span>
+                        <span>{currentPerson.favoriteDrinks.slice(0, 2).join(', ')}</span>
                       </div>
                     )}
                   </div>
+
+                  {/* Expand button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setExpandedCard(!expandedCard); }}
+                    className="w-full flex items-center justify-center gap-1 py-2 text-white/60 text-xs"
+                  >
+                    <ChevronDown size={16} className={`transition-transform ${expandedCard ? 'rotate-180' : ''}`} />
+                    {expandedCard ? 'Less' : 'Tap for more'}
+                  </button>
+
+                  {/* Expanded Wingman section */}
+                  {expandedCard && currentPerson.id !== userProfile?.id && (
+                    <div className="mt-2 animate-slide-up" onClick={e => e.stopPropagation()}>
+                      <WingmanPanel targetUserId={currentPerson.id} targetName={currentPerson.name} />
+                    </div>
+                  )}
                 </div>
-                {person.id !== userProfile?.id && (
-                  <div onClick={e => e.stopPropagation()}>
-                    <WingmanPanel targetUserId={person.id} targetName={person.name} />
-                  </div>
-                )}
               </div>
-            );
-          })
+            )}
+          </div>
         )}
       </div>
+
+      {/* Action buttons */}
+      {!isDone && currentPerson && (
+        <div className="flex-shrink-0 pb-24 pt-2 flex items-center justify-center gap-6">
+          <button
+            onClick={() => handleSwipe('left')}
+            className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-red-300 hover:shadow-xl transition-all press-scale group"
+          >
+            <X size={28} className="text-gray-400 group-hover:text-red-500 transition-colors" />
+          </button>
+
+          <button
+            onClick={() => handleUserClick(currentPerson.id)}
+            className="w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center border-2 border-gray-200 hover:border-blue-300 transition-all press-scale group"
+          >
+            <Sparkles size={20} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
+          </button>
+
+          <button
+            onClick={() => handleSwipe('right')}
+            disabled={addingFriend === currentPerson.id}
+            className="w-16 h-16 bg-gradient-to-br from-[#E91E63] to-[#FF6B6B] rounded-full shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all press-scale disabled:opacity-50"
+          >
+            {addingFriend === currentPerson.id ? (
+              <RefreshCw size={28} className="text-white animate-spin" />
+            ) : friendStatuses[currentPerson.id] === 'accepted' ? (
+              <UserCheck size={28} className="text-white" />
+            ) : (
+              <Heart size={28} className="text-white" fill="white" />
+            )}
+          </button>
+        </div>
+      )}
 
       <UserProfileModal
         isOpen={!!selectedUser}

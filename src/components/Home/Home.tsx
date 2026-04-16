@@ -8,6 +8,7 @@ import type { Database } from '../../lib/database.types';
 import ActivityHistoryModal from '../Activity/ActivityHistoryModal';
 import StatusModal from './StatusModal';
 import HomeDashboardTab from './HomeDashboardTab';
+import { HomeSkeleton } from '../UI/Skeleton';
 import UserProfileModal from '../Profile/UserProfileModal';
 import { NotificationBell, NotificationCenter } from '../Notifications/NotificationCenter';
 import type { DateFilterOption } from '../Swarms/SwarmDateFilter';
@@ -255,7 +256,7 @@ export default function Home() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => navigate('/messages')}
-              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-2xl transition-colors relative">
+              className="press-scale w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-2xl transition-colors relative">
               <MessageCircle size={22} className="text-gray-700" />
               {unreadMessageCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[#E91E63] text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
@@ -266,7 +267,7 @@ export default function Home() {
             <NotificationBell onClick={() => setShowNotifications(true)} />
             <button
               onClick={() => navigate('/settings')}
-              className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-2xl transition-colors">
+              className="press-scale w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-2xl transition-colors">
               <Settings size={22} className="text-gray-700" />
             </button>
           </div>
@@ -274,6 +275,9 @@ export default function Home() {
       </div>
 
       <div className="flex-1 overflow-auto">
+        {loading && !userProfile ? (
+          <HomeSkeleton />
+        ) : (
         <HomeDashboardTab
           userProfile={userProfile}
           nearbyUsers={nearbyUsers}
@@ -290,6 +294,7 @@ export default function Home() {
           onSelectUser={handleSelectUser}
           onSelectUserProfile={handleSelectUserProfile}
         />
+        )}
 
         <UserProfileModal
           isOpen={showProfileModal}

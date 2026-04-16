@@ -233,6 +233,79 @@
   to { opacity: 1; }
 }
 
+/* ─── Skeleton shimmer loading ─── */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 37%,
+    #f0f0f0 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmerLoad 1.4s ease-in-out infinite;
+}
+
+html.dark .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #2a2a3e 25%,
+    #3a3a50 37%,
+    #2a2a3e 63%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes shimmerLoad {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Micro-interaction press feedback ─── */
+.press-scale {
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.press-scale:active {
+  transform: scale(0.93);
+}
+
+/* ─── Card swipe overlays ─── */
+.swipe-overlay-like,
+.swipe-overlay-nope {
+  position: absolute;
+  top: 24px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.swipe-overlay-like {
+  right: 24px;
+  color: #4CAF50;
+  border: 3px solid #4CAF50;
+  transform: rotate(12deg);
+}
+.swipe-overlay-nope {
+  left: 24px;
+  color: #FF5252;
+  border: 3px solid #FF5252;
+  transform: rotate(-12deg);
+}
+
+/* ─── Enhanced glassmorphism ─── */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+html.dark .glass {
+  background: rgba(26, 31, 46, 0.85);
+}
+
 .map-marker-container {
   background: none !important;
   border: none !important;

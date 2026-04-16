@@ -38,6 +38,11 @@ export default {
         'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
         'elevated': '0 10px 40px -10px rgba(0, 0, 0, 0.15)',
       },
+      transitionTimingFunction: {
+        'spring': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'snap': 'cubic-bezier(0.16, 1, 0.3, 1)',
+      },
       animation: {
         'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-down': 'slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -45,8 +50,16 @@ export default {
         'scale-in': 'scaleIn 0.2s ease-out',
         'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
         'float': 'float 3s ease-in-out infinite',
-        'shimmer': 'shimmer 2s linear infinite',
+        'shimmer': 'shimmer 1.5s linear infinite',
         'bounce-soft': 'bounceSoft 0.5s ease-out',
+        'skeleton': 'skeleton 1.8s ease-in-out infinite',
+        'press': 'press 0.15s ease-out',
+        'badge-pop': 'badgePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        'heart-pop': 'heartPop 0.6s ease-out forwards',
+        'card-exit-right': 'cardExitRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'card-exit-left': 'cardExitLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'card-enter': 'cardEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        'stagger-in': 'staggerIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
       },
       keyframes: {
         slideUp: {
@@ -81,6 +94,41 @@ export default {
           '0%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(0.95)' },
           '100%': { transform: 'scale(1)' },
+        },
+        skeleton: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.4' },
+        },
+        press: {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(0.93)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        badgePop: {
+          '0%': { transform: 'scale(0)', opacity: '0' },
+          '60%': { transform: 'scale(1.2)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        heartPop: {
+          '0%': { transform: 'scale(0)', opacity: '1' },
+          '50%': { transform: 'scale(1.3)', opacity: '0.8' },
+          '100%': { transform: 'scale(1.6)', opacity: '0' },
+        },
+        cardExitRight: {
+          '0%': { transform: 'translateX(0) rotate(0deg)', opacity: '1' },
+          '100%': { transform: 'translateX(120%) rotate(15deg)', opacity: '0' },
+        },
+        cardExitLeft: {
+          '0%': { transform: 'translateX(0) rotate(0deg)', opacity: '1' },
+          '100%': { transform: 'translateX(-120%) rotate(-15deg)', opacity: '0' },
+        },
+        cardEnter: {
+          '0%': { transform: 'scale(0.92)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        staggerIn: {
+          '0%': { transform: 'translateY(16px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
       backdropBlur: {

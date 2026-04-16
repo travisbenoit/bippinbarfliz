@@ -191,48 +191,79 @@ export default function UserProfileModal({
     <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
       <div className="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[95vh] overflow-hidden animate-slide-up border-t sm:border border-gray-200 flex flex-col">
-        <div className="relative">
-          <div className="h-44 bg-gradient-to-br from-[#E91E63] via-[#C2185B] to-[#D81B60] overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZG90cyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSIxLjUiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNkb3RzKSIvPjwvc3ZnPg==')] opacity-50" />
+        {/* Image-first hero section */}
+        <div className="relative h-72 flex-shrink-0 overflow-hidden">
+          {/* Full-bleed photo background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#E91E63] via-[#9C27B0] to-[#673AB7]">
+            {user.avatar_url && (
+              <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+            )}
           </div>
+          {/* Dark gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
+
+          {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-black/20 backdrop-blur rounded-full hover:bg-black/30 transition-colors"
+            className="absolute top-4 right-4 p-2.5 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors z-10 press-scale"
           >
             <X className="w-5 h-5 text-white" />
           </button>
-          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2">
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gradient-to-br from-[#E91E63] to-[#C2185B]">
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-12 h-12 text-white" />
+
+          {/* Status badge */}
+          <div className="absolute top-4 left-4 z-10">
+            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-xs font-bold backdrop-blur-md bg-black/30`}>
+              <span className={`w-2 h-2 rounded-full ${statusInfo.color} ${statusInfo.glow}`} />
+              {statusInfo.label}
+            </span>
+          </div>
+
+          {/* Name & info overlay on image */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+            <div className="flex items-end gap-3">
+              {/* Small avatar badge */}
+              <div className="relative flex-shrink-0">
+                <div className="w-16 h-16 rounded-full border-3 border-white/80 shadow-xl overflow-hidden bg-gradient-to-br from-[#E91E63] to-[#C2185B]">
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                </div>
+                {user.verified_profile && (
+                  <div className="absolute -top-1 -right-1 bg-blue-500 rounded-full p-0.5 border-2 border-white">
+                    <CheckCircle className="w-3.5 h-3.5 text-white" />
                   </div>
                 )}
               </div>
-              <div className={`absolute bottom-2 right-2 w-7 h-7 ${statusInfo.color} ${statusInfo.glow} rounded-full border-3 border-white`} />
-              {user.verified_profile && (
-                <div className="absolute top-0 right-0 bg-blue-500 rounded-full p-1">
-                  <CheckCircle className="w-5 h-5 text-white" />
+              <div className="flex-1 min-w-0">
+                <h2 className="text-2xl font-extrabold text-white drop-shadow-lg truncate">
+                  {user.name}{age ? `, ${age}` : ''}
+                </h2>
+                <div className="flex items-center gap-3 mt-0.5">
+                  {user.username && (
+                    <span className="text-white/70 text-sm">@{user.username}</span>
+                  )}
+                  {user.home_city && (
+                    <span className="text-white/70 text-sm flex items-center gap-1">
+                      <MapPin size={12} />
+                      {user.home_city}
+                    </span>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="pt-20 pb-6 px-6 space-y-5 overflow-y-auto flex-1 scrollbar-hide">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
-            {user.username && <p className="text-sm text-gray-400 mt-0.5">@{user.username}</p>}
-            <p className="text-gray-500">{age} years old</p>
-            {user.home_city && (
-              <p className="text-sm text-gray-400 mt-1 flex items-center justify-center gap-1">
-                <MapPin size={14} />
-                {user.home_city}
-              </p>
-            )}
+        <div className="pb-6 px-6 space-y-5 overflow-y-auto flex-1 scrollbar-hide pt-5">
+          <div className="flex items-center justify-center">
+            <div className={`flex items-center gap-2 py-2 px-4 rounded-full ${statusInfo.bgColor}`}>
+              <span className={`w-2.5 h-2.5 rounded-full ${statusInfo.color} ${statusInfo.glow}`} />
+              <span className={`text-sm font-medium ${statusInfo.textColor}`}>{statusInfo.label}</span>
+            </div>
           </div>
 
           <div className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-full ${statusInfo.bgColor} mx-auto w-fit`}>

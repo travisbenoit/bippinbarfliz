@@ -2,18 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
       ),
       body: ListView(
         children: [
+          SwitchListTile(
+            secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
+            title: const Text('Dark Mode'),
+            value: isDark,
+            onChanged: (value) {
+              ref.read(themeModeProvider.notifier).setDarkMode(value);
+            },
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.diamond_outlined),
             title: const Text('Go Premium'),

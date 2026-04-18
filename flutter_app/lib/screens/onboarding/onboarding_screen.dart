@@ -16,17 +16,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingSlide(
       title: 'Find your\nDrinking Partner !',
       subtitle: 'Get bored drinking alone,\nfind new drinking partner',
-      image: 'assets/images/slide1.png',
+      image: 'assets/images/slide.png',
     ),
     OnboardingSlide(
       title: 'Real Drinks with\nReal Friends !',
       subtitle: 'Enjoy Your drink with new\nfriends',
-      image: 'assets/images/slide2.png',
+      image: 'assets/images/slide.png',
     ),
     OnboardingSlide(
       title: 'Best Social App To\nMake New Friends !',
       subtitle: 'Find people with the same\ninterest as you',
-      image: 'assets/images/slide3.png',
+      image: 'assets/images/slide.png',
     ),
   ];
 

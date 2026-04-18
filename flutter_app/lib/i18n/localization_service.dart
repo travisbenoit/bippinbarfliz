@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
 
@@ -51,7 +53,8 @@ class LocalizationService extends ChangeNotifier {
     try {
       // Get system locale
       final systemLocale = PlatformDispatcher.instance.locale;
-      _currentLocale = Locale(systemLocale.languageCode, systemLocale.countryCode);
+      _currentLocale =
+          Locale(systemLocale.languageCode, systemLocale.countryCode);
 
       // Load translations from database
       await loadTranslations(_currentLocale.languageCode);
@@ -72,7 +75,7 @@ class LocalizationService extends ChangeNotifier {
 
   Future<void> loadTranslations(String languageCode) async {
     try {
-      final supabase = SupabaseService.instance;
+      final supabase = SupabaseService();
 
       // Get language ID
       final langResponse = await supabase.client
@@ -109,7 +112,7 @@ class LocalizationService extends ChangeNotifier {
 
   Future<void> loadRegionalConfig(String languageCode) async {
     try {
-      final supabase = SupabaseService.instance;
+      final supabase = SupabaseService();
 
       // Get language ID
       final langResponse = await supabase.client

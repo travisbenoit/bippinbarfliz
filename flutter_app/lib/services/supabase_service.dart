@@ -15,10 +15,12 @@ class SupabaseService {
   Future<AuthResponse> signUp({
     required String email,
     required String password,
+    Map<String, dynamic> data = const {},
   }) async {
     return await client.auth.signUp(
       email: email,
       password: password,
+      data: data,
     );
   }
 

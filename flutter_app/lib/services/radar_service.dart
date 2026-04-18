@@ -102,11 +102,13 @@ class RadarService {
     if (position == null) {
       return LocationCheckResult(
         isInBounds: false,
-        errorMessage: 'Unable to determine location. Please enable location services.',
+        errorMessage:
+            'Unable to determine location. Please enable location services.',
       );
     }
 
-    final inBounds = darwinBounds.contains(position.latitude, position.longitude);
+    final inBounds =
+        darwinBounds.contains(position.latitude, position.longitude);
 
     if (!inBounds) {
       return LocationCheckResult(
@@ -146,25 +148,27 @@ class RadarService {
     }
 
     try {
-      await Radar.startTracking(RadarTrackingOptions(
-        desiredStoppedUpdateInterval: 180,
-        desiredMovingUpdateInterval: 60,
-        desiredSyncInterval: 50,
-        desiredAccuracy: RadarTrackingOptionsDesiredAccuracy.high,
-        stopDuration: 140,
-        stopDistance: 70,
-        sync: RadarTrackingOptionsSync.all,
-        replay: RadarTrackingOptionsReplay.stops,
-        showBlueBar: false,
-        useStoppedGeofence: true,
-        stoppedGeofenceRadius: 100,
-        useMovingGeofence: true,
-        movingGeofenceRadius: 100,
-        syncGeofences: true,
-        syncGeofencesLimit: 10,
-        beacons: false,
-        foregroundServiceEnabled: true,
-      ));
+      final options = <String, dynamic>{
+        'desiredStoppedUpdateInterval': 180,
+        'desiredMovingUpdateInterval': 60,
+        'desiredSyncInterval': 50,
+        'desiredAccuracy': 'high',
+        'stopDuration': 140,
+        'stopDistance': 70,
+        'sync': 'all',
+        'replay': 'stops',
+        'showBlueBar': false,
+        'useStoppedGeofence': true,
+        'stoppedGeofenceRadius': 100,
+        'useMovingGeofence': true,
+        'movingGeofenceRadius': 100,
+        'syncGeofences': true,
+        'syncGeofencesLimit': 10,
+        'beacons': false,
+        'foregroundServiceEnabled': true,
+      };
+
+      await Radar.startTrackingCustom(options);
 
       _isTracking = true;
       print('✅ Radar tracking started successfully');
@@ -187,10 +191,10 @@ class RadarService {
     }
   }
 
-  Future<RadarLocation?> getLocation() async {
+  Future<Map<String, dynamic>?> getLocation() async {
     try {
-      final result = await Radar.getLocation(RadarTrackingOptionsDesiredAccuracy.high);
-      return result.location;
+      final result = await Radar.getLocation('high');
+      return result?['location'] as Map<String, dynamic>?;
     } catch (e) {
       print('❌ Failed to get Radar location: $e');
       return null;
@@ -210,18 +214,18 @@ class RadarService {
     }
   }
 
-  Future<RadarTrackingOptions?> getTrackingOptions() async {
+  Future<Map<String, dynamic>?> getTrackingOptions() async {
     try {
-      return await Radar.getTrackingOptions();
+      return await Radar.getTrackingOptions() as Map<String, dynamic>?;
     } catch (e) {
       print('❌ Failed to get tracking options: $e');
       return null;
     }
   }
 
-  Future<bool> isTracking() async {
+  Future<bool> isTrackingRemote() async {
     try {
-      return await Radar.isTracking();
+      return await Radar.isTracking() ?? false;
     } catch (e) {
       print('❌ Failed to check tracking status: $e');
       return false;

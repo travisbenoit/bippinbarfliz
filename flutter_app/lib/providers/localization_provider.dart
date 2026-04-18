@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../i18n/localization_service.dart';
 
-final localizationServiceProvider = ChangeNotifierProvider<LocalizationService>((ref) {
+final localizationServiceProvider =
+    ChangeNotifierProvider<LocalizationService>((ref) {
   return LocalizationService();
 });
 

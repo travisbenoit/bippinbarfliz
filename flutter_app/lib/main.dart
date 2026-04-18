@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,9 +6,11 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/app_config.dart';
 import 'config/theme.dart';
+import 'firebase_options.dart';
 import 'routes/app_router.dart';
 import 'services/notification_service.dart';
 import 'providers/localization_provider.dart';
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,13 +19,17 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   await Supabase.initialize(
     url: AppConfig.supabaseUrl,
     anonKey: AppConfig.supabaseAnonKey,
   );
 
-  Stripe.publishableKey = AppConfig.stripePublishableKey;
-  await Stripe.instance.applySettings();
+  // Stripe.publishableKey = AppConfig.stripePublishableKey;
+  // await Stripe.instance.applySettings();
 
   await NotificationService.initialize();
 
@@ -55,12 +62,15 @@ class _BarflizAppState extends ConsumerState<BarflizApp> {
     final router = ref.watch(appRouterProvider);
     final currentLocale = ref.watch(currentLocaleProvider);
     final isLoading = ref.watch(isLoadingProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     if (isLoading) {
       return MaterialApp(
         title: 'Barfliz',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeMode,
         home: const Scaffold(
           body: Center(
             child: CircularProgressIndicator(),
@@ -73,6 +83,8 @@ class _BarflizAppState extends ConsumerState<BarflizApp> {
       title: 'Barfliz',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       locale: Locale(currentLocale),
       supportedLocales: const [
         Locale('en', 'US'),

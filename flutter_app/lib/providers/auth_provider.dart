@@ -23,8 +23,7 @@ final currentUserProfileProvider = StreamProvider<UserProfile?>((ref) async* {
 
   await for (final snapshot in supabase.client
       .from('users')
-      .stream(primaryKey: ['id'])
-      .eq('id', userId)) {
+      .stream(primaryKey: ['id']).eq('id', userId)) {
     if (snapshot.isNotEmpty) {
       yield UserProfile.fromJson(snapshot.first);
     } else {
@@ -49,7 +48,34 @@ class AuthController {
   }
 
   Future<void> signUp(String email, String password) async {
-    await _supabase.signUp(email: email, password: password);
+    try {
+      final response = await _supabase.signUp(email: email, password: password);
+      print(
+          '[AuthController] signUp response: user=${response.user?.id}, session=${response.session?.accessToken}');
+
+      if (response.user != null) {
+        try {
+          await _supabase.client.from('users').insert({
+            'id': response.user!.id,
+            'name': '',
+            'tonight_status': 'staying_in',
+            'vibe_tags': [],
+            'favorite_drinks': [],
+            'is_premium': false,
+            'created_at': DateTime.now().toIso8601String(),
+          }).select();
+        } catch (e, stackTrace) {
+          print(
+              '[AuthController] User profile creation failed: ${e.runtimeType} - $e');
+          print(stackTrace);
+          rethrow;
+        }
+      }
+    } catch (e, stackTrace) {
+      print('[AuthController] signUp exception: ${e.runtimeType} - $e');
+      print(stackTrace);
+      rethrow;
+    }
   }
 
   Future<void> signOut() async {
@@ -68,12 +94,22 @@ class AuthController {
     final userId = _supabase.currentUserId;
     if (userId == null) throw Exception('No authenticated user');
 
-    await _supabase.client.from('users').insert({
+    // Calculate age from DOB
+    final now = DateTime.now();
+    final age = now.year -
+        dob.year -
+        ((now.month > dob.month ||
+                (now.month == dob.month && now.day >= dob.day))
+            ? 0
+            : 1);
+
+    await _supabase.client.from('users').upsert({
       'id': userId,
       'name': name,
       'dob': dob.toIso8601String().split('T')[0],
       'home_city': homeCity,
-      'is_21_plus_confirmed': true,
+      'age': age,
+      'is_21_plus_confirmed': age >= 21,
     });
   }
 

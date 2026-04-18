@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../services/radar_service.dart';
 
 final radarServiceProvider = Provider<RadarService>((ref) {
   return RadarService();
 });
 
-final radarTrackingStateProvider = StateNotifierProvider<RadarTrackingNotifier, RadarTrackingState>((ref) {
+final radarTrackingStateProvider =
+    StateNotifierProvider<RadarTrackingNotifier, RadarTrackingState>((ref) {
   final radarService = ref.watch(radarServiceProvider);
   return RadarTrackingNotifier(radarService);
 });

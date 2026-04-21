@@ -38,9 +38,9 @@ dependencies:
   flutter_stripe: ^12.2.0
 
   # Notifications
-  firebase_core: ^2.24.0
+  firebase_core: ^4.4.0
   firebase_messaging: ^16.1.1
-  flutter_local_notifications: ^16.3.0
+  flutter_local_notifications: ^18.0.0
 
   # Image Picker
   image_picker: ^1.2.1
@@ -57,6 +57,12 @@ dependencies:
 
   # HTTP
   http: ^1.1.2
+
+  # Audio Player
+  audioplayers: ^6.1.1
+
+  # Native Share
+  share_plus: ^11.0.0
 
   # Storage
   shared_preferences: ^2.2.2
@@ -115,17 +121,16 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
     - assets/icons/
-    - assets/animations/
+    - assets/images/
 
   fonts:
     - family: Inter
       fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-        - asset: assets/fonts/Inter-Medium.ttf
+        - asset: assets/fonts/Inter_18pt-Regular.ttf
+        - asset: assets/fonts/Inter_18pt-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
+        - asset: assets/fonts/Inter_18pt-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
+        - asset: assets/fonts/Inter_18pt-Bold.ttf
           weight: 700

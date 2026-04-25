@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
@@ -14,11 +13,26 @@ import '../screens/messages/messages_screen.dart';
 import '../screens/messages/chat_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/settings/settings_screen.dart';
+import '../screens/settings/edit_profile_screen.dart';
+import '../screens/settings/notifications_settings_screen.dart';
+import '../screens/settings/safety_settings_screen.dart';
+import '../screens/settings/language_settings_screen.dart';
 import '../screens/swarms/swarms_screen.dart';
 import '../screens/swarms/create_swarm_screen.dart';
 import '../screens/premium/premium_screen.dart';
 import '../screens/gifts/send_gift_screen.dart';
 import '../screens/gifts/gifts_screen.dart';
+import '../screens/friends/friends_screen.dart';
+import '../screens/history/history_screen.dart';
+import '../screens/people/people_nearby_screen.dart';
+import '../screens/leaderboard/leaderboard_screen.dart';
+import '../screens/notifications/notifications_screen.dart';
+import '../screens/payments/payments_screen.dart';
+import '../screens/social/night_recap_screen.dart';
+import '../screens/safety/safe_arrival_screen.dart';
+import '../screens/room/the_room_screen.dart';
+import '../screens/music/music_shares_screen.dart';
+import '../screens/music/music_search_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -42,80 +56,77 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
-      ),
-      GoRoute(
-        path: '/signin',
-        builder: (context, state) => const SignInScreen(),
-      ),
-      GoRoute(
-        path: '/signup',
-        builder: (context, state) => const SignUpScreen(),
-      ),
-      GoRoute(
-        path: '/profile-setup',
-        builder: (context, state) => const ProfileSetupScreen(),
-      ),
-      GoRoute(
-        path: '/permissions',
-        builder: (context, state) => const PermissionsScreen(),
-      ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const HomeScreen(),
-      ),
-      GoRoute(
-        path: '/discover',
-        builder: (context, state) => const DiscoverScreen(),
-      ),
-      GoRoute(
-        path: '/map',
-        builder: (context, state) => const MapScreen(),
-      ),
-      GoRoute(
-        path: '/messages',
-        builder: (context, state) => const MessagesScreen(),
-      ),
+      // ── Auth ──────────────────────────────────────────────────────────────
+      GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
+      GoRoute(path: '/signin', builder: (_, __) => const SignInScreen()),
+      GoRoute(path: '/signup', builder: (_, __) => const SignUpScreen()),
+      GoRoute(path: '/profile-setup', builder: (_, __) => const ProfileSetupScreen()),
+      GoRoute(path: '/permissions', builder: (_, __) => const PermissionsScreen()),
+
+      // ── Main ──────────────────────────────────────────────────────────────
+      GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+      GoRoute(path: '/discover', builder: (_, __) => const DiscoverScreen()),
+      GoRoute(path: '/map', builder: (_, __) => const MapScreen()),
+
+      // ── Messages ──────────────────────────────────────────────────────────
+      GoRoute(path: '/messages', builder: (_, __) => const MessagesScreen()),
       GoRoute(
         path: '/chat/:userId',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return ChatScreen(userId: userId);
-        },
+        builder: (_, state) => ChatScreen(userId: state.pathParameters['userId']!),
       ),
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => const ProfileScreen(),
-      ),
-      GoRoute(
-        path: '/settings',
-        builder: (context, state) => const SettingsScreen(),
-      ),
-      GoRoute(
-        path: '/swarms',
-        builder: (context, state) => const SwarmsScreen(),
-      ),
-      GoRoute(
-        path: '/create-swarm',
-        builder: (context, state) => const CreateSwarmScreen(),
-      ),
-      GoRoute(
-        path: '/premium',
-        builder: (context, state) => const PremiumScreen(),
-      ),
+
+      // ── Profile & Settings ────────────────────────────────────────────────
+      GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
+      GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+      GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfileScreen()),
+      GoRoute(path: '/notifications-settings', builder: (_, __) => const NotificationsSettingsScreen()),
+      GoRoute(path: '/safety-settings', builder: (_, __) => const SafetySettingsScreen()),
+      GoRoute(path: '/language-settings', builder: (_, __) => const LanguageSettingsScreen()),
+
+      // ── Swarms ────────────────────────────────────────────────────────────
+      GoRoute(path: '/swarms', builder: (_, __) => const SwarmsScreen()),
+      GoRoute(path: '/create-swarm', builder: (_, __) => const CreateSwarmScreen()),
+
+      // ── Premium & Gifts ───────────────────────────────────────────────────
+      GoRoute(path: '/premium', builder: (_, __) => const PremiumScreen()),
+      GoRoute(path: '/gifts', builder: (_, __) => const GiftsScreen()),
       GoRoute(
         path: '/send-gift/:userId',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return SendGiftScreen(userId: userId);
-        },
+        builder: (_, state) => SendGiftScreen(userId: state.pathParameters['userId']!),
       ),
+
+      // ── Social ────────────────────────────────────────────────────────────
+      GoRoute(path: '/friends', builder: (_, __) => const FriendsScreen()),
+      GoRoute(path: '/people-nearby', builder: (_, __) => const PeopleNearbyScreen()),
+
+      // ── History & Activity ────────────────────────────────────────────────
+      GoRoute(path: '/history', builder: (_, __) => const HistoryScreen()),
+      GoRoute(path: '/night-recap', builder: (_, __) => const NightRecapScreen()),
+
+      // ── Gamification ──────────────────────────────────────────────────────
+      GoRoute(path: '/leaderboard', builder: (_, __) => const LeaderboardScreen()),
+
+      // ── Notifications ─────────────────────────────────────────────────────
+      GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
+
+      // ── Payments ──────────────────────────────────────────────────────────
+      GoRoute(path: '/payments', builder: (_, __) => const PaymentsScreen()),
+
+      // ── Safety ────────────────────────────────────────────────────────────
+      GoRoute(path: '/safe-arrival', builder: (_, __) => const SafeArrivalScreen()),
+
+      // ── The Room ──────────────────────────────────────────────────────────
       GoRoute(
-        path: '/gifts',
-        builder: (context, state) => const GiftsScreen(),
+        path: '/room/:venueId',
+        builder: (_, state) => TheRoomScreen(
+          venueId: state.pathParameters['venueId']!,
+          venueName: state.uri.queryParameters['name'],
+        ),
       ),
+
+      // ── Music ─────────────────────────────────────────────────────────────
+      GoRoute(path: '/music', builder: (_, __) => const MusicSharesScreen()),
+      GoRoute(path: '/music-search', builder: (_, __) => const MusicSearchScreen()),
     ],
   );
 });

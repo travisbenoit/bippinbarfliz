@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/app_config.dart';
@@ -70,6 +71,23 @@ class _BarflizAppState extends ConsumerState<BarflizApp> {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: themeMode,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', 'US'),
+          Locale('es', 'ES'),
+          Locale('fr', 'FR'),
+          Locale('de', 'DE'),
+          Locale('it', 'IT'),
+          Locale('pt', 'BR'),
+          Locale('ja', 'JP'),
+          Locale('zh', 'CN'),
+          Locale('ko', 'KR'),
+          Locale('ru', 'RU'),
+        ],
         home: const Scaffold(
           body: Center(
             child: CircularProgressIndicator(),
@@ -84,6 +102,11 @@ class _BarflizAppState extends ConsumerState<BarflizApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       locale: Locale(currentLocale),
       supportedLocales: const [
         Locale('en', 'US'),

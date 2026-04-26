@@ -10,13 +10,19 @@ import '../../models/venue.dart';
 final venuesMapProvider = FutureProvider<List<Venue>>((ref) async {
   final supabase = Supabase.instance.client;
 
-  final response = await supabase
-      .from('bars')
-      .select()
-      .order('name')
-      .limit(100);
+  try {
+    final response = await supabase
+        .from('bars')
+        .select()
+        .order('name')
+        .limit(100);
 
-  return (response as List).map((json) => Venue.fromJson(json)).toList();
+    return (response as List).map((json) => Venue.fromJson(json)).toList();
+  } catch (e, stackTrace) {
+    debugPrint('[venuesMapProvider] Error fetching venues: $e');
+    debugPrint('[venuesMapProvider] $stackTrace');
+    rethrow;
+  }
 });
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -28,8 +34,8 @@ class MapScreen extends ConsumerStatefulWidget {
 
 class _MapScreenState extends ConsumerState<MapScreen> {
   final Completer<GoogleMapController> _controller = Completer();
+  GoogleMapController? _mapController;
   final Set<Marker> _markers = {};
-  Venue? _selectedVenue;
   bool _isLoading = true;
   String? _error;
 
@@ -44,19 +50,34 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     _getCurrentLocation();
   }
 
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
   Future<void> _getCurrentLocation() async {
     try {
-      final permission = await Geolocator.checkPermission();
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (!mounted) return;
+
       if (permission == LocationPermission.denied) {
-        await Geolocator.requestPermission();
+        permission = await Geolocator.requestPermission();
+        if (!mounted) return;
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        debugPrint('[MapScreen] Location permission denied');
+        return;
       }
 
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+      if (!mounted || _mapController == null) return;
 
-      final controller = await _controller.future;
-      controller.animateCamera(
+      await _mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
             target: LatLng(position.latitude, position.longitude),
@@ -64,30 +85,34 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ),
       );
-    } catch (e) {
-      debugPrint('Error getting location: $e');
+    } catch (e, stackTrace) {
+      debugPrint('[MapScreen] Error getting location: $e');
+      debugPrint('[MapScreen] $stackTrace');
     }
   }
 
   void _onMapCreated(GoogleMapController controller) {
-    _controller.complete(controller);
+    _mapController = controller;
+    if (!_controller.isCompleted) _controller.complete(controller);
     _loadVenueMarkers();
   }
 
   Future<void> _loadVenueMarkers() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
       final venues = await ref.read(venuesMapProvider.future);
+      if (!mounted) return;
 
-      final markers = venues.where((v) => v.lat != null && v.lng != null).map((venue) {
+      final markers = venues.map((venue) {
         return Marker(
           markerId: MarkerId(venue.id),
-          position: LatLng(venue.lat!, venue.lng!),
+          position: LatLng(venue.lat, venue.lng),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose),
           infoWindow: InfoWindow(
             title: venue.name,
-            snippet: venue.address ?? 'Tap for details',
+            snippet: venue.address,
           ),
           onTap: () => _showVenueDetails(venue),
         );
@@ -97,7 +122,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         _markers.addAll(markers);
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('[MapScreen] Error loading venue markers: $e');
+      debugPrint('[MapScreen] $stackTrace');
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -106,7 +134,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   void _showVenueDetails(Venue venue) {
-    setState(() => _selectedVenue = venue);
     _showVenueBottomSheet(venue);
   }
 
@@ -172,7 +199,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                       ),
                     ],
@@ -231,7 +258,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -276,7 +303,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE91E63).withOpacity(0.1),
+                      color: const Color(0xFFE91E63).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Text(
@@ -368,7 +395,7 @@ class _VenueBottomSheet extends StatelessWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE91E63).withOpacity(0.1),
+                                color: const Color(0xFFE91E63).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -411,7 +438,7 @@ class _VenueBottomSheet extends StatelessWidget {
                       ),
                   ],
                 ),
-                if (venue.address != null) ...[
+                if (venue.address.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -419,7 +446,7 @@ class _VenueBottomSheet extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          venue.address!,
+                          venue.address,
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,

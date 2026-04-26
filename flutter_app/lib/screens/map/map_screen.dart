@@ -157,10 +157,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
         title: const Text('Nearby Venues'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.pop(),
+              )
+            : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.my_location),

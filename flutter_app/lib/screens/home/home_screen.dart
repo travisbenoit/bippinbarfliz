@@ -100,7 +100,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _navIndex = 0;
   bool _isDdTonight = false;
   bool _ddLoading = false;
 
@@ -174,36 +173,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
       ),
     );
-  }
-
-  void _showMoreSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => _MoreBottomSheet(),
-    );
-  }
-
-  void _onNavTap(int index) {
-    if (index == 4) {
-      _showMoreSheet();
-      return;
-    }
-    setState(() => _navIndex = index);
-    switch (index) {
-      case 1:
-        context.push('/map');
-        break;
-      case 2:
-        context.push('/messages');
-        break;
-      case 3:
-        context.push('/profile');
-        break;
-    }
   }
 
   @override
@@ -282,7 +251,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -314,13 +282,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       actions: [
-        // Messages with badge
+        // Messages with badge — go() switches to the Messages tab
         Stack(
           clipBehavior: Clip.none,
           children: [
             IconButton(
               icon: const Icon(Icons.chat_bubble_outline, color: Colors.black87),
-              onPressed: () => context.push('/messages'),
+              onPressed: () => context.go('/messages'),
             ),
             Positioned(
               right: 6,
@@ -343,45 +311,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         IconButton(
           icon: const Icon(Icons.settings_outlined, color: Colors.black87),
           onPressed: () => context.push('/settings'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: _navIndex == 0 ? 0 : 0,
-      onTap: _onNavTap,
-      selectedItemColor: _brandPink,
-      unselectedItemColor: Colors.grey[500],
-      backgroundColor: Colors.white,
-      type: BottomNavigationBarType.fixed,
-      elevation: 12,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.map_outlined),
-          activeIcon: Icon(Icons.map),
-          label: 'Map',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat_bubble_outline),
-          activeIcon: Icon(Icons.chat_bubble),
-          label: 'Messages',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.grid_view_outlined),
-          activeIcon: Icon(Icons.grid_view),
-          label: 'More',
         ),
       ],
     );
@@ -732,8 +661,8 @@ class _QuickActionsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     const actions = [
       _QuickAction(icon: Icons.groups_2, label: 'Create Swarm', route: '/create-swarm'),
-      _QuickAction(icon: Icons.send, label: 'Send Message', route: '/messages'),
-      _QuickAction(icon: Icons.map_outlined, label: 'Find Venues', route: '/map'),
+      _QuickAction(icon: Icons.send, label: 'Send Message', route: '/messages', isTab: true),
+      _QuickAction(icon: Icons.map_outlined, label: 'Find Venues', route: '/map', isTab: true),
       _QuickAction(icon: Icons.people_outline, label: 'Find People', route: '/people-nearby'),
       _QuickAction(icon: Icons.history, label: 'View History', route: '/history'),
       _QuickAction(icon: Icons.group_outlined, label: 'Friends', route: '/friends'),
@@ -771,8 +700,14 @@ class _QuickAction {
   final IconData icon;
   final String label;
   final String route;
+  final bool isTab;
 
-  const _QuickAction({required this.icon, required this.label, required this.route});
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.route,
+    this.isTab = false,
+  });
 }
 
 class _QuickActionTile extends StatelessWidget {
@@ -783,7 +718,7 @@ class _QuickActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push(action.route),
+      onTap: () => action.isTab ? context.go(action.route) : context.push(action.route),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -1665,89 +1600,3 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// More Bottom Sheet
-// ---------------------------------------------------------------------------
-
-class _MoreBottomSheet extends StatelessWidget {
-  const _MoreBottomSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final items = [
-      (Icons.group_outlined, 'Friends', '/friends', Colors.blue),
-      (Icons.history_outlined, 'History', '/history', Colors.purple),
-      (Icons.payment_outlined, 'Payments', '/payments', Colors.green),
-      (Icons.leaderboard_outlined, 'Leaderboard', '/leaderboard', Colors.amber),
-      (Icons.nightlight_outlined, 'Night Recap', '/night-recap', _brandPink),
-      (Icons.notifications_outlined, 'Notifications', '/notifications', Colors.orange),
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text(
-                'More',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.1,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final (icon, label, route, color) = items[index];
-              return GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push(route);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: color.withValues(alpha: 0.2)),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(icon, color: color, size: 26),
-                      const SizedBox(height: 8),
-                      Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}

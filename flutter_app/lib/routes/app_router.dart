@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
+import '../screens/shell/main_shell.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/sign_in_screen.dart';
 import '../screens/auth/sign_up_screen.dart';
@@ -56,66 +57,72 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      // ── Auth ──────────────────────────────────────────────────────────────
+      // ── Auth (no shell) ───────────────────────────────────────────────
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: '/signin', builder: (_, __) => const SignInScreen()),
       GoRoute(path: '/signup', builder: (_, __) => const SignUpScreen()),
       GoRoute(path: '/profile-setup', builder: (_, __) => const ProfileSetupScreen()),
       GoRoute(path: '/permissions', builder: (_, __) => const PermissionsScreen()),
 
-      // ── Main ──────────────────────────────────────────────────────────────
-      GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
-      GoRoute(path: '/discover', builder: (_, __) => const DiscoverScreen()),
-      GoRoute(path: '/map', builder: (_, __) => const MapScreen()),
+      // ── Main shell with persistent bottom nav ─────────────────────────
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            MainShell(navigationShell: navigationShell),
+        branches: [
+          // Branch 0 – Home
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+            ],
+          ),
+          // Branch 1 – Map
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/map', builder: (_, __) => const MapScreen()),
+            ],
+          ),
+          // Branch 2 – Messages
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/messages', builder: (_, __) => const MessagesScreen()),
+            ],
+          ),
+          // Branch 3 – Profile
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
+            ],
+          ),
+        ],
+      ),
 
-      // ── Messages ──────────────────────────────────────────────────────────
-      GoRoute(path: '/messages', builder: (_, __) => const MessagesScreen()),
+      // ── Full-screen routes pushed over the shell ───────────────────────
+      GoRoute(path: '/discover', builder: (_, __) => const DiscoverScreen()),
       GoRoute(
         path: '/chat/:userId',
         builder: (_, state) => ChatScreen(userId: state.pathParameters['userId']!),
       ),
-
-      // ── Profile & Settings ────────────────────────────────────────────────
-      GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
       GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
       GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfileScreen()),
       GoRoute(path: '/notifications-settings', builder: (_, __) => const NotificationsSettingsScreen()),
       GoRoute(path: '/safety-settings', builder: (_, __) => const SafetySettingsScreen()),
       GoRoute(path: '/language-settings', builder: (_, __) => const LanguageSettingsScreen()),
-
-      // ── Swarms ────────────────────────────────────────────────────────────
       GoRoute(path: '/swarms', builder: (_, __) => const SwarmsScreen()),
       GoRoute(path: '/create-swarm', builder: (_, __) => const CreateSwarmScreen()),
-
-      // ── Premium & Gifts ───────────────────────────────────────────────────
       GoRoute(path: '/premium', builder: (_, __) => const PremiumScreen()),
       GoRoute(path: '/gifts', builder: (_, __) => const GiftsScreen()),
       GoRoute(
         path: '/send-gift/:userId',
         builder: (_, state) => SendGiftScreen(userId: state.pathParameters['userId']!),
       ),
-
-      // ── Social ────────────────────────────────────────────────────────────
       GoRoute(path: '/friends', builder: (_, __) => const FriendsScreen()),
       GoRoute(path: '/people-nearby', builder: (_, __) => const PeopleNearbyScreen()),
-
-      // ── History & Activity ────────────────────────────────────────────────
       GoRoute(path: '/history', builder: (_, __) => const HistoryScreen()),
       GoRoute(path: '/night-recap', builder: (_, __) => const NightRecapScreen()),
-
-      // ── Gamification ──────────────────────────────────────────────────────
       GoRoute(path: '/leaderboard', builder: (_, __) => const LeaderboardScreen()),
-
-      // ── Notifications ─────────────────────────────────────────────────────
       GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
-
-      // ── Payments ──────────────────────────────────────────────────────────
       GoRoute(path: '/payments', builder: (_, __) => const PaymentsScreen()),
-
-      // ── Safety ────────────────────────────────────────────────────────────
       GoRoute(path: '/safe-arrival', builder: (_, __) => const SafeArrivalScreen()),
-
-      // ── The Room ──────────────────────────────────────────────────────────
       GoRoute(
         path: '/room/:venueId',
         builder: (_, state) => TheRoomScreen(
@@ -123,8 +130,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           venueName: state.uri.queryParameters['name'],
         ),
       ),
-
-      // ── Music ─────────────────────────────────────────────────────────────
       GoRoute(path: '/music', builder: (_, __) => const MusicSharesScreen()),
       GoRoute(path: '/music-search', builder: (_, __) => const MusicSearchScreen()),
     ],

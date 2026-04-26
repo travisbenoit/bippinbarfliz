@@ -94,10 +94,12 @@ class MessagesScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
         title: const Text('Messages'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.pop(),
+              )
+            : null,
       ),
       body: conversationsAsync.when(
         loading: () => const Center(

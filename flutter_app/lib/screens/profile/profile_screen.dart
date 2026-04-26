@@ -15,10 +15,12 @@ class ProfileScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
         title: const Text('Profile'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.pop(),
+              )
+            : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),

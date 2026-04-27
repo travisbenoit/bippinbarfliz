@@ -8,6 +8,7 @@ import 'config/app_config.dart';
 import 'config/theme.dart';
 import 'firebase_options.dart';
 import 'routes/app_router.dart';
+import 'services/analytics_service.dart';
 import 'services/notification_service.dart';
 import 'providers/localization_provider.dart';
 import 'providers/theme_provider.dart';
@@ -32,6 +33,11 @@ void main() async {
   // await Stripe.instance.applySettings();
 
   await NotificationService.initialize();
+
+  await AnalyticsService.instance.initialize(
+    apiKey: AppConfig.posthogApiKey,
+    host: AppConfig.posthogHost,
+  );
 
   runApp(
     const ProviderScope(

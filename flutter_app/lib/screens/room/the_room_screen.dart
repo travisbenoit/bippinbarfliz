@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/analytics_service.dart';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -321,6 +322,11 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
         'checked_in_at': now,
         'status': 'checked_in',
       }, onConflict: 'user_id,venue_id');
+
+      await AnalyticsService.instance.venueCheckedIn(
+        venueId: widget.venueId,
+        venueName: widget.venueName ?? 'Unknown',
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

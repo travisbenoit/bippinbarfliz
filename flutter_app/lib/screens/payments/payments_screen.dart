@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import '../../services/analytics_service.dart';
 
 // ---------------------------------------------------------------------------
 // Providers
@@ -569,6 +570,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
         'status': 'completed',
         'description': _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
       });
+      await AnalyticsService.instance.paymentSent(amount: amount, currency: 'USD');
       ref.invalidate(_paymentHistoryProvider);
       setState(() {
         _selectedUser = null;

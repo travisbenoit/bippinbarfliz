@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
+import '../services/analytics_service.dart';
 import '../screens/shell/main_shell.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/sign_in_screen.dart';
@@ -35,10 +36,13 @@ import '../screens/room/the_room_screen.dart';
 import '../screens/music/music_shares_screen.dart';
 import '../screens/music/music_search_screen.dart';
 
+final _analyticsObserver = AnalyticsNavigatorObserver();
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
+    observers: [_analyticsObserver],
     initialLocation: '/onboarding',
     redirect: (context, state) {
       final isAuthenticated = authState.value != null;
@@ -71,24 +75,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         branches: [
           // Branch 0 – Home
           StatefulShellBranch(
+            observers: [_analyticsObserver],
             routes: [
               GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
             ],
           ),
           // Branch 1 – Map
           StatefulShellBranch(
+            observers: [_analyticsObserver],
             routes: [
               GoRoute(path: '/map', builder: (_, __) => const MapScreen()),
             ],
           ),
           // Branch 2 – Messages
           StatefulShellBranch(
+            observers: [_analyticsObserver],
             routes: [
               GoRoute(path: '/messages', builder: (_, __) => const MessagesScreen()),
             ],
           ),
           // Branch 3 – Profile
           StatefulShellBranch(
+            observers: [_analyticsObserver],
             routes: [
               GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
             ],

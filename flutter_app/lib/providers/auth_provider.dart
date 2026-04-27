@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/analytics_service.dart';
 import '../services/supabase_service.dart';
 import '../models/user_profile.dart';
 
@@ -44,7 +45,11 @@ class AuthController {
   SupabaseService get _supabase => ref.read(supabaseServiceProvider);
 
   Future<void> signIn(String email, String password) async {
-    await _supabase.signIn(email: email, password: password);
+    final response = await _supabase.signIn(email: email, password: password);
+    final userId = response.user?.id;
+    if (userId != null) {
+      await AnalyticsService.instance.userSignedIn(userId);
+    }
   }
 
   Future<void> signUp(String email, String password) async {
@@ -64,6 +69,7 @@ class AuthController {
             'is_premium': false,
             'created_at': DateTime.now().toIso8601String(),
           }).select();
+          await AnalyticsService.instance.userSignedUp(response.user!.id);
         } catch (e, stackTrace) {
           print(
               '[AuthController] User profile creation failed: ${e.runtimeType} - $e');
@@ -79,6 +85,7 @@ class AuthController {
   }
 
   Future<void> signOut() async {
+    await AnalyticsService.instance.userSignedOut();
     await _supabase.signOut();
   }
 

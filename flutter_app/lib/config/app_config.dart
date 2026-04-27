@@ -21,4 +21,16 @@ class AppConfig {
     'GOOGLE_MAPS_API_KEY',
     defaultValue: 'AIzaSyAS0-83wH0i8jwFy-gAXM3sZmqH_hZCetM',
   );
+
+  // PostHog — get these from posthog.com → Project Settings → API Keys
+  static const String posthogApiKey = String.fromEnvironment(
+    'POSTHOG_API_KEY',
+    defaultValue: 'YOUR_POSTHOG_API_KEY',
+  );
+
+  // US Cloud: https://us.i.posthog.com  |  EU Cloud: https://eu.i.posthog.com
+  static const String posthogHost = String.fromEnvironment(
+    'POSTHOG_HOST',
+    defaultValue: 'https://us.i.posthog.com',
+  );
 }

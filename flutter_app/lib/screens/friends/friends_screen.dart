@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/user_profile.dart';
+import '../../services/analytics_service.dart';
 
 // ---------------------------------------------------------------------------
 // Data models
@@ -688,6 +689,7 @@ class _FindFriendsTabState extends ConsumerState<_FindFriendsTab> {
                             'addressee_id': user.id,
                             'status': 'pending',
                           });
+                          await AnalyticsService.instance.friendRequestSent(user.id);
                           ref.invalidate(myFriendshipsProvider);
                         } catch (e) {
                           setState(() =>

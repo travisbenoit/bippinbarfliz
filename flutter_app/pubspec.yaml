@@ -66,6 +66,9 @@ dependencies:
   # Native Share
   share_plus: ^11.0.0
 
+  # Analytics
+  posthog_flutter: ^4.0.0
+
   # Storage
   shared_preferences: ^2.2.2
 

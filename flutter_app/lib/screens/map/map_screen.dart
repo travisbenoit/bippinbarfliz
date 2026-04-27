@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/venue.dart';
+import '../../services/analytics_service.dart';
 
 final venuesMapProvider = FutureProvider<List<Venue>>((ref) async {
   final supabase = Supabase.instance.client;
@@ -134,6 +135,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   void _showVenueDetails(Venue venue) {
+    AnalyticsService.instance.venueViewed(venueId: venue.id, venueName: venue.name);
     _showVenueBottomSheet(venue);
   }
 

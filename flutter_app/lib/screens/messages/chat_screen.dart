@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/analytics_service.dart';
 
 class ChatMessage {
   final String id;
@@ -220,6 +221,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         'sender_user_id': currentUser.id,
         'body': text,
       });
+      AnalyticsService.instance.messageSent();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

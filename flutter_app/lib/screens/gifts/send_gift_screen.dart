@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/analytics_service.dart';
 
 class SendGiftScreen extends StatefulWidget {
   final String userId;
@@ -62,6 +63,10 @@ class _SendGiftScreenState extends State<SendGiftScreen> {
         'status': 'pending',
         'delivery_method': 'direct_message',
       });
+      await AnalyticsService.instance.giftSent(
+        giftType: _selectedDrink,
+        amount: _amount,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

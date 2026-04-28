@@ -37,6 +37,10 @@ import '../screens/music/music_shares_screen.dart';
 import '../screens/music/music_search_screen.dart';
 
 final _analyticsObserver = AnalyticsNavigatorObserver();
+final _homeObserver = AnalyticsNavigatorObserver();
+final _mapObserver = AnalyticsNavigatorObserver();
+final _messagesObserver = AnalyticsNavigatorObserver();
+final _profileObserver = AnalyticsNavigatorObserver();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -75,28 +79,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         branches: [
           // Branch 0 – Home
           StatefulShellBranch(
-            observers: [_analyticsObserver],
+            observers: [_homeObserver],
             routes: [
               GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
             ],
           ),
           // Branch 1 – Map
           StatefulShellBranch(
-            observers: [_analyticsObserver],
+            observers: [_mapObserver],
             routes: [
               GoRoute(path: '/map', builder: (_, __) => const MapScreen()),
             ],
           ),
           // Branch 2 – Messages
           StatefulShellBranch(
-            observers: [_analyticsObserver],
+            observers: [_messagesObserver],
             routes: [
               GoRoute(path: '/messages', builder: (_, __) => const MessagesScreen()),
             ],
           ),
           // Branch 3 – Profile
           StatefulShellBranch(
-            observers: [_analyticsObserver],
+            observers: [_profileObserver],
             routes: [
               GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
             ],

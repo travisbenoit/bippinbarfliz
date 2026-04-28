@@ -56,14 +56,28 @@ class UserChallenge {
 final leaderboardProvider = FutureProvider<List<LeaderboardEntry>>((ref) async {
   final supabase = Supabase.instance.client;
 
-  final response = await supabase
+  final statsRows = await supabase
       .from('user_stats')
-      .select('user_id, total_xp, current_streak, total_checkins, users(name, avatar_url)')
+      .select('user_id, total_xp, current_streak, total_checkins')
       .order('total_xp', ascending: false)
       .limit(50);
 
-  return (response as List).map((row) {
-    final user = row['users'] as Map<String, dynamic>? ?? {};
+  if ((statsRows as List).isEmpty) return [];
+
+  final userIds = statsRows.map((r) => r['user_id'] as String).toList();
+
+  final usersRows = await supabase
+      .from('users')
+      .select('id, name, avatar_url')
+      .inFilter('id', userIds);
+
+  final userMap = <String, Map<String, dynamic>>{
+    for (final u in (usersRows as List))
+      (u['id'] as String): u as Map<String, dynamic>
+  };
+
+  return statsRows.map((row) {
+    final user = userMap[row['user_id'] as String] ?? {};
     return LeaderboardEntry(
       userId: row['user_id'] as String,
       userName: user['name'] as String? ?? 'Unknown',
@@ -80,25 +94,38 @@ final userChallengesProvider = FutureProvider<List<UserChallenge>>((ref) async {
   final currentUser = supabase.auth.currentUser;
   if (currentUser == null) return [];
 
-  final response = await supabase
+  final rows = await supabase
       .from('user_challenges')
-      .select(
-        'id, challenge_id, status, progress, challenge_definitions(name, description, xp_reward, requirement_count, challenge_type)',
-      )
+      .select('id, challenge_key, status, progress, target, reward_xp')
       .eq('user_id', currentUser.id);
 
-  return (response as List).map((row) {
-    final def = row['challenge_definitions'] as Map<String, dynamic>? ?? {};
+  if ((rows as List).isEmpty) return [];
+
+  final keys = rows.map((r) => r['challenge_key'] as String).toList();
+
+  final defs = await supabase
+      .from('challenge_definitions')
+      .select('challenge_key, name, description')
+      .inFilter('challenge_key', keys);
+
+  final defMap = <String, Map<String, dynamic>>{
+    for (final d in (defs as List))
+      (d['challenge_key'] as String): d as Map<String, dynamic>
+  };
+
+  return rows.map((row) {
+    final key = row['challenge_key'] as String;
+    final def = defMap[key] ?? {};
     return UserChallenge(
       id: row['id'] as String,
-      challengeId: row['challenge_id'] as String,
+      challengeId: key,
       status: row['status'] as String? ?? 'in_progress',
       progress: (row['progress'] as num?)?.toInt() ?? 0,
-      challengeName: def['name'] as String? ?? 'Challenge',
+      challengeName: def['name'] as String? ?? key,
       challengeDescription: def['description'] as String? ?? '',
-      xpReward: (def['xp_reward'] as num?)?.toInt() ?? 0,
-      requirementCount: (def['requirement_count'] as num?)?.toInt() ?? 1,
-      challengeType: def['challenge_type'] as String? ?? '',
+      xpReward: (row['reward_xp'] as num?)?.toInt() ?? 0,
+      requirementCount: (row['target'] as num?)?.toInt() ?? 1,
+      challengeType: '',
     );
   }).toList();
 });

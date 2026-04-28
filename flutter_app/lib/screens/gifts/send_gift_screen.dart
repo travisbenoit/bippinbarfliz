@@ -52,16 +52,15 @@ class _SendGiftScreenState extends State<SendGiftScreen> {
         throw Exception('Not logged in');
       }
 
-      await supabase.from('user_gifts').insert({
-        'sender_user_id': currentUser.id,
-        'recipient_user_id': widget.userId,
-        'gift_type': _selectedDrink.toLowerCase(),
+      await supabase.from('gifts').insert({
+        'from_user_id': currentUser.id,
+        'to_user_id': widget.userId,
+        'drink_type': _selectedDrink.toLowerCase(),
         'amount': _amount,
         'message': _messageController.text.trim().isNotEmpty
             ? _messageController.text.trim()
             : null,
         'status': 'pending',
-        'delivery_method': 'direct_message',
       });
       await AnalyticsService.instance.giftSent(
         giftType: _selectedDrink,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../i18n/localization_helper.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/localization_provider.dart';
 
 class LanguageSettingsScreen extends ConsumerWidget {
@@ -26,7 +26,16 @@ class LanguageSettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(ref.t('settings.title')),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text(
+          'Language',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
       ),
       body: ListView(
         children: [
@@ -53,7 +62,7 @@ class LanguageSettingsScreen extends ConsumerWidget {
                 localization.changeLanguage(code);
               },
             );
-          }).toList(),
+          }),
         ],
       ),
     );

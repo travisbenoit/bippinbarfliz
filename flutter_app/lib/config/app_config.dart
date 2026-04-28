@@ -25,7 +25,7 @@ class AppConfig {
   // PostHog — get these from posthog.com → Project Settings → API Keys
   static const String posthogApiKey = String.fromEnvironment(
     'POSTHOG_API_KEY',
-    defaultValue: 'YOUR_POSTHOG_API_KEY',
+    defaultValue: 'phc_p2BKvP7Dxeu8HLVLrTB37efbCgjeZuP3bU7VBDSCeB8S',
   );
 
   // US Cloud: https://us.i.posthog.com  |  EU Cloud: https://eu.i.posthog.com

@@ -40,8 +40,8 @@ class Friendship {
     }
     return Friendship(
       id: json['id'] as String,
-      requesterId: json['requester_id'] as String,
-      addresseeId: json['addressee_id'] as String,
+      requesterId: json['user_id'] as String,
+      addresseeId: json['friend_id'] as String,
       status: status,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
@@ -71,7 +71,7 @@ final acceptedFriendsProvider =
       .from('friendships')
       .select()
       .eq('status', 'accepted')
-      .or('requester_id.eq.${me.id},addressee_id.eq.${me.id}');
+      .or('user_id.eq.${me.id},friend_id.eq.${me.id}');
 
   final friendships = (rows as List)
       .map((r) => Friendship.fromJson(r as Map<String, dynamic>))
@@ -118,7 +118,7 @@ final pendingRequestsProvider =
   final rows = await _supabase
       .from('friendships')
       .select()
-      .eq('addressee_id', me.id)
+      .eq('friend_id', me.id)
       .eq('status', 'pending');
 
   final friendships = (rows as List)
@@ -175,7 +175,7 @@ final myFriendshipsProvider =
   final rows = await _supabase
       .from('friendships')
       .select()
-      .or('requester_id.eq.${me.id},addressee_id.eq.${me.id}');
+      .or('user_id.eq.${me.id},friend_id.eq.${me.id}');
 
   return (rows as List)
       .map((r) => Friendship.fromJson(r as Map<String, dynamic>))
@@ -685,8 +685,8 @@ class _FindFriendsTabState extends ConsumerState<_FindFriendsTab> {
                           await _supabase
                               .from('friendships')
                               .insert({
-                            'requester_id': currentUser.id,
-                            'addressee_id': user.id,
+                            'user_id': currentUser.id,
+                            'friend_id': user.id,
                             'status': 'pending',
                           });
                           await AnalyticsService.instance.friendRequestSent(user.id);

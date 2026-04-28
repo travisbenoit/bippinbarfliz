@@ -56,7 +56,14 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
           _marketing = prefs['marketing'] as bool? ?? false;
         });
       }
-    } catch (_) {}
+    } catch (e, st) {
+      debugPrint('[NotifSettings] Failed to load preferences: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load notification preferences')),
+        );
+      }
+    }
     setState(() => _loading = false);
   }
 

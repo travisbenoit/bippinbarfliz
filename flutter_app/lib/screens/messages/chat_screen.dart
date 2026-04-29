@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/analytics_service.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 class ChatMessage {
   final String id;
@@ -234,7 +236,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

@@ -1,29 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../extensions/localization_extension.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
-class PremiumScreen extends StatelessWidget {
+class PremiumScreen extends ConsumerWidget {
   const PremiumScreen({super.key});
 
   void _handleSubscribe(BuildContext context, String plan) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('Coming Soon'),
         content: Text(
           'Premium subscriptions ($plan) will be available soon!\n\n'
-          'We\'re setting up secure payment processing with Stripe.',
+          "We're setting up secure payment processing with Stripe.",
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(ctx),
             child: const Text('OK'),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('You\'ll be notified when Premium launches!'),
+                  content: Text("You'll be notified when Premium launches!"),
                   backgroundColor: Color(0xFFE91E63),
                 ),
               );
@@ -39,9 +43,10 @@ class PremiumScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -61,20 +66,17 @@ class PremiumScreen extends StatelessWidget {
                 color: Color(0xFFE91E63),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Go Premium',
-                style: TextStyle(
+              Text(
+                t(AppStrings.premiumTitle),
+                style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Unlock exclusive features',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+              Text(
+                t(AppStrings.premiumSubtitle),
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 48),
               _PremiumFeature(
@@ -90,7 +92,7 @@ class PremiumScreen extends StatelessWidget {
               _PremiumFeature(
                 icon: Icons.filter_list,
                 title: 'Advanced Filters',
-                subtitle: 'Find exactly who you\'re looking for',
+                subtitle: "Find exactly who you're looking for",
               ),
               _PremiumFeature(
                 icon: Icons.block,
@@ -99,18 +101,20 @@ class PremiumScreen extends StatelessWidget {
               ),
               const Spacer(),
               _PricingCard(
-                title: 'Monthly',
+                title: t(AppStrings.premiumMonthly),
                 price: '\$9.99',
                 period: '/month',
-                onSubscribe: () => _handleSubscribe(context, 'Monthly - \$9.99/mo'),
+                onSubscribe: () =>
+                    _handleSubscribe(context, 'Monthly - \$9.99/mo'),
               ),
               const SizedBox(height: 16),
               _PricingCard(
-                title: 'Yearly',
+                title: t(AppStrings.premiumYearly),
                 price: '\$79.99',
                 period: '/year',
                 badge: 'Save 33%',
-                onSubscribe: () => _handleSubscribe(context, 'Yearly - \$79.99/yr'),
+                onSubscribe: () =>
+                    _handleSubscribe(context, 'Yearly - \$79.99/yr'),
               ),
             ],
           ),
@@ -159,10 +163,7 @@ class _PremiumFeature extends StatelessWidget {
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ],
             ),
@@ -248,10 +249,7 @@ class _PricingCard extends StatelessWidget {
                     ),
                     Text(
                       period,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -267,7 +265,7 @@ class _PricingCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-            child: const Text('Subscribe'),
+            child: Text(context.tr(AppStrings.premiumGetPremium)),
           ),
         ],
       ),

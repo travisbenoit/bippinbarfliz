@@ -26,3 +26,13 @@ final isLoadingProvider = Provider<bool>((ref) {
   final service = ref.watch(localizationServiceProvider);
   return service.isLoading;
 });
+
+// Convenience provider — watch this in any ConsumerWidget to get a translate
+// function that triggers a rebuild when the language changes.
+//
+// Usage:
+//   final t = ref.watch(tProvider);
+//   Text(t(AppStrings.someKey))
+final tProvider = Provider<String Function(String)>((ref) {
+  return ref.watch(localizationServiceProvider).translate;
+});

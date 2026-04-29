@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../providers/music_provider.dart';
 import 'widgets/music_share_card.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 class MusicSharesScreen extends ConsumerWidget {
   const MusicSharesScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final recentShares = ref.watch(recentMusicSharesProvider);
     final userShares = ref.watch(userMusicSharesProvider);
 

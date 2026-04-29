@@ -7,6 +7,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/venue.dart';
 import '../../services/analytics_service.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 final venuesMapProvider = FutureProvider<List<Venue>>((ref) async {
   final supabase = Supabase.instance.client;
@@ -156,7 +158,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
         title: const Text('Nearby Venues'),
         leading: context.canPop()

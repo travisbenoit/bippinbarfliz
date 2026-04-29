@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 class SafeArrivalScreen extends ConsumerStatefulWidget {
   const SafeArrivalScreen({super.key});
@@ -193,9 +195,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),

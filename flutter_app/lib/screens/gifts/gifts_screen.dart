@@ -1,10 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
-class GiftsScreen extends StatelessWidget {
+class GiftsScreen extends ConsumerWidget {
   const GiftsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Gifts'),

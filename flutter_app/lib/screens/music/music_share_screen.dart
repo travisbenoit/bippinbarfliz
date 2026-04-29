@@ -1,15 +1,18 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/itunes_music_service.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
-class MusicShareScreen extends StatefulWidget {
+class MusicShareScreen extends ConsumerStatefulWidget {
   const MusicShareScreen({Key? key}) : super(key: key);
 
   @override
-  State<MusicShareScreen> createState() => _MusicShareScreenState();
+  ConsumerState<MusicShareScreen> createState() => _MusicShareScreenState();
 }
 
-class _MusicShareScreenState extends State<MusicShareScreen> {
+class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
   final _musicService = ITunesMusicService();
   final _searchController = TextEditingController();
 

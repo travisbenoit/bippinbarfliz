@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/music_search_result.dart';
 import '../../providers/music_provider.dart';
 import 'widgets/music_search_card.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 class MusicSearchScreen extends ConsumerWidget {
   const MusicSearchScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final searchQuery = ref.watch(musicSearchQueryProvider);
     final searchResults = ref.watch(musicSearchResultsProvider(searchQuery));
 

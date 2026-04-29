@@ -1,7 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/supabase_service.dart';
+import 'app_strings.dart';
+
+const _kLangKey = 'selected_language';
 
 class RegionalConfig {
   final String languageCode;
@@ -51,19 +55,25 @@ class LocalizationService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Get system locale
-      final systemLocale = PlatformDispatcher.instance.locale;
-      _currentLocale =
-          Locale(systemLocale.languageCode, systemLocale.countryCode);
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_kLangKey);
 
-      // Load translations from database
-      await loadTranslations(_currentLocale.languageCode);
+      final String langCode;
+      final String? countryCode;
+      if (saved != null) {
+        langCode = saved;
+        countryCode = null;
+      } else {
+        final systemLocale = PlatformDispatcher.instance.locale;
+        langCode = systemLocale.languageCode;
+        countryCode = systemLocale.countryCode;
+      }
+      _currentLocale = Locale(langCode, countryCode);
 
-      // Load regional configuration
-      await loadRegionalConfig(_currentLocale.languageCode);
+      await loadTranslations(langCode);
+      await loadRegionalConfig(langCode);
     } catch (e) {
       debugPrint('Error initializing localization: $e');
-      // Fall back to English
       _currentLocale = const Locale('en', 'US');
       await loadTranslations('en');
       await loadRegionalConfig('en');
@@ -163,6 +173,8 @@ class LocalizationService extends ChangeNotifier {
 
     try {
       _currentLocale = Locale(languageCode);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kLangKey, languageCode);
       await loadTranslations(languageCode);
       await loadRegionalConfig(languageCode);
     } catch (e) {
@@ -174,7 +186,7 @@ class LocalizationService extends ChangeNotifier {
   }
 
   String translate(String key, {Map<String, String>? parameters}) {
-    var text = _translations[key] ?? key;
+    var text = _translations[key] ?? AppStrings.englishFallback[key] ?? key;
 
     if (parameters != null) {
       parameters.forEach((paramKey, paramValue) {

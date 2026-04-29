@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/user_profile.dart';
 import '../../services/analytics_service.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Data models
@@ -230,7 +232,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
     return Scaffold(
       backgroundColor: _bg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
@@ -284,6 +285,7 @@ class _FriendsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final friendsAsync = ref.watch(acceptedFriendsProvider);
 
     return friendsAsync.when(
@@ -406,6 +408,7 @@ class _RequestsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final requestsAsync = ref.watch(pendingRequestsProvider);
 
     return requestsAsync.when(

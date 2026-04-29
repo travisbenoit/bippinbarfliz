@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 import '../../services/analytics_service.dart';
 
-class SendGiftScreen extends StatefulWidget {
+class SendGiftScreen extends ConsumerStatefulWidget {
   final String userId;
 
   const SendGiftScreen({super.key, required this.userId});
 
   @override
-  State<SendGiftScreen> createState() => _SendGiftScreenState();
+  ConsumerState<SendGiftScreen> createState() => _SendGiftScreenState();
 }
 
-class _SendGiftScreenState extends State<SendGiftScreen> {
+class _SendGiftScreenState extends ConsumerState<SendGiftScreen> {
   final _messageController = TextEditingController();
   String _selectedDrink = 'Beer';
   double _amount = 5.0;
   bool _isSending = false;
   String? _recipientName;
-
-  final List<String> _drinkTypes = ['Beer', 'Wine', 'Cocktail', 'Shot', 'Custom'];
 
   @override
   void initState() {
@@ -48,9 +49,7 @@ class _SendGiftScreenState extends State<SendGiftScreen> {
       final supabase = Supabase.instance.client;
       final currentUser = supabase.auth.currentUser;
 
-      if (currentUser == null) {
-        throw Exception('Not logged in');
-      }
+      if (currentUser == null) throw Exception('Not logged in');
 
       await supabase.from('gifts').insert({
         'from_user_id': currentUser.id,
@@ -62,15 +61,18 @@ class _SendGiftScreenState extends State<SendGiftScreen> {
             : null,
         'status': 'pending',
       });
+
       await AnalyticsService.instance.giftSent(
         giftType: _selectedDrink,
         amount: _amount,
       );
 
       if (mounted) {
+        final t = ref.read(tProvider);
+        final recipient = _recipientName ?? t(AppStrings.unknownUser);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gift sent to ${_recipientName ?? 'user'}!'),
+            content: Text('${t(AppStrings.giftSentSuccess)} $recipient!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -78,28 +80,38 @@ class _SendGiftScreenState extends State<SendGiftScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final t = ref.read(tProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send gift: ${e.toString()}'),
+            content: Text('${t(AppStrings.giftSendError)}: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isSending = false);
-      }
+      if (mounted) setState(() => _isSending = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
+
+    final drinkOptions = [
+      (t(AppStrings.giftDrinkBeer),     'Beer'),
+      (t(AppStrings.giftDrinkWine),     'Wine'),
+      (t(AppStrings.giftDrinkCocktail), 'Cocktail'),
+      (t(AppStrings.giftDrinkShot),     'Shot'),
+      (t(AppStrings.giftDrinkCustom),   'Custom'),
+    ];
+
+    final titleText = _recipientName != null
+        ? '${t(AppStrings.giftTitleTo)} $_recipientName'
+        : t(AppStrings.giftTitle);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
-        title: Text(_recipientName != null
-            ? 'Send Gift to $_recipientName'
-            : 'Send a Gift'),
+        title: Text(titleText),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -128,35 +140,33 @@ class _SendGiftScreenState extends State<SendGiftScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            const Text(
-              'Choose a drink',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            Text(
+              t(AppStrings.giftChooseDrink),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: _drinkTypes.map((drink) {
-                final isSelected = _selectedDrink == drink;
+              children: drinkOptions.map((pair) {
+                final label    = pair.$1;
+                final value    = pair.$2;
+                final selected = _selectedDrink == value;
                 return ChoiceChip(
-                  label: Text(drink),
-                  selected: isSelected,
+                  label: Text(label),
+                  selected: selected,
                   selectedColor: const Color(0xFFE91E63),
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black87,
+                    color: selected ? Colors.white : Colors.black87,
                   ),
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedDrink = drink;
-                    });
-                  },
+                  onSelected: (_) => setState(() => _selectedDrink = value),
                 );
               }).toList(),
             ),
             const SizedBox(height: 32),
-            const Text(
-              'Amount',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            Text(
+              t(AppStrings.giftAmount),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             Slider(
@@ -166,11 +176,7 @@ class _SendGiftScreenState extends State<SendGiftScreen> {
               divisions: 9,
               activeColor: const Color(0xFFE91E63),
               label: '\$${_amount.toStringAsFixed(0)}',
-              onChanged: (value) {
-                setState(() {
-                  _amount = value;
-                });
-              },
+              onChanged: (value) => setState(() => _amount = value),
             ),
             Center(
               child: Text(
@@ -186,7 +192,7 @@ class _SendGiftScreenState extends State<SendGiftScreen> {
             TextField(
               controller: _messageController,
               decoration: InputDecoration(
-                labelText: 'Add a message (optional)',
+                labelText: t(AppStrings.giftMessageHint),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -219,9 +225,9 @@ class _SendGiftScreenState extends State<SendGiftScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
-                        'Send Gift',
-                        style: TextStyle(
+                    : Text(
+                        t(AppStrings.giftSendButton),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../i18n/app_strings.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/localization_provider.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -48,25 +50,26 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   void _showForgotPasswordDialog() {
+    final t = ref.read(tProvider);
     final resetEmailController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset Password'),
+        title: Text(t(AppStrings.signInForgot)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Enter your email address and we\'ll send you a link to reset your password.',
+              "Enter your email address and we'll send you a link to reset your password.",
             ),
             const SizedBox(height: 16),
             TextField(
               controller: resetEmailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: t(AppStrings.fieldEmail),
+                border: const OutlineInputBorder(),
               ),
             ),
           ],
@@ -74,18 +77,17 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(t(AppStrings.cancel)),
           ),
           ElevatedButton(
             onPressed: () async {
               final email = resetEmailController.text.trim();
               if (email.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter an email')),
+                  SnackBar(content: Text('Please enter an email')),
                 );
                 return;
               }
-
               try {
                 await ref.read(authControllerProvider).resetPassword(email);
                 if (mounted) {
@@ -120,8 +122,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -134,9 +136,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Welcome Back!',
-                  style: TextStyle(
+                Text(
+                  t(AppStrings.signInTitle),
+                  style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -144,19 +146,16 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to continue',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade600,
-                  ),
+                  t(AppStrings.signInSubtitle),
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 48),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
+                  decoration: InputDecoration(
+                    labelText: t(AppStrings.fieldEmail),
+                    prefixIcon: const Icon(Icons.email_outlined),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -173,7 +172,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: t(AppStrings.fieldPassword),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -181,11 +180,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: (value) {
@@ -203,9 +199,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: _showForgotPasswordDialog,
-                    child: const Text(
-                      'Forgot Password?',
-                      style: TextStyle(color: Color(0xFFE91E63)),
+                    child: Text(
+                      t(AppStrings.signInForgot),
+                      style: const TextStyle(color: Color(0xFFE91E63)),
                     ),
                   ),
                 ),
@@ -230,9 +226,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text(
-                            'Sign In',
-                            style: TextStyle(
+                        : Text(
+                            t(AppStrings.signInButton),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -244,15 +240,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Don't have an account? ",
-                      style: TextStyle(color: Colors.black54),
+                    Text(
+                      t(AppStrings.signInNoAccount),
+                      style: const TextStyle(color: Colors.black54),
                     ),
                     TextButton(
                       onPressed: () => context.go('/signup'),
-                      child: const Text(
-                        'Sign up',
-                        style: TextStyle(
+                      child: Text(
+                        t(AppStrings.signInGoSignUp),
+                        style: const TextStyle(
                           color: Color(0xFFE91E63),
                           fontWeight: FontWeight.w600,
                         ),

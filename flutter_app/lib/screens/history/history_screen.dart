@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:intl/intl.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Data models
@@ -128,7 +130,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
     return Scaffold(
       backgroundColor: _background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -210,6 +211,7 @@ class _ActivityTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final feedAsync = ref.watch(activityFeedProvider);
 
     return feedAsync.when(
@@ -389,6 +391,7 @@ class _VisitsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final visitsAsync = ref.watch(venueVisitsProvider);
 
     return visitsAsync.when(

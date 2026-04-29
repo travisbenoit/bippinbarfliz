@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../services/analytics_service.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Providers
@@ -68,7 +70,6 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen>
     return Scaffold(
       backgroundColor: _bg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: BackButton(color: Colors.black87),
         title: const Text(
@@ -118,6 +119,7 @@ class _OverviewTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final profileAsync = ref.watch(_currentUserProfileProvider);
 
     return profileAsync.when(
@@ -841,6 +843,7 @@ class _HistoryTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final historyAsync = ref.watch(_paymentHistoryProvider);
     final uid = Supabase.instance.client.auth.currentUser?.id;
 

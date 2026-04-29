@@ -4,6 +4,8 @@ import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/user_profile.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 final discoverUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
   final supabase = Supabase.instance.client;
@@ -44,7 +46,6 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     final usersAsync = ref.watch(discoverUsersProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

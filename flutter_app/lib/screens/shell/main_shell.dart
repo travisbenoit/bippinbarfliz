@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 const _brandPink = Color(0xFFE91E63);
 
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainShell({super.key, required this.navigationShell});
@@ -31,7 +34,8 @@ class MainShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
@@ -42,31 +46,31 @@ class MainShell extends StatelessWidget {
         backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
         elevation: 12,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            activeIcon: const Icon(Icons.home),
+            label: t(AppStrings.navHome),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.map_outlined),
-            activeIcon: Icon(Icons.map),
-            label: 'Map',
+            icon: const Icon(Icons.map_outlined),
+            activeIcon: const Icon(Icons.map),
+            label: t(AppStrings.navMap),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: 'Messages',
+            icon: const Icon(Icons.chat_bubble_outline),
+            activeIcon: const Icon(Icons.chat_bubble),
+            label: t(AppStrings.navMessages),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            activeIcon: const Icon(Icons.person),
+            label: t(AppStrings.navProfile),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view_outlined),
-            activeIcon: Icon(Icons.grid_view),
-            label: 'More',
+            icon: const Icon(Icons.grid_view_outlined),
+            activeIcon: const Icon(Icons.grid_view),
+            label: t(AppStrings.navMore),
           ),
         ],
       ),
@@ -74,18 +78,19 @@ class MainShell extends StatelessWidget {
   }
 }
 
-class _MoreBottomSheet extends StatelessWidget {
+class _MoreBottomSheet extends ConsumerWidget {
   const _MoreBottomSheet();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final items = [
-      (Icons.group_outlined, 'Friends', '/friends', Colors.blue),
-      (Icons.history_outlined, 'History', '/history', Colors.purple),
-      (Icons.payment_outlined, 'Payments', '/payments', Colors.green),
-      (Icons.leaderboard_outlined, 'Leaderboard', '/leaderboard', Colors.amber),
-      (Icons.nightlight_outlined, 'Night Recap', '/night-recap', _brandPink),
-      (Icons.notifications_outlined, 'Notifications', '/notifications', Colors.orange),
+      (Icons.group_outlined,       t(AppStrings.moreFriends),       '/friends',     Colors.blue),
+      (Icons.history_outlined,     t(AppStrings.moreHistory),       '/history',     Colors.purple),
+      (Icons.payment_outlined,     t(AppStrings.morePayments),      '/payments',    Colors.green),
+      (Icons.leaderboard_outlined, t(AppStrings.moreLeaderboard),   '/leaderboard', Colors.amber),
+      (Icons.nightlight_outlined,  t(AppStrings.moreNightRecap),    '/night-recap', _brandPink),
+      (Icons.notifications_outlined, t(AppStrings.moreNotifications), '/notifications', Colors.orange),
     ];
 
     return Padding(
@@ -96,9 +101,9 @@ class _MoreBottomSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text(
-                'More',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              Text(
+                t(AppStrings.navMore),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
               const Spacer(),
               IconButton(

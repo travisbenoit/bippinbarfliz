@@ -5,6 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/user_profile.dart';
 import '../../models/venue.dart';
 import '../../models/swarm.dart';
+import '../../widgets/first_run_tour.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Providers
@@ -183,7 +186,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final venuesAsync = ref.watch(nearbyVenuesProvider);
     final swarmsAsync = ref.watch(activeSwarmsProvider);
 
-    return Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
       backgroundColor: _bgColor,
       appBar: _buildAppBar(),
       body: RefreshIndicator(
@@ -251,12 +256,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
+        ),
+        const FirstRunTour(),
+      ],
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: false,
       title: Column(

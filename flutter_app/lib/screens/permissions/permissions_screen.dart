@@ -1,15 +1,18 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
-class PermissionsScreen extends StatefulWidget {
+class PermissionsScreen extends ConsumerStatefulWidget {
   const PermissionsScreen({super.key});
 
   @override
-  State<PermissionsScreen> createState() => _PermissionsScreenState();
+  ConsumerState<PermissionsScreen> createState() => _PermissionsScreenState();
 }
 
-class _PermissionsScreenState extends State<PermissionsScreen> {
+class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
   int _currentStep = 0;
   bool _locationGranted = false;
   bool _locationDenied = false;
@@ -79,7 +82,6 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
 
   Widget _buildLocationScreen() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -206,7 +208,6 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
 
   Widget _buildLocationDeniedScreen() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -294,7 +295,6 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
 
   Widget _buildCameraScreen() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -392,7 +392,6 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
 
   Widget _buildNotificationScreen() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32.0),

@@ -1,12 +1,14 @@
-import 'package:flutter/gestures.dart';
 import 'dart:convert';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../i18n/app_strings.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/localization_provider.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -94,8 +96,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -108,9 +110,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Create Account',
-                  style: TextStyle(
+                Text(
+                  t(AppStrings.signUpTitle),
+                  style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -118,27 +120,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign up to get started',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade600,
-                  ),
+                  t(AppStrings.signUpSubtitle),
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 48),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
+                  decoration: InputDecoration(
+                    labelText: t(AppStrings.fieldEmail),
+                    prefixIcon: const Icon(Icons.email_outlined),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
+                    if (value == null || value.isEmpty) return 'Please enter your email';
+                    if (!value.contains('@')) return 'Please enter a valid email';
                     return null;
                   },
                 ),
@@ -147,28 +142,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: t(AppStrings.fieldPassword),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                      icon: Icon(_obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
+                    if (value == null || value.isEmpty) return 'Please enter your password';
+                    if (value.length < 6) return 'Password must be at least 6 characters';
                     return null;
                   },
                 ),
@@ -177,28 +163,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
-                    labelText: 'Confirm Password',
+                    labelText: t(AppStrings.fieldConfirmPass),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
+                      icon: Icon(_obscureConfirmPassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined),
+                      onPressed: () => setState(
+                          () => _obscureConfirmPassword = !_obscureConfirmPassword),
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please confirm your password';
-                    }
-                    if (value != _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
+                    if (value == null || value.isEmpty) return 'Please confirm your password';
+                    if (value != _passwordController.text) return 'Passwords do not match';
                     return null;
                   },
                 ),
@@ -211,15 +188,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       height: 24,
                       child: Checkbox(
                         value: _agreedToTerms,
-                        onChanged: (value) {
-                          setState(() {
-                            _agreedToTerms = value ?? false;
-                          });
-                        },
+                        onChanged: (value) =>
+                            setState(() => _agreedToTerms = value ?? false),
                         activeColor: const Color(0xFFE91E63),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                            borderRadius: BorderRadius.circular(4)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -227,14 +200,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       child: RichText(
                         text: TextSpan(
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade700,
-                            height: 1.4,
-                          ),
+                              fontSize: 14,
+                              color: Colors.grey.shade700,
+                              height: 1.4),
                           children: [
                             const TextSpan(text: 'I agree to the '),
                             TextSpan(
-                              text: 'Terms of Service',
+                              text: t(AppStrings.settingsTerms),
                               style: const TextStyle(
                                 color: Color(0xFFE91E63),
                                 fontWeight: FontWeight.w600,
@@ -246,15 +218,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             ),
                             const TextSpan(text: ' and '),
                             TextSpan(
-                              text: 'Privacy Policy',
+                              text: t(AppStrings.settingsPrivacyPolicy),
                               style: const TextStyle(
                                 color: Color(0xFFE91E63),
                                 fontWeight: FontWeight.w600,
                                 decoration: TextDecoration.underline,
                               ),
                               recognizer: TapGestureRecognizer()
-                                ..onTap = () => _openUrl(
-                                    'https://barfliz.com/legal/privacy'),
+                                ..onTap = () =>
+                                    _openUrl('https://barfliz.com/legal/privacy'),
                             ),
                           ],
                         ),
@@ -273,21 +245,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           const Color(0xFFE91E63).withOpacity(0.4),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
+                          borderRadius: BorderRadius.circular(30)),
                     ),
                     child: _isLoading
                         ? const SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
+                                color: Colors.white, strokeWidth: 2),
                           )
-                        : const Text(
-                            'Sign Up',
-                            style: TextStyle(
+                        : Text(
+                            t(AppStrings.signUpButton),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -299,15 +268,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Already have an account? ',
-                      style: TextStyle(color: Colors.black54),
-                    ),
+                    Text(t(AppStrings.signUpHaveAccount),
+                        style: const TextStyle(color: Colors.black54)),
                     TextButton(
                       onPressed: () => context.go('/signin'),
-                      child: const Text(
-                        'Sign in',
-                        style: TextStyle(
+                      child: Text(
+                        t(AppStrings.signUpGoSignIn),
+                        style: const TextStyle(
                           color: Color(0xFFE91E63),
                           fontWeight: FontWeight.w600,
                         ),

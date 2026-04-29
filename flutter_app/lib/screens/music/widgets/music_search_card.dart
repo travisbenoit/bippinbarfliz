@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../models/music_search_result.dart';
 import '../../../providers/music_provider.dart';
+import '../../../i18n/app_strings.dart';
+import '../../../providers/localization_provider.dart';
 
 class MusicSearchCard extends ConsumerWidget {
   final MusicSearchResult track;
@@ -14,6 +16,7 @@ class MusicSearchCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: ListTile(

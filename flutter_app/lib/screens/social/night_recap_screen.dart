@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 class NightRecapScreen extends ConsumerStatefulWidget {
   const NightRecapScreen({super.key});
@@ -125,9 +127,7 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
     final dateStr = DateFormat('EEEE, MMM d').format(lastNight);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F0),
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text('Night Recap 🌙', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
         leading: IconButton(

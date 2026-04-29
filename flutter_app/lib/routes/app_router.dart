@@ -35,6 +35,7 @@ import '../screens/safety/safe_arrival_screen.dart';
 import '../screens/room/the_room_screen.dart';
 import '../screens/music/music_shares_screen.dart';
 import '../screens/music/music_search_screen.dart';
+import '../screens/settings/blocked_users_screen.dart';
 
 final _analyticsObserver = AnalyticsNavigatorObserver();
 final _homeObserver = AnalyticsNavigatorObserver();
@@ -144,6 +145,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/music', builder: (_, __) => const MusicSharesScreen()),
       GoRoute(path: '/music-search', builder: (_, __) => const MusicSearchScreen()),
+      GoRoute(path: '/blocked-users', builder: (_, __) => const BlockedUsersScreen()),
     ],
   );
 });

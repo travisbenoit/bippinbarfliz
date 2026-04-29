@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, MessageCircle, UserPlus, User, Sparkles, Wine, Music, Gift, Briefcase, GraduationCap, Instagram, CheckCircle, Heart, MessageSquare, Mic, UserCheck, Clock, Shield, ShieldOff, Check, AlertTriangle } from 'lucide-react';
+import { X, MapPin, MessageCircle, UserPlus, User, Sparkles, Wine, Music, Gift, Briefcase, GraduationCap, Instagram, CheckCircle, Heart, MessageSquare, Mic, UserCheck, Clock, Shield, ShieldOff, Check, AlertTriangle, Flag } from 'lucide-react';
+import ReportContentModal from '../Safety/ReportContentModal';
 import { useNavigate } from 'react-router-dom';
 import type { Database } from '../../lib/database.types';
 import { parseDrinkFromStorage } from '../../data/drinkOptions';
@@ -33,6 +34,7 @@ export default function UserProfileModal({
   const [isBlocked, setIsBlocked] = useState(false);
   const [iBlockedThem, setIBlockedThem] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     if (isOpen && user && currentUser && user.id !== currentUser.id) {
@@ -50,8 +52,8 @@ export default function UserProfileModal({
           supabase
             .from('user_blocks')
             .select('id')
-            .eq('blocking_user_id', me.id)
-            .eq('blocked_user_id', user.id)
+            .eq('blocker_id', me.id)
+            .eq('blocked_id', user.id)
             .maybeSingle()
             .then(({ data }) => setIBlockedThem(!!data));
         });
@@ -503,21 +505,38 @@ export default function UserProfileModal({
             </button>
           </div>
           {currentUser && user.id !== currentUser.id && (
-            <button
-              onClick={() => setShowBlockConfirm(true)}
-              className={`w-full py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                iBlockedThem
-                  ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  : 'bg-red-50 text-red-500 hover:bg-red-100'
-              }`}
-            >
-              {iBlockedThem ? <ShieldOff className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
-              {iBlockedThem ? 'Unblock User' : 'Block User'}
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 bg-red-50 text-red-500 hover:bg-red-100"
+              >
+                <Flag className="w-4 h-4" />
+                Report
+              </button>
+              <button
+                onClick={() => setShowBlockConfirm(true)}
+                className={`py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                  iBlockedThem
+                    ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-red-50 text-red-500 hover:bg-red-100'
+                }`}
+              >
+                {iBlockedThem ? <ShieldOff className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+                {iBlockedThem ? 'Unblock' : 'Block'}
+              </button>
+            </div>
           )}
         </div>
       </div>
     </div>
+
+    <ReportContentModal
+      open={showReportModal}
+      onClose={() => setShowReportModal(false)}
+      targetType="user"
+      targetUserId={user.id}
+      targetLabel={user.name}
+    />
 
     {showBlockConfirm && (
       <div className="fixed inset-0 z-[3000] flex items-center justify-center px-4">

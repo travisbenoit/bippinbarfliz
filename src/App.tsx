@@ -26,6 +26,7 @@ const SettingsView = lazy(() => import('./components/Settings/SettingsView'));
 const EditProfile = lazy(() => import('./components/Settings/EditProfile'));
 const NotificationsSettings = lazy(() => import('./components/Settings/NotificationsSettings'));
 const SafetySecurity = lazy(() => import('./components/Settings/SafetySecurity'));
+const BlockedUsersList = lazy(() => import('./components/Safety/BlockedUsersList'));
 const RadarSettings = lazy(() => import('./components/Settings/RadarSettings'));
 const HelpCenter = lazy(() => import('./components/Settings/HelpCenter'));
 const AdminGooglePlaces = lazy(() => import('./components/Settings/AdminGooglePlaces'));
@@ -187,6 +188,7 @@ function AppRouter() {
           <Route path="/settings/edit-profile" element={<EditProfile />} />
           <Route path="/settings/notifications" element={<NotificationsSettings />} />
           <Route path="/settings/safety" element={<SafetySecurity />} />
+          <Route path="/settings/blocked-users" element={<BlockedUsersList />} />
           <Route path="/settings/help" element={<HelpCenter />} />
           <Route path="/settings/radar" element={<RadarSettings />} />
           <Route path="/settings/admin/google-places" element={<AdminGooglePlaces />} />

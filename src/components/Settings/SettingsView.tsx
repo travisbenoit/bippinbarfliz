@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Bell, Shield, MapPin, HelpCircle, ChevronRight, LogOut, Moon, Ruler, Trash2, AlertTriangle, X } from 'lucide-react';
+import { User, Bell, Shield, ShieldOff, MapPin, HelpCircle, ChevronRight, LogOut, Moon, Ruler, Trash2, AlertTriangle, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRegionalSettings } from '../../contexts/RegionalSettingsContext';
@@ -116,6 +116,23 @@ export default function SettingsView() {
       ],
     },
     {
+      title: 'Privacy & Safety',
+      items: [
+        {
+          icon: Shield,
+          label: 'Safety & Security',
+          subtitle: 'Emergency contacts and safety tools',
+          action: () => navigate('/settings/safety'),
+        },
+        {
+          icon: ShieldOff,
+          label: 'Blocked Users',
+          subtitle: 'Manage users you have blocked',
+          action: () => navigate('/settings/blocked-users'),
+        },
+      ],
+    },
+    {
       title: 'Support',
       items: [
         {
@@ -123,12 +140,6 @@ export default function SettingsView() {
           label: 'Help Center',
           subtitle: 'FAQs and contact support',
           action: () => navigate('/settings/help'),
-        },
-        {
-          icon: Shield,
-          label: 'Safety & Security',
-          subtitle: 'Emergency contacts and safety tools',
-          action: () => navigate('/settings/safety'),
         },
       ],
     },

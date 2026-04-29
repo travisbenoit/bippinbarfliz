@@ -32,17 +32,20 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-base font-bold text-gray-900">4. Acceptable Use</h2>
+          <h2 className="text-base font-bold text-gray-900">4. Acceptable Use and Zero Tolerance</h2>
+          <p>Barfliz has <span className="font-semibold text-gray-900">zero tolerance for objectionable content or abusive users</span>. Reports are reviewed within 24 hours. Users who violate these terms are banned without warning and may be reported to law enforcement when appropriate.</p>
           <p>You agree not to:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Harass, threaten, or abuse other users</li>
-            <li>Post illegal, harmful, or offensive content</li>
+            <li>Harass, threaten, bully, or abuse other users</li>
+            <li>Post illegal, harmful, hateful, sexually explicit, or otherwise objectionable content</li>
             <li>Impersonate another person or entity</li>
             <li>Use the app while driving or in a way that endangers yourself or others</li>
             <li>Attempt to bypass security measures or reverse-engineer the app</li>
             <li>Use automated tools to scrape or collect data</li>
             <li>Share the location of other users without their consent</li>
+            <li>Create accounts if you are under the legal drinking age in your country</li>
           </ul>
+          <p>You can report any user, message, swarm, or venue from inside the app at any time. You can block any user from your profile or theirs. Blocked users will no longer be able to see your profile, send you messages, or appear in your discovery feeds.</p>
         </section>
 
         <section className="space-y-3">

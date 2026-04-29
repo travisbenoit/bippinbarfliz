@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { isDemoPhone, DEMO_OTP_CODE } from "../_shared/demoNumbers.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,6 +27,15 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "Phone number is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Demo / App Store reviewer bypass: skip Twilio, return the static demo code.
+    if (isDemoPhone(phone)) {
+      console.log(`Demo phone detected (${phone}). Returning static demo OTP, skipping Twilio.`);
+      return new Response(
+        JSON.stringify({ success: true, otp: DEMO_OTP_CODE, sms_sent: false, demo: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -73,7 +83,7 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("Error:", err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: err instanceof Error ? err.message : "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -243,20 +243,25 @@ export default function SettingsView() {
             </div>
             <span className="flex-1 text-left font-medium text-red-600">Sign Out</span>
           </button>
-          <div className="border-t border-gray-100">
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="w-full px-5 py-4 flex items-center gap-3 hover:bg-red-50 transition-colors"
-            >
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <Trash2 size={20} className="text-red-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-red-600">Delete Account</p>
-                <p className="text-xs text-gray-400">Permanently remove your data</p>
-              </div>
-            </button>
-          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border-2 border-red-100">
+          <h2 className="text-sm font-semibold text-red-700 uppercase tracking-wide px-5 py-3 bg-red-50">
+            Danger Zone
+          </h2>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="w-full px-5 py-4 flex items-center gap-3 hover:bg-red-50 transition-colors"
+          >
+            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <Trash2 size={20} className="text-red-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-medium text-red-600">Delete Account</p>
+              <p className="text-xs text-gray-500">Permanently remove your account and all associated data</p>
+            </div>
+            <ChevronRight size={20} className="text-red-300" />
+          </button>
         </div>
 
         <div className="text-center space-y-2 pt-4">
@@ -267,7 +272,7 @@ export default function SettingsView() {
 
       {showDeleteModal && (
         <div className="fixed inset-0 z-[9000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
@@ -281,10 +286,32 @@ export default function SettingsView() {
                 </button>
               </div>
 
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Delete Account</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Delete Your Barfliz Account</h2>
               <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                This will permanently delete your account, profile, messages, gifts, and all associated data. <span className="font-semibold text-gray-900">This cannot be undone.</span>
+                <span className="font-semibold text-gray-900">This action is permanent and cannot be undone.</span>
               </p>
+
+              <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-3">
+                <p className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-2">What gets deleted</p>
+                <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                  <li>Your profile, photo, name, and birthday</li>
+                  <li>All messages and conversations</li>
+                  <li>Friends, blocks, and friend requests</li>
+                  <li>Swarms you created or joined</li>
+                  <li>Venue check-ins and history</li>
+                  <li>Lush Coins and any gifts received</li>
+                  <li>Linked payment accounts (Venmo, etc.)</li>
+                  <li>Tonight Status and activity feed</li>
+                </ul>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">What we retain</p>
+                <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                  <li>Anonymized analytics (no personal identifiers) for 30 days</li>
+                  <li>Receipts of any in-app purchases (legal/tax requirement)</li>
+                </ul>
+              </div>
 
               <div className="bg-gray-50 rounded-xl p-3 mb-4">
                 <p className="text-xs text-gray-500 mb-2">Type <span className="font-bold text-gray-900">DELETE</span> to confirm</p>

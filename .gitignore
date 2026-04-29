@@ -21,3 +21,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Supabase CLI transient cache (not project state)
+supabase/.temp/

@@ -36,6 +36,30 @@ When you finish a task, reply to Steve with: task ID, what you did, and any outp
 
 ---
 
+## Task M1B — Deploy updated Supabase Edge Functions
+
+**Why:** Several edge functions changed in V1 work (demo mode, account deletion). These changes are committed to the repo but Supabase runs whatever was last deployed, not whatever is in `main`. Without this step, demo numbers won't bypass Twilio and account deletion won't return the deletion summary.
+
+**Time:** 3 minutes
+
+**One-liner (run from the repo root after `git pull`):**
+```
+npx supabase functions deploy twilio-send-otp twilio-verify-otp delete-account
+```
+
+That's it. The CLI auto-bundles the `_shared/demoNumbers.ts` module that the OTP functions import.
+
+**Verify:**
+1. After deploy, test with the primary demo number `+15550000001` and code `0001`. You should sign in instantly without an SMS.
+2. Test a real phone number too. It should still receive an actual SMS via Twilio.
+3. From a test account: Settings → Danger Zone → Delete Account → type DELETE → confirm. The account row in `auth.users` and `public.users` should both disappear.
+
+**When to run again:** any time we ship more edge function changes. The pre-flight before submission (Task M11) should re-run this to make sure the deployed functions match `main`.
+
+**Deliver back:** Confirmation deploy succeeded + screenshot of demo bypass working.
+
+---
+
 ## Task M2 — RevenueCat account + 6 IAP products
 
 **Why:** Apple guideline 3.1.1 requires virtual currency (Lush Coins) to be sold through Apple IAP, not crypto/Solana. RevenueCat is the standard tool to manage Apple + Google IAP receipts in one place.
@@ -280,7 +304,7 @@ When you finish a task, reply to Steve with: task ID, what you did, and any outp
 
 ```
 M1 (Twilio) ──┐
-              ├──► Claude Feature 4 (Demo Mode) ──► Test signup
+              ├──► M1B (deploy edge fns) ──► Claude Feature 4 (Demo Mode) ──► Test signup
 M2 (RevenueCat) ──┐
                    ├──► M3 ──► Claude Feature 1 (IAP) ──► IAP sandbox test
 M4 (App Store Connect) ──► provides: bundle ID, shared secret

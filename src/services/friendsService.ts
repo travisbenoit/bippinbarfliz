@@ -220,7 +220,7 @@ export const friendsService = {
     // Insert block
     const { error } = await supabase
       .from('user_blocks')
-      .insert({ blocking_user_id: user.id, blocked_user_id: targetUserId });
+      .insert({ blocker_id: user.id, blocked_id: targetUserId });
 
     if (error && !error.message.includes('duplicate')) throw error;
   },
@@ -232,8 +232,8 @@ export const friendsService = {
     const { error } = await supabase
       .from('user_blocks')
       .delete()
-      .eq('blocking_user_id', user.id)
-      .eq('blocked_user_id', targetUserId);
+      .eq('blocker_id', user.id)
+      .eq('blocked_id', targetUserId);
 
     if (error) throw error;
   },
@@ -244,10 +244,10 @@ export const friendsService = {
 
     const { data } = await supabase
       .from('user_blocks')
-      .select('blocked_user_id')
-      .eq('blocking_user_id', user.id);
+      .select('blocked_id')
+      .eq('blocker_id', user.id);
 
-    return (data || []).map((b: any) => b.blocked_user_id);
+    return (data || []).map((b: { blocked_id: string }) => b.blocked_id);
   },
 
   async isBlockedBy(otherUserId: string): Promise<boolean> {
@@ -257,8 +257,8 @@ export const friendsService = {
     const { data } = await supabase
       .from('user_blocks')
       .select('id')
-      .eq('blocking_user_id', otherUserId)
-      .eq('blocked_user_id', user.id)
+      .eq('blocker_id', otherUserId)
+      .eq('blocked_id', user.id)
       .maybeSingle();
 
     return !!data;

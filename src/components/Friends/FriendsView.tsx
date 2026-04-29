@@ -33,8 +33,8 @@ function Avatar({ name, avatarUrl, size = 'md' }: { name: string; avatarUrl: str
 
 interface BlockedEntry {
   id: string;
-  blocked_user_id: string;
-  blocked_at: string;
+  blocked_id: string;
+  created_at: string;
   blocked_user?: FriendUser;
 }
 
@@ -138,14 +138,38 @@ export default function FriendsView() {
   };
 
   const loadBlocked = async () => {
-    const { data } = await (async () => {
-      const { supabase } = await import('../../lib/supabase');
-      return supabase
-        .from('user_blocks')
-        .select('id, blocked_user_id, blocked_at, blocked_user:users!user_blocks_blocked_user_id_fkey(id, name, avatar_url, tonight_status, home_city, occupation, vibe_tags)')
-        .eq('blocking_user_id', (await supabase.auth.getUser()).data.user?.id || '');
-    })();
-    setBlockedUsers((data || []) as BlockedEntry[]);
+    const { supabase } = await import('../../lib/supabase');
+    const { data: { user: me } } = await supabase.auth.getUser();
+    if (!me) {
+      setBlockedUsers([]);
+      return;
+    }
+
+    // Fetch blocks (FK references auth.users, so no PostgREST join — query users separately)
+    const { data: blocks } = await supabase
+      .from('user_blocks')
+      .select('id, blocked_id, created_at')
+      .eq('blocker_id', me.id);
+
+    if (!blocks || blocks.length === 0) {
+      setBlockedUsers([]);
+      return;
+    }
+
+    const blockedIds = blocks.map((b) => b.blocked_id);
+    const { data: profiles } = await supabase
+      .from('users')
+      .select('id, name, avatar_url, tonight_status, home_city, occupation, vibe_tags')
+      .in('id', blockedIds);
+
+    const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
+    const entries: BlockedEntry[] = blocks.map((b) => ({
+      id: b.id,
+      blocked_id: b.blocked_id,
+      created_at: b.created_at,
+      blocked_user: profileMap.get(b.blocked_id) as FriendUser | undefined,
+    }));
+    setBlockedUsers(entries);
   };
 
   const handleAccept = async (friendship: Friendship) => {
@@ -744,8 +768,8 @@ function BlockedList({
               <p className="text-xs text-gray-400">Blocked</p>
             </div>
             <button
-              onClick={() => onUnblock(entry.blocked_user_id)}
-              disabled={actionLoading === entry.blocked_user_id}
+              onClick={() => onUnblock(entry.blocked_id)}
+              disabled={actionLoading === entry.blocked_id}
               className="px-3 py-1.5 text-sm text-[#E91E63] border border-[#E91E63]/30 rounded-full hover:bg-[#E91E63]/10 transition-colors disabled:opacity-50 flex-shrink-0"
             >
               Unblock

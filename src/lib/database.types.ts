@@ -396,20 +396,23 @@ export interface Database {
       user_blocks: {
         Row: {
           id: string
-          blocking_user_id: string
-          blocked_user_id: string
+          blocker_id: string
+          blocked_id: string
+          reason: string | null
           created_at: string
         }
         Insert: {
           id?: string
-          blocking_user_id: string
-          blocked_user_id: string
+          blocker_id: string
+          blocked_id: string
+          reason?: string | null
           created_at?: string
         }
         Update: {
           id?: string
-          blocking_user_id?: string
-          blocked_user_id?: string
+          blocker_id?: string
+          blocked_id?: string
+          reason?: string | null
           created_at?: string
         }
       }

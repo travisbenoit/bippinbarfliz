@@ -10,6 +10,7 @@ import StatusModal from './StatusModal';
 import HomeDashboardTab from './HomeDashboardTab';
 import { HomeSkeleton } from '../UI/Skeleton';
 import UserProfileModal from '../Profile/UserProfileModal';
+import FirstRunTour from '../Onboarding/FirstRunTour';
 import { NotificationBell, NotificationCenter } from '../Notifications/NotificationCenter';
 import type { DateFilterOption } from '../Swarms/SwarmDateFilter';
 import { messagesService } from '../../services/messagesService';
@@ -318,6 +319,8 @@ export default function Home() {
       </div>
 
       <NotificationCenter isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
+
+      <FirstRunTour />
     </div>
   );
 }

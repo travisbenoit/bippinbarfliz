@@ -34,5 +34,9 @@ final isLoadingProvider = Provider<bool>((ref) {
 //   final t = ref.watch(tProvider);
 //   Text(t(AppStrings.someKey))
 final tProvider = Provider<String Function(String)>((ref) {
-  return ref.watch(localizationServiceProvider).translate;
+  final service = ref.watch(localizationServiceProvider);
+  // Wrap in a new closure each rebuild — method tearoffs from the same
+  // instance are equal in modern Dart, so returning `service.translate`
+  // directly would make Provider see "no change" and skip widget rebuilds.
+  return (String key) => service.translate(key);
 });

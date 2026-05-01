@@ -95,7 +95,7 @@ class MessagesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Messages'),
+        title: Text(t(AppStrings.messagesTitle)),
         leading: context.canPop()
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -113,11 +113,11 @@ class MessagesScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Error: ${error.toString()}'),
+              Text('${t(AppStrings.error)}: ${error.toString()}'),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(conversationsProvider),
-                child: const Text('Retry'),
+                child: Text(t(AppStrings.retry)),
               ),
             ],
           ),
@@ -142,9 +142,9 @@ class MessagesScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No messages yet',
-                    style: TextStyle(
+                  Text(
+                    t(AppStrings.messagesNoMsgYet),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
@@ -152,7 +152,7 @@ class MessagesScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Start a conversation with someone nearby!',
+                    t(AppStrings.messagesStartConvo),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],

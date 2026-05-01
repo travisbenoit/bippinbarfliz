@@ -202,20 +202,20 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(t(AppStrings.helpTitle)),
-        content: const SingleChildScrollView(
+        content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Frequently Asked Questions',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 12),
-              Text('Q: How do I find people nearby?\nA: Use the People Nearby screen or the map to discover people going out tonight.'),
-              SizedBox(height: 8),
-              Text('Q: What is a Swarm?\nA: A Swarm is a group hangout you can create or join to meet people at a venue.'),
-              SizedBox(height: 8),
-              Text('Q: How do I earn XP?\nA: Check in at venues, send messages, join swarms, and send gifts to earn XP.'),
-              SizedBox(height: 8),
-              Text('Q: What is Ghost Mode?\nA: Ghost mode hides your location and profile from other users.'),
+              Text(t(AppStrings.helpFaq),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              Text(t(AppStrings.helpQ1)),
+              const SizedBox(height: 8),
+              Text(t(AppStrings.helpQ2)),
+              const SizedBox(height: 8),
+              Text(t(AppStrings.helpQ3)),
+              const SizedBox(height: 8),
+              Text(t(AppStrings.helpQ4)),
             ],
           ),
         ),

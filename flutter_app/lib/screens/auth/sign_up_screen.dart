@@ -30,11 +30,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final t = ref.read(tProvider);
+    final messenger = ScaffoldMessenger.of(context);
+
     if (!_agreedToTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('Please agree to the Terms of Service and Privacy Policy'),
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(t(AppStrings.signUpAgreeTerms)),
           backgroundColor: Colors.red,
         ),
       );
@@ -57,14 +59,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       print(stackTrace);
       final errorMessage = _extractAuthErrorMessage(e);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Sign up failed: $errorMessage'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('${t(AppStrings.authSignUpFailed)}: $errorMessage'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

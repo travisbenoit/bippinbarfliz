@@ -15,26 +15,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingSlide> _slides = [
-    OnboardingSlide(
-      title: 'Find your\nDrinking Partner !',
-      subtitle: 'Get bored drinking alone,\nfind new drinking partner',
-      image: 'assets/images/slide.png',
-    ),
-    OnboardingSlide(
-      title: 'Real Drinks with\nReal Friends !',
-      subtitle: 'Enjoy Your drink with new\nfriends',
-      image: 'assets/images/slide.png',
-    ),
-    OnboardingSlide(
-      title: 'Best Social App To\nMake New Friends !',
-      subtitle: 'Find people with the same\ninterest as you',
-      image: 'assets/images/slide.png',
-    ),
-  ];
-
-  void _nextSlide() {
-    if (_currentPage < _slides.length - 1) {
+  void _nextSlide(int slidesLength) {
+    if (_currentPage < slidesLength - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -46,6 +28,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
+
+    final slides = [
+      OnboardingSlide(
+        title: t(AppStrings.onboardingSlide1Title),
+        subtitle: t(AppStrings.onboardingSlide1Sub),
+        image: 'assets/images/slide.png',
+      ),
+      OnboardingSlide(
+        title: t(AppStrings.onboardingSlide2Title),
+        subtitle: t(AppStrings.onboardingSlide2Sub),
+        image: 'assets/images/slide.png',
+      ),
+      OnboardingSlide(
+        title: t(AppStrings.onboardingSlide3Title),
+        subtitle: t(AppStrings.onboardingSlide3Sub),
+        image: 'assets/images/slide.png',
+      ),
+    ];
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -58,9 +60,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     _currentPage = index;
                   });
                 },
-                itemCount: _slides.length,
+                itemCount: slides.length,
                 itemBuilder: (context, index) {
-                  return _buildSlide(_slides[index]);
+                  return _buildSlide(slides[index]);
                 },
               ),
             ),
@@ -71,7 +73,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
-                      _slides.length,
+                      slides.length,
                       (index) => AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -90,7 +92,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _nextSlide,
+                      onPressed: () => _nextSlide(slides.length),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE91E63),
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -101,9 +103,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Get Started',
-                            style: TextStyle(
+                          Text(
+                            t(AppStrings.onboardingGetStarted),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -119,15 +121,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Already have an account? ',
-                        style: TextStyle(color: Colors.black54),
+                      Text(
+                        t(AppStrings.onboardingAlreadyAccount),
+                        style: const TextStyle(color: Colors.black54),
                       ),
                       TextButton(
                         onPressed: () => context.go('/signin'),
-                        child: const Text(
-                          'Sign in',
-                          style: TextStyle(
+                        child: Text(
+                          t(AppStrings.onboardingSignIn),
+                          style: const TextStyle(
                             color: Color(0xFFE91E63),
                             fontWeight: FontWeight.w600,
                           ),
@@ -153,14 +155,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Container(
             height: 300,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Center(
               child: Icon(
                 Icons.local_bar,
                 size: 120,
-                color: const Color(0xFFE91E63).withOpacity(0.6),
+                color: const Color(0xFFE91E63).withValues(alpha: 0.6),
               ),
             ),
           ),

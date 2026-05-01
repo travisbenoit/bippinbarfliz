@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/itunes_music_service.dart';
+import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 
@@ -44,7 +45,7 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
       final results = await _musicService.searchTracks(query);
       setState(() => _searchResults = results);
     } catch (e) {
-      setState(() => _shareError = 'Search failed: ${e.toString()}');
+      setState(() => _shareError = '${context.tr(AppStrings.musicSearchFailed)}: ${e.toString()}');
     } finally {
       setState(() => _isSearching = false);
     }
@@ -76,13 +77,13 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Song shared successfully!')),
+            SnackBar(content: Text(context.tr(AppStrings.musicSharedOk))),
           );
           context.pop();
         }
       }
     } catch (e) {
-      setState(() => _shareError = 'Failed to share: ${e.toString()}');
+      setState(() => _shareError = '${context.tr(AppStrings.musicShareFailed)}: ${e.toString()}');
     } finally {
       setState(() => _isSharing = false);
     }
@@ -92,7 +93,7 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Share a Song'),
+        title: Text(context.tr(AppStrings.musicShareTitle)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -106,7 +107,7 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search on Apple Music...',
+                hintText: context.tr(AppStrings.musicShareHint),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -130,10 +131,10 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
                 ),
               )
             else if (_searchResults.isEmpty && _searchController.text.isNotEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Text('No songs found'),
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: Text(context.tr(AppStrings.musicNoResults)),
                 ),
               )
             else if (_searchResults.isNotEmpty)
@@ -170,10 +171,10 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
                 },
               )
             else
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Text('Search for a song to share'),
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: Text(context.tr(AppStrings.musicSearchTitle)),
                 ),
               ),
           ],

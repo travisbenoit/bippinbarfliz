@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../extensions/localization_extension.dart';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -238,6 +239,8 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     final user = _supabase.auth.currentUser;
     if (user == null) return;
 
+    final messenger = ScaffoldMessenger.of(context);
+    final errMsg = context.tr(AppStrings.roomFailedSend);
     try {
       await _supabase.from('venue_room_messages').insert({
         'venue_id': widget.venueId,
@@ -247,9 +250,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send: $e')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
       }
     }
   }
@@ -308,6 +309,9 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     if (user == null) return;
 
     setState(() => _checkingIn = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final successMsg = context.tr(AppStrings.roomCheckedIn);
+    final failMsg = context.tr(AppStrings.roomCheckinFailed);
     try {
       final now = DateTime.now().toIso8601String();
 
@@ -331,16 +335,12 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("You're checked in!")),
-        );
+        messenger.showSnackBar(SnackBar(content: Text(successMsg)));
         await _loadPresence();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Check-in failed: $e')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text('$failMsg: $e')));
       }
     } finally {
       if (mounted) setState(() => _checkingIn = false);
@@ -381,14 +381,14 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
   }
 
   Future<void> _addPhoto() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final msg = context.tr(AppStrings.roomPhotoComingSoon);
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked == null) return;
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Photo sharing coming soon')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(msg)));
     }
   }
 
@@ -449,6 +449,9 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
   Future<void> _submitVote() async {
     if (_currentPoll == null || _selectedPollOption == null) return;
     setState(() => _submittingVote = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final successMsg = context.tr(AppStrings.roomVoteSuccess);
+    final failMsg = context.tr(AppStrings.roomVoteFailed);
 
     try {
       final votes = Map<String, dynamic>.from(_currentPoll!.votes);
@@ -460,16 +463,12 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
           .update({'votes': votes}).eq('id', _currentPoll!.id);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vote submitted!')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text(successMsg)));
         await _loadVibe();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to vote: $e')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text('$failMsg: $e')));
       }
     } finally {
       if (mounted) setState(() => _submittingVote = false);
@@ -484,6 +483,8 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     if (user == null) return;
 
     setState(() => _postingMoment = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final failMsg = context.tr(AppStrings.roomMomentFailed);
     try {
       await _supabase.from('venue_room_moments').insert({
         'venue_id': widget.venueId,
@@ -495,9 +496,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       await _loadVibe();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to post: $e')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text('$failMsg: $e')));
       }
     } finally {
       if (mounted) setState(() => _postingMoment = false);
@@ -510,6 +509,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       backgroundColor: _bgColor,
       appBar: AppBar(
@@ -522,7 +522,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
           children: [
             Expanded(
               child: Text(
-                widget.venueName ?? 'The Room',
+                widget.venueName ?? t(AppStrings.roomTheRoomDefault),
                 style: const TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w700,
@@ -566,11 +566,11 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
           unselectedLabelColor: Colors.grey,
           labelStyle:
               const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-          tabs: const [
-            Tab(text: 'Chat 💬'),
-            Tab(text: "Who's Here 👥"),
-            Tab(text: 'Photo Wall 📸'),
-            Tab(text: 'Vibe ✨'),
+          tabs: [
+            Tab(text: t(AppStrings.roomChatTab)),
+            Tab(text: t(AppStrings.roomWhosHereTab)),
+            Tab(text: t(AppStrings.roomPhotoWallTab)),
+            Tab(text: t(AppStrings.roomVibeTab)),
           ],
         ),
       ),
@@ -625,16 +625,16 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'No messages yet',
-              style: TextStyle(
+            Text(
+              context.tr(AppStrings.roomNoMessages),
+              style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87),
             ),
             const SizedBox(height: 8),
             Text(
-              'Be the first to say something!',
+              context.tr(AppStrings.roomBeFirstSay),
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
           ],
@@ -675,7 +675,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
               child: TextField(
                 controller: _chatController,
                 decoration: InputDecoration(
-                  hintText: 'Say something...',
+                  hintText: context.tr(AppStrings.roomSaySomething),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,
@@ -733,7 +733,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                     const Icon(Icons.people, size: 16, color: _brandColor),
                     const SizedBox(width: 6),
                     Text(
-                      '$_peopleCount here now',
+                      '$_peopleCount ${context.tr(AppStrings.roomHereNow)}',
                       style: const TextStyle(
                         color: _brandColor,
                         fontWeight: FontWeight.w600,
@@ -754,7 +754,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                             strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(Icons.location_on, size: 16),
-                label: const Text("I'm Here!"),
+                label: Text(context.tr(AppStrings.roomIAmHere)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _brandColor,
                   foregroundColor: Colors.white,
@@ -778,11 +778,11 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                         Icon(Icons.person_off_outlined,
                             size: 48, color: Colors.grey[400]),
                         const SizedBox(height: 12),
-                        Text('No one checked in yet',
+                        Text(context.tr(AppStrings.roomNoOneCheckedIn),
                             style: TextStyle(
                                 fontSize: 16, color: Colors.grey[600])),
                         const SizedBox(height: 6),
-                        Text('Be the first!',
+                        Text(context.tr(AppStrings.roomBeFirst),
                             style: TextStyle(
                                 fontSize: 14, color: Colors.grey[500])),
                       ],
@@ -840,13 +840,13 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                             size: 36, color: _brandColor),
                       ),
                       const SizedBox(height: 16),
-                      const Text('No photos yet',
-                          style: TextStyle(
+                      Text(context.tr(AppStrings.roomNoPhotos),
+                          style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87)),
                       const SizedBox(height: 8),
-                      Text('Add the first photo!',
+                      Text(context.tr(AppStrings.roomAddFirstPhoto),
                           style: TextStyle(
                               fontSize: 14, color: Colors.grey[600])),
                     ],
@@ -913,7 +913,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
               ),
               child: Center(
                 child: Text(
-                  'No active poll right now',
+                  context.tr(AppStrings.roomNoActivePoll),
                   style: TextStyle(color: Colors.grey[500], fontSize: 14),
                 ),
               ),
@@ -931,9 +931,9 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Popular Vibes Here',
-                  style: TextStyle(
+                Text(
+                  context.tr(AppStrings.roomPopularVibes),
+                  style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
@@ -976,9 +976,9 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Share a Moment',
-                  style: TextStyle(
+                Text(
+                  context.tr(AppStrings.roomShareMomentTitle),
+                  style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
@@ -986,7 +986,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                   controller: _momentController,
                   maxLines: 2,
                   decoration: InputDecoration(
-                    hintText: "What's happening right now?",
+                    hintText: context.tr(AppStrings.roomWhatHappening),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide:
@@ -1013,7 +1013,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                             width: 16,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white))
-                        : const Text('Post Moment'),
+                        : Text(context.tr(AppStrings.roomPostMoment)),
                   ),
                 ),
               ],
@@ -1024,9 +1024,9 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
 
           // Recent moments
           if (_moments.isNotEmpty) ...[
-            const Text(
-              'Recent Moments',
-              style: TextStyle(
+            Text(
+              context.tr(AppStrings.roomRecentMoments),
+              style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: Colors.black87),
@@ -1059,7 +1059,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                   color: _brandColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text('POLL',
+                child: Text(context.tr(AppStrings.roomPollLabel),
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -1131,7 +1131,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                       width: 16,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : const Text('Submit Vote'),
+                  : Text(context.tr(AppStrings.roomSubmitVote)),
             ),
           ),
         ],
@@ -1263,13 +1263,13 @@ class _UserCard extends StatelessWidget {
     switch (user.tonightStatus) {
       case 'out_now':
         statusColor = Colors.green;
-        statusLabel = 'Out Now';
+        statusLabel = context.tr(AppStrings.roomOutNow);
       case 'going_out_soon':
         statusColor = Colors.orange;
-        statusLabel = 'Going Out Soon';
+        statusLabel = context.tr(AppStrings.roomGoingOutSoon);
       default:
         statusColor = Colors.grey;
-        statusLabel = 'Staying In';
+        statusLabel = context.tr(AppStrings.roomStayingIn);
     }
 
     return Container(
@@ -1455,7 +1455,7 @@ class _MomentCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _fmtRelative(moment.createdAt),
+                  _fmtRelative(moment.createdAt, context),
                   style:
                       TextStyle(fontSize: 11, color: Colors.grey[500]),
                 ),
@@ -1467,11 +1467,11 @@ class _MomentCard extends StatelessWidget {
     );
   }
 
-  String _fmtRelative(DateTime t) {
+  String _fmtRelative(DateTime t, BuildContext context) {
     final diff = DateTime.now().difference(t);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return context.tr(AppStrings.roomJustNow);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}${context.tr(AppStrings.roomMinAgo)}';
+    if (diff.inHours < 24) return '${diff.inHours}${context.tr(AppStrings.roomHourAgo)}';
+    return '${diff.inDays}${context.tr(AppStrings.roomDayAgo)}';
   }
 }

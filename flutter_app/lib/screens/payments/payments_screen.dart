@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../services/analytics_service.dart';
+import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 
@@ -67,14 +68,15 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       backgroundColor: _bg,
       appBar: AppBar(
         elevation: 0,
         leading: BackButton(color: Colors.black87),
-        title: const Text(
-          'Payments',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w700),
+        title: Text(
+          t(AppStrings.paymentsTitle),
+          style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w700),
         ),
         actions: const [
           Padding(
@@ -87,10 +89,10 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen>
           indicatorColor: _pink,
           labelColor: _pink,
           unselectedLabelColor: Colors.grey,
-          tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'Send'),
-            Tab(text: 'History'),
+          tabs: [
+            Tab(text: t(AppStrings.paymentsTabOverview)),
+            Tab(text: t(AppStrings.paymentsTabSend)),
+            Tab(text: t(AppStrings.paymentsTabHistory)),
           ],
         ),
       ),
@@ -126,7 +128,7 @@ class _OverviewTab extends ConsumerWidget {
       loading: () => const Center(
         child: CircularProgressIndicator(color: _pink),
       ),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(child: Text('${context.tr(AppStrings.error)}: $e')),
       data: (profile) {
         final lushBalance = (profile?['lush_coin_balance'] as num?)?.toInt() ?? 0;
         final providerLinked = profile?['payment_provider_linked'] == true;
@@ -158,7 +160,7 @@ class _OverviewTab extends ConsumerWidget {
                 child: ElevatedButton.icon(
                   onPressed: onGoToSend,
                   icon: const Icon(Icons.send_rounded),
-                  label: const Text('Send Payment'),
+                  label: Text(context.tr(AppStrings.paymentsSendPayment)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _pink,
                     foregroundColor: Colors.white,
@@ -180,10 +182,10 @@ class _OverviewTab extends ConsumerWidget {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Request payment – coming soon')),
+                    SnackBar(content: Text(context.tr(AppStrings.paymentsComingSoon))),
                   ),
                   icon: const Icon(Icons.request_page_outlined),
-                  label: const Text('Request Payment'),
+                  label: Text(context.tr(AppStrings.paymentsRequestPayment)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: _pink,
                     side: const BorderSide(color: _pink),
@@ -209,7 +211,7 @@ class _OverviewTab extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Link Payment Method'),
+        title: Text(context.tr(AppStrings.paymentsLinkMethod)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -221,7 +223,7 @@ class _OverviewTab extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Venmo setup coming soon')),
+                  SnackBar(content: Text(context.tr(AppStrings.paymentsVenmoComingSoon))),
                 );
               },
             ),
@@ -232,7 +234,7 @@ class _OverviewTab extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('PayPal setup coming soon')),
+                  SnackBar(content: Text(context.tr(AppStrings.paymentsPaypalComingSoon))),
                 );
               },
             ),
@@ -243,7 +245,7 @@ class _OverviewTab extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('CashApp setup coming soon')),
+                  SnackBar(content: Text(context.tr(AppStrings.paymentsCashappComingSoon))),
                 );
               },
             ),
@@ -252,7 +254,7 @@ class _OverviewTab extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(context.tr(AppStrings.cancel)),
           ),
         ],
       ),
@@ -341,23 +343,21 @@ class _LushCoinCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'coins available',
-            style: TextStyle(color: Colors.white60, fontSize: 13),
+          Text(
+            context.tr(AppStrings.paymentsCoinsAvailable),
+            style: const TextStyle(color: Colors.white60, fontSize: 13),
           ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Coming soon - LushCoin purchases'),
-                ),
+                SnackBar(content: Text(context.tr(AppStrings.paymentsComingSoon))),
               ),
               icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-              label: const Text(
-                'Add Coins',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              label: Text(
+                context.tr(AppStrings.paymentsAddCoins),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.white54),
@@ -424,9 +424,9 @@ class _PaymentMethodCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Payment Method',
-                  style: TextStyle(
+                Text(
+                  context.tr(AppStrings.paymentsPaymentMethod),
+                  style: const TextStyle(
                     fontSize: 13,
                     color: Colors.grey,
                     fontWeight: FontWeight.w500,
@@ -448,7 +448,7 @@ class _PaymentMethodCard extends StatelessWidget {
                       const Icon(Icons.check_circle, color: Colors.green, size: 14),
                       const SizedBox(width: 4),
                       Text(
-                        '$provider linked',
+                        '$provider ${context.tr(AppStrings.paymentsLinked)}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.green,
@@ -458,9 +458,9 @@ class _PaymentMethodCard extends StatelessWidget {
                     ],
                   ),
                 ] else ...[
-                  const Text(
-                    'No method linked',
-                    style: TextStyle(
+                  Text(
+                    context.tr(AppStrings.paymentsNoMethodLinked),
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.black54,
@@ -473,9 +473,9 @@ class _PaymentMethodCard extends StatelessWidget {
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: const Text(
-                      'Link Payment Method →',
-                      style: TextStyle(
+                    child: Text(
+                      '${context.tr(AppStrings.paymentsLinkMethod)} →',
+                      style: const TextStyle(
                         color: Color(0xFFE91E63),
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
@@ -554,12 +554,14 @@ class _SendTabState extends ConsumerState<_SendTab> {
     final amount = double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount')),
+        SnackBar(content: Text(context.tr(AppStrings.paymentsInvalidAmount))),
       );
       return;
     }
 
     setState(() => _isSending = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final t = ref.read(tProvider);
     try {
       final supabase = Supabase.instance.client;
       final uid = supabase.auth.currentUser?.id;
@@ -582,17 +584,17 @@ class _SendTabState extends ConsumerState<_SendTab> {
         _searchResults = [];
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
-            content: Text('Payment sent to ${recipient['name']}!'),
+            content: Text('${t(AppStrings.paymentsPaymentSentTo)} ${recipient['name']}!'),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send payment: $e')),
+        messenger.showSnackBar(
+          SnackBar(content: Text('${t(AppStrings.paymentsFailedSend)}: $e')),
         );
       }
     } finally {
@@ -622,7 +624,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
             controller: _searchController,
             onChanged: _searchUsers,
             decoration: InputDecoration(
-              hintText: 'Search people by name...',
+              hintText: context.tr(AppStrings.paymentsSearchHint),
               prefixIcon: _isSearching
                   ? const Padding(
                       padding: EdgeInsets.all(12),
@@ -714,9 +716,9 @@ class _SendTabState extends ConsumerState<_SendTab> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Sending to',
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      Text(
+                        context.tr(AppStrings.paymentsSendingTo),
+                        style: const TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                       Text(
                         _selectedUser!['name'] as String? ?? 'Unknown',
@@ -743,7 +745,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
           // Amount field
           _buildInputField(
             controller: _amountController,
-            label: 'Amount (USD)',
+            label: context.tr(AppStrings.paymentsAmountUsd),
             hint: '0.00',
             prefixText: '\$ ',
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -756,8 +758,8 @@ class _SendTabState extends ConsumerState<_SendTab> {
           // Note field
           _buildInputField(
             controller: _noteController,
-            label: 'Note (optional)',
-            hint: 'What\'s it for?',
+            label: context.tr(AppStrings.paymentsNoteLabel),
+            hint: context.tr(AppStrings.paymentsNoteHint),
           ),
           const SizedBox(height: 24),
 
@@ -787,7 +789,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Send Payment'),
+                  : Text(context.tr(AppStrings.paymentsSendPayment)),
             ),
           ),
         ],
@@ -849,7 +851,7 @@ class _HistoryTab extends ConsumerWidget {
 
     return historyAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(color: _pink)),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(child: Text('${context.tr(AppStrings.error)}: $e')),
       data: (transactions) {
         if (transactions.isEmpty) {
           return Center(
@@ -866,13 +868,13 @@ class _HistoryTab extends ConsumerWidget {
                   child: const Icon(Icons.receipt_long_outlined, size: 40, color: _pink),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'No transactions yet',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                Text(
+                  t(AppStrings.paymentsNoTransactions),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your payment history will appear here',
+                  t(AppStrings.paymentsHistoryEmptySub),
                   style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 ),
               ],
@@ -912,7 +914,7 @@ class _HistoryTab extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: _SummaryTile(
-                        label: 'Total Sent',
+                        label: t(AppStrings.paymentsTotalSent),
                         amount: totalSent,
                         color: Colors.red,
                         icon: Icons.arrow_upward_rounded,
@@ -921,7 +923,7 @@ class _HistoryTab extends ConsumerWidget {
                     Container(width: 1, height: 50, color: Colors.grey[200]),
                     Expanded(
                       child: _SummaryTile(
-                        label: 'Total Received',
+                        label: t(AppStrings.paymentsTotalReceived),
                         amount: totalReceived,
                         color: Colors.green,
                         icon: Icons.arrow_downward_rounded,
@@ -931,9 +933,9 @@ class _HistoryTab extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Transactions',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              Text(
+                t(AppStrings.paymentsTransactions),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 12),
               ...transactions.map((tx) => _TransactionTile(tx: tx, currentUid: uid)),
@@ -1051,7 +1053,7 @@ class _TransactionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isSender ? 'Payment Sent' : 'Payment Received',
+                  isSender ? context.tr(AppStrings.paymentsSent) : context.tr(AppStrings.paymentsReceived),
                   style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
                 if (note != null && note.isNotEmpty) ...[

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../extensions/localization_extension.dart';
 
 class SafetySettingsScreen extends ConsumerStatefulWidget {
   const SafetySettingsScreen({super.key});
@@ -97,7 +98,7 @@ class _SafetySettingsScreenState
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load settings: $e')),
+          SnackBar(content: Text('${context.tr(AppStrings.safetyFailedLoad)}: $e')),
         );
       }
     }
@@ -115,6 +116,8 @@ class _SafetySettingsScreenState
       _ghostMode = value;
       _savingGhost = true;
     });
+    final messenger = ScaffoldMessenger.of(context);
+    final errMsg = context.tr(AppStrings.safetyFailedGhost);
 
     try {
       await _supabase
@@ -122,10 +125,8 @@ class _SafetySettingsScreenState
           .update({'ghost_mode': value}).eq('id', user.id);
     } catch (e) {
       if (mounted) {
-        setState(() => _ghostMode = !value); // revert
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update ghost mode: $e')),
-        );
+        setState(() => _ghostMode = !value);
+        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
       }
     } finally {
       if (mounted) setState(() => _savingGhost = false);
@@ -141,6 +142,8 @@ class _SafetySettingsScreenState
       _privacyMode = mode;
       _savingPrivacy = true;
     });
+    final messenger = ScaffoldMessenger.of(context);
+    final errMsg = context.tr(AppStrings.safetyFailedPrivacy);
 
     try {
       await _supabase
@@ -149,9 +152,7 @@ class _SafetySettingsScreenState
     } catch (e) {
       if (mounted) {
         setState(() => _privacyMode = previous);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update privacy: $e')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
       }
     } finally {
       if (mounted) setState(() => _savingPrivacy = false);
@@ -159,6 +160,10 @@ class _SafetySettingsScreenState
   }
 
   Future<void> _unblock(_BlockedUser blocked) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final unblockMsg = '${blocked.name} ${context.tr(AppStrings.safetyUnblockedUser)}';
+    final errMsg = context.tr(AppStrings.safetyFailedUnblock);
+
     try {
       await _supabase
           .from('user_blocks')
@@ -168,36 +173,35 @@ class _SafetySettingsScreenState
       if (mounted) {
         setState(() =>
             _blockedUsers.removeWhere((b) => b.blockId == blocked.blockId));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${blocked.name} unblocked')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text(unblockMsg)));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to unblock: $e')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
       }
     }
   }
 
   Future<void> _showDeleteAccountDialog() async {
+    final title = context.tr(AppStrings.safetyDeleteConfirmTitle);
+    final message = context.tr(AppStrings.safetyDeleteConfirmMsg);
+    final cancelLabel = context.tr(AppStrings.cancel);
+    final deleteLabel = context.tr(AppStrings.safetyDeleteMyAccount);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: const Text(
-          'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.',
-        ),
+        title: Text(title),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(cancelLabel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete My Account'),
+            child: Text(deleteLabel),
           ),
         ],
       ),
@@ -212,6 +216,9 @@ class _SafetySettingsScreenState
     if (user == null) return;
 
     setState(() => _requestingDeletion = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final successMsg = context.tr(AppStrings.safetyDeletionRequested);
+    final errMsg = context.tr(AppStrings.safetyFailedSubmit);
 
     try {
       await _supabase.from('account_deletion_requests').insert({
@@ -220,19 +227,14 @@ class _SafetySettingsScreenState
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Account deletion requested. You will receive a confirmation email.'),
-            duration: Duration(seconds: 5),
-          ),
-        );
+        messenger.showSnackBar(SnackBar(
+          content: Text(successMsg),
+          duration: const Duration(seconds: 5),
+        ));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit request: $e')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
       }
     } finally {
       if (mounted) setState(() => _requestingDeletion = false);
@@ -240,12 +242,10 @@ class _SafetySettingsScreenState
   }
 
   void _requestDataExport() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Data export requested - check your email'),
-        duration: Duration(seconds: 4),
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(context.tr(AppStrings.safetyDataExportSoon)),
+      duration: const Duration(seconds: 4),
+    ));
   }
 
   // ---------------------------------------------------------------------------
@@ -262,9 +262,9 @@ class _SafetySettingsScreenState
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Safety & Security',
-          style: TextStyle(
+        title: Text(
+          context.tr(AppStrings.safetyTitle),
+          style: const TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.w700,
               fontSize: 18),
@@ -300,26 +300,25 @@ class _SafetySettingsScreenState
 
   Widget _buildPrivacySection() {
     return _SectionCard(
-      title: 'Privacy',
+      title: context.tr(AppStrings.safetyPrivacy),
       icon: Icons.lock_outline,
       children: [
-        // Ghost Mode
         Row(
           children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Ghost Mode',
-                    style: TextStyle(
+                  Text(
+                    context.tr(AppStrings.safetyGhostModeTitle),
+                    style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Hide your location and profile from discovery',
+                    context.tr(AppStrings.safetyGhostHideSub),
                     style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                   ),
                 ],
@@ -343,15 +342,14 @@ class _SafetySettingsScreenState
 
         const Divider(height: 28),
 
-        // Privacy Mode
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Text(
-                  'Profile Visibility',
-                  style: TextStyle(
+                Text(
+                  context.tr(AppStrings.safetyProfileVisibility),
+                  style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87),
@@ -369,22 +367,22 @@ class _SafetySettingsScreenState
             const SizedBox(height: 12),
             _buildPrivacyOption(
               value: 'public',
-              label: 'Public',
-              description: 'Everyone can see your profile',
+              label: context.tr(AppStrings.safetyPublicLabel),
+              description: context.tr(AppStrings.safetyPublicDesc),
               icon: Icons.public,
             ),
             const SizedBox(height: 8),
             _buildPrivacyOption(
               value: 'friends_only',
-              label: 'Friends Only',
-              description: 'Only your friends can see your profile',
+              label: context.tr(AppStrings.safetyFriendsOnlyLabel),
+              description: context.tr(AppStrings.safetyFriendsOnlyDesc),
               icon: Icons.people_outline,
             ),
             const SizedBox(height: 8),
             _buildPrivacyOption(
               value: 'private',
-              label: 'Private',
-              description: 'No one can discover your profile',
+              label: context.tr(AppStrings.safetyPrivateLabel),
+              description: context.tr(AppStrings.safetyPrivateDesc),
               icon: Icons.lock_outline,
             ),
           ],
@@ -459,7 +457,7 @@ class _SafetySettingsScreenState
 
   Widget _buildBlockListSection() {
     return _SectionCard(
-      title: 'Blocked Users',
+      title: context.tr(AppStrings.safetyBlockedUsersTitle),
       icon: Icons.block,
       children: [
         if (_blockedUsers.isEmpty)
@@ -467,7 +465,7 @@ class _SafetySettingsScreenState
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Center(
               child: Text(
-                'No blocked users',
+                context.tr(AppStrings.safetyNoBlocked),
                 style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               ),
             ),
@@ -487,7 +485,7 @@ class _SafetySettingsScreenState
 
   Widget _buildAccountSection() {
     return _SectionCard(
-      title: 'Account',
+      title: context.tr(AppStrings.safetyAccount),
       icon: Icons.manage_accounts_outlined,
       children: [
         ListTile(
@@ -502,13 +500,13 @@ class _SafetySettingsScreenState
             child: const Icon(Icons.delete_forever_outlined,
                 color: Colors.red, size: 20),
           ),
-          title: const Text(
-            'Delete Account',
-            style: TextStyle(
+          title: Text(
+            context.tr(AppStrings.safetyDeleteAccount),
+            style: const TextStyle(
                 color: Colors.red, fontWeight: FontWeight.w600, fontSize: 15),
           ),
           subtitle: Text(
-            'Permanently remove your account and data',
+            context.tr(AppStrings.safetyDeleteAccountSub),
             style: TextStyle(fontSize: 12, color: Colors.grey[500]),
           ),
           trailing: _requestingDeletion
@@ -532,7 +530,7 @@ class _SafetySettingsScreenState
 
   Widget _buildDataSection() {
     return _SectionCard(
-      title: 'Your Data',
+      title: context.tr(AppStrings.safetyYourData),
       icon: Icons.storage_outlined,
       children: [
         ListTile(
@@ -547,15 +545,15 @@ class _SafetySettingsScreenState
             child: const Icon(Icons.download_outlined,
                 color: _brandColor, size: 20),
           ),
-          title: const Text(
-            'Download My Data',
-            style: TextStyle(
+          title: Text(
+            context.tr(AppStrings.safetyDownloadData),
+            style: const TextStyle(
                 color: Colors.black87,
                 fontWeight: FontWeight.w600,
                 fontSize: 15),
           ),
           subtitle: Text(
-            'Request a copy of all your data',
+            context.tr(AppStrings.safetyDownloadDataSub),
             style: TextStyle(fontSize: 12, color: Colors.grey[500]),
           ),
           trailing: const Icon(Icons.arrow_forward_ios,
@@ -643,7 +641,7 @@ class _BlockedUserTile extends StatelessWidget {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text('Unblock', style: TextStyle(fontSize: 13)),
+            child: Text(context.tr(AppStrings.blockedUnblock), style: const TextStyle(fontSize: 13)),
           ),
         ],
       ),

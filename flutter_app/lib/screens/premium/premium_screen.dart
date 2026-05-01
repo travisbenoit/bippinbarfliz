@@ -12,30 +12,27 @@ class PremiumScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Coming Soon'),
-        content: Text(
-          'Premium subscriptions ($plan) will be available soon!\n\n'
-          "We're setting up secure payment processing with Stripe.",
-        ),
+        title: Text(context.tr(AppStrings.premiumComingSoon)),
+        content: Text(context.tr(AppStrings.premiumComingSoonMsg)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK'),
+            child: Text(context.tr(AppStrings.ok)),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("You'll be notified when Premium launches!"),
-                  backgroundColor: Color(0xFFE91E63),
+                SnackBar(
+                  content: Text(context.tr(AppStrings.premiumNotifyConfirm)),
+                  backgroundColor: const Color(0xFFE91E63),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE91E63),
             ),
-            child: const Text('Notify Me'),
+            child: Text(context.tr(AppStrings.premiumNotifyMe)),
           ),
         ],
       ),
@@ -79,22 +76,22 @@ class PremiumScreen extends ConsumerWidget {
                 style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 48),
-              _PremiumFeature(
+              const _PremiumFeature(
                 icon: Icons.favorite,
                 title: 'Unlimited Swipes',
                 subtitle: 'Never run out of potential matches',
               ),
-              _PremiumFeature(
+              const _PremiumFeature(
                 icon: Icons.visibility,
                 title: 'See Who Likes You',
                 subtitle: 'Know who wants to meet you',
               ),
-              _PremiumFeature(
+              const _PremiumFeature(
                 icon: Icons.filter_list,
                 title: 'Advanced Filters',
                 subtitle: "Find exactly who you're looking for",
               ),
-              _PremiumFeature(
+              const _PremiumFeature(
                 icon: Icons.block,
                 title: 'No Ads',
                 subtitle: 'Enjoy an ad-free experience',

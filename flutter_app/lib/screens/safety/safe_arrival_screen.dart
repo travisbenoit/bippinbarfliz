@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../extensions/localization_extension.dart';
 
 class SafeArrivalScreen extends ConsumerStatefulWidget {
   const SafeArrivalScreen({super.key});
@@ -59,6 +60,11 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
 
   Future<void> _checkInSafe() async {
     setState(() => _checkingIn = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final failMsg = context.tr(AppStrings.safeArrivalFailedRecord);
+    final recordedTitle = context.tr(AppStrings.safeArrivalRecordedTitle);
+    final notifyMsg = context.tr(AppStrings.safeArrivalNotifyMsg);
+    final greatLabel = context.tr(AppStrings.safeArrivalGreat);
     try {
       final supabase = Supabase.instance.client;
       final currentUser = supabase.auth.currentUser;
@@ -85,14 +91,14 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
                   child: const Icon(Icons.check, color: Colors.white, size: 40),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Safe Arrival Recorded!',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  recordedTitle,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your safety friends have been notified.',
+                  notifyMsg,
                   style: TextStyle(color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
@@ -101,7 +107,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Great!', style: TextStyle(color: _brandPink)),
+                child: Text(greatLabel, style: const TextStyle(color: _brandPink)),
               ),
             ],
           ),
@@ -110,9 +116,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to record safe arrival. Try again.'), backgroundColor: Colors.red),
-        );
+        messenger.showSnackBar(SnackBar(content: Text(failMsg), backgroundColor: Colors.red));
       }
     } finally {
       if (mounted) setState(() => _checkingIn = false);
@@ -129,20 +133,26 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
   void _showAddFriendDialog() {
     final searchCtrl = TextEditingController();
     List<Map<String, dynamic>> results = [];
+    final messenger = ScaffoldMessenger.of(context);
+    final addedMsg = context.tr(AppStrings.safeArrivalFriendAdded);
+    final dialogTitle = context.tr(AppStrings.safeArrivalAddFriendDialog);
+    final searchHint = context.tr(AppStrings.safeArrivalSearchHint);
+    final addLabel = context.tr(AppStrings.safeArrivalAddBtn);
+    final cancelLabel = context.tr(AppStrings.cancel);
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
-          title: const Text('Add Safety Friend'),
+          title: Text(dialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: searchCtrl,
-                decoration: const InputDecoration(
-                  hintText: 'Search by name...',
-                  prefixIcon: Icon(Icons.search),
+                decoration: InputDecoration(
+                  hintText: searchHint,
+                  prefixIcon: const Icon(Icons.search),
                 ),
                 onChanged: (q) async {
                   if (q.length < 2) return;
@@ -174,18 +184,16 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
                         Navigator.pop(ctx);
                         _loadData();
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Safety friend added!'), backgroundColor: _brandPink),
-                          );
+                          messenger.showSnackBar(SnackBar(content: Text(addedMsg), backgroundColor: _brandPink));
                         }
                       },
-                      child: const Text('Add', style: TextStyle(color: _brandPink)),
+                      child: Text(addLabel, style: const TextStyle(color: _brandPink)),
                     ),
                   )),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(cancelLabel)),
           ],
         ),
       ),
@@ -194,6 +202,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -201,11 +210,11 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => context.pop(),
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.shield_outlined, color: _brandPink, size: 22),
-            SizedBox(width: 8),
-            Text('Safe Arrival', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+            const Icon(Icons.shield_outlined, color: _brandPink, size: 22),
+            const SizedBox(width: 8),
+            Text(t(AppStrings.safeArrivalTitle), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
           ],
         ),
       ),
@@ -251,15 +260,15 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
         children: [
           const Icon(Icons.shield, color: Colors.white, size: 36),
           const SizedBox(width: 16),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Stay Safe Tonight', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
+                Text(context.tr(AppStrings.safeArrivalStaySafe), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
                 Text(
-                  'Let your friends know when you get home safe.',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                  context.tr(AppStrings.safeArrivalLetFriendsKnow),
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
             ),
@@ -278,7 +287,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
             ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
             : const Text('🏠', style: TextStyle(fontSize: 20)),
         label: Text(
-          _checkingIn ? 'Recording...' : "I'm Home Safe!",
+          _checkingIn ? context.tr(AppStrings.safeArrivalRecordingState) : context.tr(AppStrings.safeArrivalIAmHome),
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
@@ -299,11 +308,11 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Safety Friends', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            Text(context.tr(AppStrings.safeArrivalFriendsSection), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
             TextButton.icon(
               onPressed: _showAddFriendDialog,
               icon: const Icon(Icons.add, size: 16, color: _brandPink),
-              label: const Text('Add', style: TextStyle(color: _brandPink)),
+              label: Text(context.tr(AppStrings.safeArrivalAddBtn), style: const TextStyle(color: _brandPink)),
             ),
           ],
         ),
@@ -312,11 +321,11 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.person_add_outlined, color: Colors.grey),
-                SizedBox(width: 12),
-                Text('Add friends to notify when you arrive safe', style: TextStyle(color: Colors.grey)),
+                const Icon(Icons.person_add_outlined, color: Colors.grey),
+                const SizedBox(width: 12),
+                Text(context.tr(AppStrings.safeArrivalAddFriendPrompt), style: const TextStyle(color: Colors.grey)),
               ],
             ),
           )
@@ -337,7 +346,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
                       : null,
                 ),
                 title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: const Text('Will be notified', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                subtitle: Text(context.tr(AppStrings.safeArrivalWillNotify), style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 trailing: const Icon(Icons.shield_outlined, color: Colors.green, size: 18),
               ),
             );
@@ -350,17 +359,17 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Recent Safe Arrivals', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+        Text(context.tr(AppStrings.safeArrivalRecentSection), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         if (_safeArrivals.isEmpty)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.history, color: Colors.grey),
-                SizedBox(width: 12),
-                Text('No safe arrivals recorded yet', style: TextStyle(color: Colors.grey)),
+                const Icon(Icons.history, color: Colors.grey),
+                const SizedBox(width: 12),
+                Text(context.tr(AppStrings.safeArrivalNoRecent), style: const TextStyle(color: Colors.grey)),
               ],
             ),
           )
@@ -378,7 +387,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
                   decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), shape: BoxShape.circle),
                   child: const Icon(Icons.shield_outlined, color: Colors.green, size: 20),
                 ),
-                title: const Text('Arrived safe', style: TextStyle(fontWeight: FontWeight.w600)),
+                title: Text(context.tr(AppStrings.safeArrivalArrivedSafe), style: const TextStyle(fontWeight: FontWeight.w600)),
                 subtitle: Text(a['location_note'] as String? ?? 'Home', style: const TextStyle(fontSize: 12)),
                 trailing: Text(formatted, style: const TextStyle(fontSize: 11, color: Colors.grey)),
               ),
@@ -399,11 +408,11 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.emergency_outlined, color: Colors.red),
-              SizedBox(width: 8),
-              Text('Emergency', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 16)),
+              const Icon(Icons.emergency_outlined, color: Colors.red),
+              const SizedBox(width: 8),
+              Text(context.tr(AppStrings.safeArrivalEmergencySection), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 16)),
             ],
           ),
           const SizedBox(height: 12),
@@ -413,7 +422,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
                 child: OutlinedButton.icon(
                   onPressed: () => _callEmergency('911'),
                   icon: const Icon(Icons.phone, color: Colors.red, size: 16),
-                  label: const Text('Call 911', style: TextStyle(color: Colors.red)),
+                  label: Text(context.tr(AppStrings.safeArrivalCall911), style: const TextStyle(color: Colors.red)),
                   style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.red)),
                 ),
               ),
@@ -422,7 +431,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
                 child: OutlinedButton.icon(
                   onPressed: () => _callEmergency('112'),
                   icon: const Icon(Icons.phone, color: Colors.red, size: 16),
-                  label: const Text('Call 112', style: TextStyle(color: Colors.red)),
+                  label: Text(context.tr(AppStrings.safeArrivalCall112), style: const TextStyle(color: Colors.red)),
                   style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.red)),
                 ),
               ),

@@ -11,10 +11,10 @@ class CreateSwarmScreen extends ConsumerWidget {
     final t = ref.watch(tProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Swarm'),
+        title: Text(t(AppStrings.swarmsCreate)),
       ),
-      body: const Center(
-        child: Text('Create a new group meetup'),
+      body: Center(
+        child: Text(t(AppStrings.swarmsCreateNew)),
       ),
     );
   }

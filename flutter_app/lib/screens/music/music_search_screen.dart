@@ -17,7 +17,7 @@ class MusicSearchScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Search Music'),
+        title: Text(t(AppStrings.musicSearchTitle)),
         elevation: 0,
       ),
       body: Column(
@@ -29,7 +29,7 @@ class MusicSearchScreen extends ConsumerWidget {
                 ref.read(musicSearchQueryProvider.notifier).state = value;
               },
               decoration: InputDecoration(
-                hintText: 'Search songs, artists...',
+                hintText: t(AppStrings.musicSearchHintFull),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -44,7 +44,7 @@ class MusicSearchScreen extends ConsumerWidget {
                 if (searchQuery.isEmpty) {
                   return Center(
                     child: Text(
-                      'Start typing to search',
+                      t(AppStrings.musicStartTyping),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   );
@@ -53,7 +53,7 @@ class MusicSearchScreen extends ConsumerWidget {
                 if (results.isEmpty) {
                   return Center(
                     child: Text(
-                      'No results found',
+                      t(AppStrings.musicNoResults),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   );
@@ -71,7 +71,7 @@ class MusicSearchScreen extends ConsumerWidget {
                 child: CircularProgressIndicator(),
               ),
               error: (error, stack) => Center(
-                child: Text('Error: $error'),
+                child: Text('${t(AppStrings.error)}: $error'),
               ),
             ),
           ),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../extensions/localization_extension.dart';
 import '../../models/venue.dart';
 import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
@@ -157,9 +158,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nearby Venues'),
+        title: Text(t(AppStrings.mapTitle)),
         leading: context.canPop()
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -209,10 +211,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       ),
                     ],
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
@@ -220,8 +222,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                           color: Color(0xFFE91E63),
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Text('Loading venues...'),
+                      const SizedBox(width: 8),
+                      Text(t(AppStrings.mapLoadingVenues)),
                     ],
                   ),
                 ),
@@ -289,14 +291,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${_markers.length} venues nearby',
+                          '${_markers.length} ${t(AppStrings.mapVenuesNearby)}',
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                           ),
                         ),
                         Text(
-                          'Tap a marker for details',
+                          t(AppStrings.mapTapMarker),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[600],
@@ -468,7 +470,7 @@ class _VenueBottomSheet extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: onNavigate,
                         icon: const Icon(Icons.directions),
-                        label: const Text('Directions'),
+                        label: Text(context.tr(AppStrings.mapDirections)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFFE91E63),
                           side: const BorderSide(color: Color(0xFFE91E63)),
@@ -484,7 +486,7 @@ class _VenueBottomSheet extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () {},
                         icon: const Icon(Icons.login),
-                        label: const Text('Check In'),
+                        label: Text(context.tr(AppStrings.mapCheckInVenue)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE91E63),
                           foregroundColor: Colors.white,

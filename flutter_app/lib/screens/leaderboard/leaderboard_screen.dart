@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 
@@ -164,6 +165,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       backgroundColor: _background,
       appBar: AppBar(
@@ -172,14 +174,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Row(
+        title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.emoji_events, color: _brandPink, size: 22),
-            SizedBox(width: 8),
+            const Icon(Icons.emoji_events, color: _brandPink, size: 22),
+            const SizedBox(width: 8),
             Text(
-              'Leaderboard',
-              style: TextStyle(
+              t(AppStrings.leaderboardTitle),
+              style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 20,
                 color: Colors.black87,
@@ -193,9 +195,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           unselectedLabelColor: Colors.grey[600],
           indicatorColor: _brandPink,
           indicatorWeight: 3,
-          tabs: const [
-            Tab(text: 'Leaderboard'),
-            Tab(text: 'Challenges'),
+          tabs: [
+            Tab(text: t(AppStrings.leaderboardTab)),
+            Tab(text: t(AppStrings.challengesTab)),
           ],
         ),
       ),
@@ -235,7 +237,7 @@ class _LeaderboardTab extends ConsumerWidget {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error: ${error.toString()}',
+            Text('${context.tr(AppStrings.error)}: ${error.toString()}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.black54)),
             const SizedBox(height: 16),
@@ -245,7 +247,7 @@ class _LeaderboardTab extends ConsumerWidget {
                 backgroundColor: _brandPink,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Retry'),
+              child: Text(t(AppStrings.retry)),
             ),
           ],
         ),
@@ -321,18 +323,18 @@ class _MyStatsCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: entry == null
-            ? const Center(
+            ? Center(
                 child: Text(
-                  'Sign in to see your stats',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  context.tr(AppStrings.leaderboardSignInStats),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Your Stats',
-                    style: TextStyle(
+                  Text(
+                    context.tr(AppStrings.leaderboardYourStats),
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -353,12 +355,12 @@ class _MyStatsCard extends StatelessWidget {
                       _StatBadge(
                         icon: '⚡',
                         value: '${entry!.totalXp}',
-                        label: 'XP',
+                        label: context.tr(AppStrings.leaderboardXp),
                       ),
                       const SizedBox(width: 12),
                       _StatBadge(
                         icon: '🔥',
-                        value: '${entry!.currentStreak}-night streak',
+                        value: '${entry!.currentStreak} ${context.tr(AppStrings.leaderboardNightStreak)}',
                         label: '',
                         compact: true,
                       ),
@@ -366,7 +368,7 @@ class _MyStatsCard extends StatelessWidget {
                       _StatBadge(
                         icon: '📍',
                         value: '${entry!.totalCheckins}',
-                        label: 'check-ins',
+                        label: context.tr(AppStrings.leaderboardCheckIns),
                       ),
                     ],
                   ),
@@ -560,7 +562,7 @@ class _ChallengesTab extends ConsumerWidget {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error: ${error.toString()}',
+            Text('${context.tr(AppStrings.error)}: ${error.toString()}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.black54)),
             const SizedBox(height: 16),
@@ -570,7 +572,7 @@ class _ChallengesTab extends ConsumerWidget {
                 backgroundColor: _brandPink,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Retry'),
+              child: Text(t(AppStrings.retry)),
             ),
           ],
         ),
@@ -599,9 +601,9 @@ class _ChallengesTab extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'No challenges yet',
-                  style: TextStyle(
+                Text(
+                  t(AppStrings.leaderboardNoChallenges),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -609,7 +611,7 @@ class _ChallengesTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Complete challenges to earn XP',
+                  t(AppStrings.leaderboardCompleteXp),
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
@@ -667,7 +669,7 @@ class _XpEarnedBanner extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$totalXp XP earned',
+                '$totalXp ${context.tr(AppStrings.leaderboardXpEarned)}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -675,7 +677,7 @@ class _XpEarnedBanner extends StatelessWidget {
                 ),
               ),
               Text(
-                'from completed challenges',
+                context.tr(AppStrings.leaderboardFromChallenges),
                 style: TextStyle(fontSize: 13, color: Colors.grey[600]),
               ),
             ],
@@ -824,7 +826,7 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompleted = status == 'completed';
     final color = isCompleted ? Colors.green : Colors.orange;
-    final label = isCompleted ? 'Completed' : 'In Progress';
+    final label = isCompleted ? context.tr(AppStrings.challengeCompleted) : context.tr(AppStrings.challengeInProgress);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../extensions/localization_extension.dart';
 import '../../models/user_profile.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
@@ -43,6 +44,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     final usersAsync = ref.watch(discoverUsersProvider);
 
     return Scaffold(
@@ -51,7 +53,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Discover'),
+        title: Text(t(AppStrings.discoverTitle)),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
@@ -69,26 +71,26 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Error: ${error.toString()}'),
+              Text('${t(AppStrings.error)}: ${error.toString()}'),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(discoverUsersProvider),
-                child: const Text('Retry'),
+                child: Text(t(AppStrings.retry)),
               ),
             ],
           ),
         ),
         data: (users) {
           if (users.isEmpty) {
-            return _buildEmptyState();
+            return _buildEmptyState(t);
           }
-          return _buildSwiper(users);
+          return _buildSwiper(users, t);
         },
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(String Function(String) t) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -97,7 +99,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: const Color(0xFFE91E63).withOpacity(0.1),
+              color: const Color(0xFFE91E63).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -107,9 +109,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'No one to discover right now',
-            style: TextStyle(
+          Text(
+            t(AppStrings.discoverNoOne),
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
@@ -117,7 +119,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Check back later when more people are going out!',
+            t(AppStrings.discoverCheckBack),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -135,14 +137,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 borderRadius: BorderRadius.circular(24),
               ),
             ),
-            child: const Text('Refresh'),
+            child: Text(t(AppStrings.discoverRefresh)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSwiper(List<UserProfile> users) {
+  Widget _buildSwiper(List<UserProfile> users, String Function(String) t) {
     return Column(
       children: [
         Expanded(
@@ -208,9 +210,10 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   void _handleLike(UserProfile user) {
+    final t = ref.read(tProvider);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('You liked ${user.name}!'),
+        content: Text('${t(AppStrings.discoverYouLiked)} ${user.name}!'),
         backgroundColor: const Color(0xFFE91E63),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -331,7 +334,7 @@ class _UserCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  _buildStatusBadge(),
+                  _buildStatusBadge(context),
                   if (user.bio != null && user.bio!.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Text(
@@ -395,7 +398,7 @@ class _UserCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge() {
+  Widget _buildStatusBadge(BuildContext context) {
     Color color;
     String text;
     IconData icon;
@@ -403,17 +406,17 @@ class _UserCard extends StatelessWidget {
     switch (user.tonightStatus) {
       case TonightStatus.outNow:
         color = Colors.green;
-        text = 'Out Now';
+        text = context.tr(AppStrings.homeOutNow);
         icon = Icons.local_bar;
         break;
       case TonightStatus.goingOutSoon:
         color = Colors.orange;
-        text = 'Going Out Soon';
+        text = context.tr(AppStrings.homeGoingOut2);
         icon = Icons.schedule;
         break;
       case TonightStatus.stayingIn:
         color = Colors.grey;
-        text = 'Staying In';
+        text = context.tr(AppStrings.homeStayingIn);
         icon = Icons.home;
         break;
     }
@@ -421,7 +424,7 @@ class _UserCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.9),
+        color: color.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(

@@ -117,6 +117,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     final notificationsAsync = ref.watch(notificationsProvider);
 
     final unreadCount = notificationsAsync.maybeWhen(
@@ -135,9 +136,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Notifications',
-              style: TextStyle(
+            Text(
+              t(AppStrings.notificationsTitle),
+              style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 20,
                 color: Colors.black87,
@@ -145,7 +146,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             ),
             if (unreadCount > 0)
               Text(
-                '$unreadCount unread',
+                '$unreadCount ${t(AppStrings.notificationsUnread)}',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -170,9 +171,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   )
                 : TextButton(
                     onPressed: _markAllRead,
-                    child: const Text(
-                      'Mark all read',
-                      style: TextStyle(
+                    child: Text(
+                      t(AppStrings.notificationsMarkAllRead),
+                      style: const TextStyle(
                         color: _brandPink,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
@@ -191,7 +192,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Error: ${error.toString()}',
+              Text('${t(AppStrings.notificationsError)}: ${error.toString()}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.black54)),
               const SizedBox(height: 16),
@@ -201,7 +202,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   backgroundColor: _brandPink,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('Retry'),
+                child: Text(t(AppStrings.retry)),
               ),
             ],
           ),
@@ -226,9 +227,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No notifications yet',
-                    style: TextStyle(
+                  Text(
+                    t(AppStrings.notificationsEmpty),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
@@ -236,7 +237,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'You\'re all caught up!',
+                    t(AppStrings.notificationsAllCaughtUp),
                     style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
@@ -261,7 +262,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               padding: const EdgeInsets.only(bottom: 24),
               children: [
                 if (today.isNotEmpty) ...[
-                  _SectionHeader(label: 'Today'),
+                  _SectionHeader(label: t(AppStrings.notificationsToday)),
                   ...today.map(
                     (n) => _NotificationCard(
                       notification: n,
@@ -270,7 +271,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   ),
                 ],
                 if (earlier.isNotEmpty) ...[
-                  _SectionHeader(label: 'Earlier'),
+                  _SectionHeader(label: t(AppStrings.notificationsEarlier)),
                   ...earlier.map(
                     (n) => _NotificationCard(
                       notification: n,

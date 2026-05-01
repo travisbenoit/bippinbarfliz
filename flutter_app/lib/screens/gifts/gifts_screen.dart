@@ -11,26 +11,26 @@ class GiftsScreen extends ConsumerWidget {
     final t = ref.watch(tProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Gifts'),
+        title: Text(t(AppStrings.giftsTitle)),
       ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.card_giftcard,
               size: 80,
               color: Color(0xFFE91E63),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
-              'No gifts yet',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              t(AppStrings.giftsEmpty),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Send or receive virtual drinks',
-              style: TextStyle(color: Colors.grey),
+              t(AppStrings.giftsEmptySub),
+              style: const TextStyle(color: Colors.grey),
             ),
           ],
         ),

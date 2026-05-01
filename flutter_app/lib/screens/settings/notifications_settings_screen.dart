@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../extensions/localization_extension.dart';
 
 class NotificationsSettingsScreen extends ConsumerStatefulWidget {
   const NotificationsSettingsScreen({super.key});
@@ -62,7 +63,7 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
       debugPrint('[NotifSettings] Failed to load preferences: $e\n$st');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load notification preferences')),
+          SnackBar(content: Text(context.tr(AppStrings.notifSettingsFailedLoad))),
         );
       }
     }
@@ -71,6 +72,9 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
 
   Future<void> _save() async {
     setState(() => _saving = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final savedMsg = context.tr(AppStrings.notifSettingsSavedBanner);
+    final errorMsg = context.tr(AppStrings.notifSettingsSaveError);
     try {
       final supabase = Supabase.instance.client;
       final currentUser = supabase.auth.currentUser;
@@ -92,15 +96,11 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
       }, onConflict: 'user_id');
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Notification preferences saved!'), backgroundColor: _brandPink),
-        );
+        messenger.showSnackBar(SnackBar(content: Text(savedMsg), backgroundColor: _brandPink));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to save preferences'), backgroundColor: Colors.red),
-        );
+        messenger.showSnackBar(SnackBar(content: Text(errorMsg), backgroundColor: Colors.red));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -109,6 +109,7 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -116,7 +117,7 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+        title: Text(t(AppStrings.notifSettingsTitle), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
         actions: [
           _saving
               ? const Padding(
@@ -125,7 +126,7 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
                 )
               : TextButton(
                   onPressed: _save,
-                  child: const Text('Save', style: TextStyle(color: _brandPink, fontWeight: FontWeight.w700)),
+                  child: Text(t(AppStrings.save), style: const TextStyle(color: _brandPink, fontWeight: FontWeight.w700)),
                 ),
         ],
       ),
@@ -133,72 +134,72 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
           ? const Center(child: CircularProgressIndicator(color: _brandPink))
           : ListView(
               children: [
-                _SectionHeader(title: 'Social'),
+                _SectionHeader(title: t(AppStrings.notifSettingsSocial)),
                 _NotifTile(
                   icon: Icons.chat_bubble_outline,
                   iconColor: Colors.blue,
-                  title: 'Messages',
-                  subtitle: 'New messages from friends',
+                  title: t(AppStrings.notifMessages),
+                  subtitle: t(AppStrings.notifMessagesSub),
                   value: _messages,
                   onChanged: (v) => setState(() => _messages = v),
                 ),
                 _NotifTile(
                   icon: Icons.person_add_outlined,
                   iconColor: Colors.teal,
-                  title: 'Friend Requests',
-                  subtitle: 'When someone adds you',
+                  title: t(AppStrings.notifFriendReq),
+                  subtitle: t(AppStrings.notifFriendReqSub),
                   value: _friendRequests,
                   onChanged: (v) => setState(() => _friendRequests = v),
                 ),
                 _NotifTile(
                   icon: Icons.groups_outlined,
                   iconColor: const Color(0xFFE91E63),
-                  title: 'Swarms',
-                  subtitle: 'Swarm invites and activity',
+                  title: t(AppStrings.notifSwarms),
+                  subtitle: t(AppStrings.notifSwarmsSub),
                   value: _swarms,
                   onChanged: (v) => setState(() => _swarms = v),
                 ),
                 _NotifTile(
                   icon: Icons.card_giftcard_outlined,
                   iconColor: Colors.green,
-                  title: 'Gifts',
-                  subtitle: 'When you receive a gift',
+                  title: t(AppStrings.notifGifts),
+                  subtitle: t(AppStrings.notifGiftsSub),
                   value: _gifts,
                   onChanged: (v) => setState(() => _gifts = v),
                 ),
                 const Divider(height: 1),
-                _SectionHeader(title: 'Location & Activity'),
+                _SectionHeader(title: t(AppStrings.notifSettingsLocation)),
                 _NotifTile(
                   icon: Icons.people_outline,
                   iconColor: Colors.orange,
-                  title: 'Nearby People',
-                  subtitle: 'Friends going out near you',
+                  title: t(AppStrings.notifNearbyFriends),
+                  subtitle: t(AppStrings.notifNearbyFriendsSub),
                   value: _nearbyPeople,
                   onChanged: (v) => setState(() => _nearbyPeople = v),
                 ),
                 _NotifTile(
                   icon: Icons.local_bar_outlined,
                   iconColor: Colors.purple,
-                  title: 'Check-in Reminders',
-                  subtitle: 'Remind you to check in at venues',
+                  title: t(AppStrings.notifCheckins),
+                  subtitle: t(AppStrings.notifCheckinsSub),
                   value: _checkinReminders,
                   onChanged: (v) => setState(() => _checkinReminders = v),
                 ),
                 _NotifTile(
                   icon: Icons.shield_outlined,
                   iconColor: Colors.green,
-                  title: 'Safe Arrival Alerts',
-                  subtitle: 'When safety friends arrive home',
+                  title: t(AppStrings.notifSafeArrival),
+                  subtitle: t(AppStrings.notifSafeArrivalSub),
                   value: _safeArrival,
                   onChanged: (v) => setState(() => _safeArrival = v),
                 ),
                 const Divider(height: 1),
-                _SectionHeader(title: 'Other'),
+                _SectionHeader(title: t(AppStrings.notifSettingsOther)),
                 _NotifTile(
                   icon: Icons.campaign_outlined,
                   iconColor: Colors.grey,
-                  title: 'Marketing & Promotions',
-                  subtitle: 'Special offers and updates',
+                  title: t(AppStrings.notifPromo),
+                  subtitle: t(AppStrings.notifPromoSub),
                   value: _marketing,
                   onChanged: (v) => setState(() => _marketing = v),
                 ),

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../extensions/localization_extension.dart';
 
 class NightRecapScreen extends ConsumerStatefulWidget {
   const NightRecapScreen({super.key});
@@ -86,22 +87,22 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
 
   String _labelForType(String type) {
     return switch (type) {
-      'venue_checkin' => 'Venue Check-in',
-      'message_sent' => 'Message Sent',
-      'swarm_joined' => 'Joined Swarm',
-      'gift_sent' => 'Gift Sent',
-      _ => 'Activity',
+      'venue_checkin' => context.tr(AppStrings.recapVenueCheckin),
+      'message_sent' => context.tr(AppStrings.recapMessageSent),
+      'swarm_joined' => context.tr(AppStrings.recapSwarmJoined),
+      'gift_sent' => context.tr(AppStrings.recapGiftSent),
+      _ => context.tr(AppStrings.recapActivity),
     };
   }
 
   String _descForActivity(Map<String, dynamic> activity) {
     final meta = activity['metadata'] as Map<String, dynamic>?;
     return switch (activity['action_type'] as String) {
-      'venue_checkin' => meta?['venue_name'] as String? ?? 'A venue',
-      'message_sent' => 'Sent a message',
-      'swarm_joined' => meta?['swarm_title'] as String? ?? 'A swarm',
-      'gift_sent' => meta?['gift_name'] as String? ?? 'A gift',
-      _ => 'Activity',
+      'venue_checkin' => meta?['venue_name'] as String? ?? context.tr(AppStrings.recapVenueDefault),
+      'message_sent' => context.tr(AppStrings.recapSentMessage),
+      'swarm_joined' => meta?['swarm_title'] as String? ?? context.tr(AppStrings.recapSwarmDefault),
+      'gift_sent' => meta?['gift_name'] as String? ?? context.tr(AppStrings.recapGiftDefault),
+      _ => context.tr(AppStrings.recapActivity),
     };
   }
 
@@ -122,6 +123,7 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     final now = DateTime.now();
     final lastNight = now.subtract(const Duration(days: 1));
     final dateStr = DateFormat('EEEE, MMM d').format(lastNight);
@@ -129,7 +131,7 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Text('Night Recap 🌙', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+        title: Text(t(AppStrings.recapTitle), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => context.pop(),
@@ -163,9 +165,9 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
                             _buildNightRouteCard(),
                             const SizedBox(height: 20),
                           ],
-                          const Text(
-                            'Timeline',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                          Text(
+                            t(AppStrings.recapTimeline),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                           ),
                           const SizedBox(height: 12),
                           _buildTimeline(),
@@ -175,7 +177,7 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
                             child: ElevatedButton.icon(
                               onPressed: _shareRecap,
                               icon: const Icon(Icons.share),
-                              label: const Text('Share Night Recap'),
+                              label: Text(t(AppStrings.recapShareBtn)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: _brandPink,
                                 foregroundColor: Colors.white,
@@ -207,20 +209,20 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
               child: const Icon(Icons.nightlife, size: 40, color: _brandPink),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Nothing to recap yet!',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+            Text(
+              context.tr(AppStrings.recapNothingYet),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
             const SizedBox(height: 8),
             Text(
-              'Start by going out 🍻',
+              context.tr(AppStrings.recapStartGoingOut),
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => context.push('/map'),
               icon: const Icon(Icons.map_outlined),
-              label: const Text('Find Venues'),
+              label: Text(context.tr(AppStrings.recapFindVenues)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _brandPink,
                 foregroundColor: Colors.white,
@@ -248,12 +250,12 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Last Night's Recap", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(context.tr(AppStrings.recapNightTitle), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
           Text(dateStr, style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
           const SizedBox(height: 16),
           Text(
-            '${_activities.length} activities recorded',
+            '${_activities.length} ${context.tr(AppStrings.recapActivitiesCount)}',
             style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
           ),
         ],
@@ -268,21 +270,21 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
           icon: Icons.local_bar,
           color: Colors.orange,
           value: '${_countByType('venue_checkin')}',
-          label: 'Venues',
+          label: context.tr(AppStrings.recapVenues),
         ),
         const SizedBox(width: 8),
         _StatChip(
           icon: Icons.chat_bubble_outline,
           color: Colors.blue,
           value: '${_countByType('message_sent')}',
-          label: 'Messages',
+          label: context.tr(AppStrings.recapMessagesLabel),
         ),
         const SizedBox(width: 8),
         _StatChip(
           icon: Icons.groups_outlined,
           color: _brandPink,
           value: '${_countByType('swarm_joined')}',
-          label: 'Swarms',
+          label: context.tr(AppStrings.recapSwarmsLabel),
         ),
       ],
     );
@@ -312,7 +314,7 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Night Route', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                Text(context.tr(AppStrings.recapNightRoute), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 Text(
                   _nightRoute!['title'] as String? ?? 'Your planned route',
                   style: TextStyle(fontSize: 13, color: Colors.grey[600]),

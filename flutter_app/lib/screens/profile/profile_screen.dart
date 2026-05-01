@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../extensions/localization_extension.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_profile.dart';
 import '../../i18n/app_strings.dart';
@@ -16,7 +17,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(t(AppStrings.profileTitle)),
         leading: context.canPop()
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -40,18 +41,18 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Error loading profile'),
+              Text(t(AppStrings.profileErrorLoading)),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(currentUserProfileProvider),
-                child: const Text('Retry'),
+                child: Text(t(AppStrings.retry)),
               ),
             ],
           ),
         ),
         data: (profile) {
           if (profile == null) {
-            return const Center(child: Text('No profile found'));
+            return Center(child: Text(t(AppStrings.profileNotFound)));
           }
           return _ProfileContent(profile: profile);
         },
@@ -71,27 +72,27 @@ class _ProfileContent extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          _buildHeader(),
+          _buildHeader(context),
           const SizedBox(height: 24),
-          _buildStatusCard(),
+          _buildStatusCard(context),
           const SizedBox(height: 16),
-          _buildInfoCard(),
+          _buildInfoCard(context),
           const SizedBox(height: 16),
           if (profile.vibeTags.isNotEmpty) ...[
-            _buildVibeTagsCard(),
+            _buildVibeTagsCard(context),
             const SizedBox(height: 16),
           ],
           if (profile.favoriteDrinks.isNotEmpty) ...[
-            _buildDrinksCard(),
+            _buildDrinksCard(context),
             const SizedBox(height: 16),
           ],
-          _buildStatsCard(),
+          _buildStatsCard(context),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
         Container(
@@ -105,7 +106,7 @@ class _ProfileContent extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFE91E63).withOpacity(0.3),
+                color: const Color(0xFFE91E63).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -116,7 +117,7 @@ class _ProfileContent extends StatelessWidget {
                 ? Image.network(
                     profile.avatarUrl!,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stack) => _buildAvatarPlaceholder(),
+                    errorBuilder: (ctx, error, stack) => _buildAvatarPlaceholder(),
                   )
                 : _buildAvatarPlaceholder(),
           ),
@@ -133,7 +134,7 @@ class _ProfileContent extends StatelessWidget {
         if (profile.age != null) ...[
           const SizedBox(height: 4),
           Text(
-            '${profile.age} years old',
+            '${profile.age} ${context.tr(AppStrings.profileYearsOld)}',
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
@@ -172,7 +173,7 @@ class _ProfileContent extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusCard() {
+  Widget _buildStatusCard(BuildContext context) {
     Color color;
     String text;
     IconData icon;
@@ -180,17 +181,17 @@ class _ProfileContent extends StatelessWidget {
     switch (profile.tonightStatus) {
       case TonightStatus.outNow:
         color = Colors.green;
-        text = 'Out Now';
+        text = context.tr(AppStrings.homeOutNow);
         icon = Icons.local_bar;
         break;
       case TonightStatus.goingOutSoon:
         color = Colors.orange;
-        text = 'Going Out Soon';
+        text = context.tr(AppStrings.homeGoingOut2);
         icon = Icons.schedule;
         break;
       case TonightStatus.stayingIn:
         color = Colors.grey;
-        text = 'Staying In';
+        text = context.tr(AppStrings.homeStayingIn);
         icon = Icons.home;
         break;
     }
@@ -205,7 +206,7 @@ class _ProfileContent extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color),
@@ -214,9 +215,9 @@ class _ProfileContent extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Tonight Status',
-                  style: TextStyle(
+                Text(
+                  context.tr(AppStrings.profileTonightStatus),
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
                   ),
@@ -235,11 +236,11 @@ class _ProfileContent extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                'Change',
+                context.tr(AppStrings.profileChange),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -253,7 +254,7 @@ class _ProfileContent extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -261,16 +262,16 @@ class _ProfileContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'About Me',
-              style: TextStyle(
+            Text(
+              context.tr(AppStrings.profileAboutMe),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              profile.bio ?? 'No bio yet. Tell people about yourself!',
+              profile.bio ?? context.tr(AppStrings.profileNoBio),
               style: TextStyle(
                 fontSize: 14,
                 color: profile.bio != null ? Colors.black87 : Colors.grey[500],
@@ -283,7 +284,7 @@ class _ProfileContent extends StatelessWidget {
     );
   }
 
-  Widget _buildVibeTagsCard() {
+  Widget _buildVibeTagsCard(BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -291,9 +292,9 @@ class _ProfileContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Vibe Tags',
-              style: TextStyle(
+            Text(
+              context.tr(AppStrings.profileVibeTags),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -306,7 +307,7 @@ class _ProfileContent extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE91E63).withOpacity(0.1),
+                    color: const Color(0xFFE91E63).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
@@ -326,7 +327,7 @@ class _ProfileContent extends StatelessWidget {
     );
   }
 
-  Widget _buildDrinksCard() {
+  Widget _buildDrinksCard(BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -334,9 +335,9 @@ class _ProfileContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Favorite Drinks',
-              style: TextStyle(
+            Text(
+              context.tr(AppStrings.profileFavoritesDrinks),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -349,7 +350,7 @@ class _ProfileContent extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.1),
+                    color: Colors.amber.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -376,7 +377,7 @@ class _ProfileContent extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsCard() {
+  Widget _buildStatsCard(BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -384,13 +385,15 @@ class _ProfileContent extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _StatItem(label: 'Swarms', value: '0'),
+            _StatItem(label: context.tr(AppStrings.homeSwarms), value: '0'),
             Container(width: 1, height: 40, color: Colors.grey[200]),
-            _StatItem(label: 'Friends', value: '0'),
+            _StatItem(label: context.tr(AppStrings.profileFriends), value: '0'),
             Container(width: 1, height: 40, color: Colors.grey[200]),
             _StatItem(
-              label: 'Premium',
-              value: profile.isPremium ? 'Yes' : 'No',
+              label: context.tr(AppStrings.profilePremium),
+              value: profile.isPremium
+                  ? context.tr(AppStrings.profileYes)
+                  : context.tr(AppStrings.profileNo),
               color: profile.isPremium ? Colors.amber : null,
             ),
           ],

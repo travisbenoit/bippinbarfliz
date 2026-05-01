@@ -23,6 +23,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final t = ref.read(tProvider);
 
     try {
       await ref.read(authControllerProvider).signIn(
@@ -34,14 +36,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         context.go('/home');
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Sign in failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('${t(AppStrings.authSignInFailed)}: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -52,17 +52,20 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   void _showForgotPasswordDialog() {
     final t = ref.read(tProvider);
     final resetEmailController = TextEditingController();
+    final forgotDesc = t(AppStrings.signInForgotDesc);
+    final enterEmailMsg = t(AppStrings.signInEnterEmail);
+    final resetSentMsg = t(AppStrings.signInResetEmailSent);
+    final sendResetLabel = t(AppStrings.signInSendResetLink);
+    final errorPrefix = t(AppStrings.error);
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: Text(t(AppStrings.signInForgot)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "Enter your email address and we'll send you a link to reset your password.",
-            ),
+            Text(forgotDesc),
             const SizedBox(height: 16),
             TextField(
               controller: resetEmailController,
@@ -76,34 +79,35 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(ctx),
             child: Text(t(AppStrings.cancel)),
           ),
           ElevatedButton(
             onPressed: () async {
               final email = resetEmailController.text.trim();
               if (email.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Please enter an email')),
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  SnackBar(content: Text(enterEmailMsg)),
                 );
                 return;
               }
+              final messenger = ScaffoldMessenger.of(ctx);
               try {
                 await ref.read(authControllerProvider).resetPassword(email);
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Password reset email sent!'),
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(resetSentMsg),
                       backgroundColor: Colors.green,
                     ),
                   );
                 }
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                if (ctx.mounted) {
+                  messenger.showSnackBar(
                     SnackBar(
-                      content: Text('Error: ${e.toString()}'),
+                      content: Text('$errorPrefix: ${e.toString()}'),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -113,7 +117,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE91E63),
             ),
-            child: const Text('Send Reset Link'),
+            child: Text(sendResetLabel),
           ),
         ],
       ),

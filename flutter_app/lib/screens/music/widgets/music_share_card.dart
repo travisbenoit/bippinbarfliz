@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../models/music_track.dart';
+import '../../../extensions/localization_extension.dart';
+import '../../../i18n/app_strings.dart';
 
 class MusicShareCard extends StatelessWidget {
   final MusicTrack share;
@@ -80,14 +82,14 @@ class MusicShareCard extends StatelessWidget {
                       // Implement like/favorite functionality
                     },
                     icon: const Icon(Icons.favorite_border),
-                    label: const Text('Like'),
+                    label: Text(context.tr(AppStrings.musicLike)),
                   ),
                 TextButton.icon(
                   onPressed: () {
                     // Implement share functionality
                   },
                   icon: const Icon(Icons.share),
-                  label: const Text('Share'),
+                  label: Text(context.tr(AppStrings.musicShare)),
                 ),
               ],
             ),

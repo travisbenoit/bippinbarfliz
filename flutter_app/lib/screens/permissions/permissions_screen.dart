@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 
@@ -16,8 +17,6 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
   int _currentStep = 0;
   bool _locationGranted = false;
   bool _locationDenied = false;
-  bool _cameraGranted = false;
-  bool _notificationGranted = false;
 
   Future<void> _requestLocationPermission() async {
     final status = await Permission.locationWhenInUse.request();
@@ -31,43 +30,24 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
   }
 
   Future<void> _requestCameraPermission() async {
-    final status = await Permission.camera.request();
-    setState(() {
-      _cameraGranted = status.isGranted;
-      _currentStep = 2;
-    });
+    await Permission.camera.request();
+    setState(() => _currentStep = 2);
   }
 
   Future<void> _requestNotificationPermission() async {
-    final status = await Permission.notification.request();
-    setState(() {
-      _notificationGranted = status.isGranted;
-    });
+    await Permission.notification.request();
     _continue();
   }
 
-  void _skipLocation() {
-    setState(() {
-      _currentStep = 1;
-    });
-  }
-
-  void _skipCamera() {
-    setState(() {
-      _currentStep = 2;
-    });
-  }
-
-  void _continue() {
-    context.go('/home');
-  }
+  void _skipLocation() => setState(() => _currentStep = 1);
+  void _skipCamera() => setState(() => _currentStep = 2);
+  void _continue() => context.go('/home');
 
   @override
   Widget build(BuildContext context) {
     if (_locationDenied && _currentStep == 0) {
       return _buildLocationDeniedScreen();
     }
-
     switch (_currentStep) {
       case 0:
         return _buildLocationScreen();
@@ -101,7 +81,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFE91E63).withOpacity(0.3),
+                      color: const Color(0xFFE91E63).withValues(alpha: 0.3),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -114,10 +94,10 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              const Text(
-                'Enable Location to\nConnect in Real Life',
+              Text(
+                context.tr(AppStrings.permissionsLocationTitle),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -126,7 +106,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Barfliz uses your location to place you inside real venues so you can meet and interact with others around you in real time.',
+                context.tr(AppStrings.permissionsLocationBody),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -138,21 +118,21 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE91E63).withOpacity(0.06),
+                  color: const Color(0xFFE91E63).withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFFE91E63).withOpacity(0.15),
+                    color: const Color(0xFFE91E63).withValues(alpha: 0.15),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.shield_outlined,
-                        color: const Color(0xFFE91E63).withOpacity(0.7),
+                        color: const Color(0xFFE91E63).withValues(alpha: 0.7),
                         size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Your exact location is never shared publicly. You control who sees you.',
+                        context.tr(AppStrings.permissionsLocationPrivacy),
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey.shade700,
@@ -174,12 +154,11 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                     elevation: 4,
-                    shadowColor:
-                        const Color(0xFFE91E63).withOpacity(0.4),
+                    shadowColor: const Color(0xFFE91E63).withValues(alpha: 0.4),
                   ),
-                  child: const Text(
-                    'Allow Location',
-                    style: TextStyle(
+                  child: Text(
+                    context.tr(AppStrings.permissionsAllowLocation),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -191,7 +170,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               TextButton(
                 onPressed: _skipLocation,
                 child: Text(
-                  'Not Now',
+                  context.tr(AppStrings.permissionsNotNow),
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
@@ -230,10 +209,10 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Limited Experience',
+              Text(
+                context.tr(AppStrings.permissionsLimitedExp),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -241,11 +220,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Without location access, you won\'t be able to:\n\n'
-                '- Auto check-in to venues\n'
-                '- See who\'s nearby\n'
-                '- Get venue recommendations\n'
-                '- Use real-time social features',
+                context.tr(AppStrings.permissionsLimitedExpBody),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
@@ -265,9 +240,9 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'Open Settings',
-                    style: TextStyle(
+                  child: Text(
+                    context.tr(AppStrings.permissionsOpenSettings),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -279,7 +254,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               TextButton(
                 onPressed: _skipLocation,
                 child: Text(
-                  'Continue Without Location',
+                  context.tr(AppStrings.permissionsContWithoutLoc),
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
@@ -314,7 +289,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF2196F3).withOpacity(0.3),
+                      color: const Color(0xFF2196F3).withValues(alpha: 0.3),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -327,10 +302,10 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              const Text(
-                'Enable Camera',
+              Text(
+                context.tr(AppStrings.permissionsCameraTitle),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -338,7 +313,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Used for profile photos and sharing moments in venues. Show others your best side!',
+                context.tr(AppStrings.permissionsCameraBody),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -358,12 +333,11 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                     elevation: 4,
-                    shadowColor:
-                        const Color(0xFF2196F3).withOpacity(0.4),
+                    shadowColor: const Color(0xFF2196F3).withValues(alpha: 0.4),
                   ),
-                  child: const Text(
-                    'Allow Camera',
-                    style: TextStyle(
+                  child: Text(
+                    context.tr(AppStrings.permissionsCameraAllow),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -375,7 +349,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               TextButton(
                 onPressed: _skipCamera,
                 child: Text(
-                  'Not Now',
+                  context.tr(AppStrings.permissionsNotNow),
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
@@ -411,7 +385,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFF9800).withOpacity(0.3),
+                      color: const Color(0xFFFF9800).withValues(alpha: 0.3),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -424,10 +398,10 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              const Text(
-                'Stay in the Loop',
+              Text(
+                context.tr(AppStrings.permissionsNotifsScreenTitle),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -435,7 +409,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Get notified when friends arrive at venues, when you receive messages, and when swarms are happening nearby.',
+                context.tr(AppStrings.permissionsNotifsBody),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -455,12 +429,11 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                     elevation: 4,
-                    shadowColor:
-                        const Color(0xFFFF9800).withOpacity(0.4),
+                    shadowColor: const Color(0xFFFF9800).withValues(alpha: 0.4),
                   ),
-                  child: const Text(
-                    'Allow Notifications',
-                    style: TextStyle(
+                  child: Text(
+                    context.tr(AppStrings.permissionsNotifsAllow),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -472,7 +445,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               TextButton(
                 onPressed: _continue,
                 child: Text(
-                  'Not Now',
+                  context.tr(AppStrings.permissionsNotNow),
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,

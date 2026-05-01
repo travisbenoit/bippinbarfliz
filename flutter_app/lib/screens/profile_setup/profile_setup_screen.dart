@@ -45,10 +45,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Future<void> _saveProfile() async {
+    final t = ref.read(tProvider);
     if (!_formKey.currentState!.validate() || _selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all fields'),
+        SnackBar(
+          content: Text(t(AppStrings.profileSetupFillAll)),
           backgroundColor: Colors.red,
         ),
       );
@@ -71,7 +72,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create profile: ${e.toString()}'),
+            content: Text('${t(AppStrings.profileSetupFailedCreate)}: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -85,11 +86,12 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Setup Profile'),
+        title: Text(t(AppStrings.profileSetupTitle)),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -99,9 +101,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Let's get to know you!",
-                  style: TextStyle(
+                Text(
+                  t(AppStrings.profileSetupGetToKnow),
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -109,7 +111,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Tell us about yourself',
+                  t(AppStrings.profileSetupTellUs),
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey.shade600,
@@ -132,19 +134,21 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                           color: Colors.grey.shade400,
                         ),
                       ),
-                      Positioned(
+                      const Positioned(
                         bottom: 0,
                         right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
                             color: Color(0xFFE91E63),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            color: Colors.white,
-                            size: 20,
+                          child: Padding(
+                            padding: EdgeInsets.all(8),
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ),
@@ -154,13 +158,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
-                    prefixIcon: Icon(Icons.person_outline),
+                  decoration: InputDecoration(
+                    labelText: t(AppStrings.profileSetupFullName),
+                    prefixIcon: const Icon(Icons.person_outline),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
+                      return t(AppStrings.profileSetupNameRequired);
                     }
                     return null;
                   },
@@ -169,13 +173,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 InkWell(
                   onTap: _selectDate,
                   child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Date of Birth',
-                      prefixIcon: Icon(Icons.calendar_today_outlined),
+                    decoration: InputDecoration(
+                      labelText: t(AppStrings.profileSetupDobLabel),
+                      prefixIcon: const Icon(Icons.calendar_today_outlined),
                     ),
                     child: Text(
                       _selectedDate == null
-                          ? 'Select date'
+                          ? t(AppStrings.profileSetupSelectDate)
                           : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
                       style: TextStyle(
                         color: _selectedDate == null
@@ -188,13 +192,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _cityController,
-                  decoration: const InputDecoration(
-                    labelText: 'City',
-                    prefixIcon: Icon(Icons.location_city_outlined),
+                  decoration: InputDecoration(
+                    labelText: t(AppStrings.profileSetupCityLabel),
+                    prefixIcon: const Icon(Icons.location_city_outlined),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your city';
+                      return t(AppStrings.profileSetupCityRequired);
                     }
                     return null;
                   },
@@ -220,9 +224,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text(
-                            'Continue',
-                            style: TextStyle(
+                        : Text(
+                            t(AppStrings.profileSetupContinue),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,

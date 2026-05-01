@@ -90,7 +90,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final currentUser = _supabase.auth.currentUser;
       if (currentUser == null) {
         setState(() {
-          _error = 'Not logged in';
+          _error = ref.read(tProvider)(AppStrings.chatNotLoggedIn);
           _loading = false;
         });
         return;
@@ -119,7 +119,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           id: msg['id'],
           senderId: msg['sender_user_id'],
           senderName: msg['sender_user_id'] == currentUser.id
-              ? 'You'
+              ? ref.read(tProvider)(AppStrings.messagesYou)
               : _otherUserName,
           senderAvatar: msg['sender_user_id'] == currentUser.id
               ? null
@@ -170,7 +170,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 id: newMsg['id'],
                 senderId: newMsg['sender_user_id'],
                 senderName: newMsg['sender_user_id'] == currentUser.id
-                    ? 'You'
+                    ? ref.read(tProvider)(AppStrings.messagesYou)
                     : _otherUserName,
                 senderAvatar: newMsg['sender_user_id'] == currentUser.id
                     ? null
@@ -227,7 +227,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send: $e')),
+          SnackBar(content: Text('${ref.read(tProvider)(AppStrings.chatFailedSend)}: $e')),
         );
       }
     }
@@ -270,6 +270,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildMessageList() {
+    final t = ref.read(tProvider);
     if (_loading) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFFE91E63)),
@@ -283,11 +284,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error: $_error'),
+            Text('${t(AppStrings.error)}: $_error'),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadMessages,
-              child: const Text('Retry'),
+              child: Text(t(AppStrings.retry)),
             ),
           ],
         ),
@@ -313,9 +314,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'No messages yet',
-              style: TextStyle(
+            Text(
+              t(AppStrings.chatNoMsgYet),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -323,7 +324,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Say hello to $_otherUserName!',
+              '$_otherUserName!',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -346,6 +347,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildMessageInput() {
+    final t = ref.read(tProvider);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -365,7 +367,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: TextField(
                 controller: _messageController,
                 decoration: InputDecoration(
-                  hintText: 'Type a message...',
+                  hintText: t(AppStrings.chatTypeMsg),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,

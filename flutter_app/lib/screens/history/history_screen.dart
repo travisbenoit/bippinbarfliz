@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:intl/intl.dart';
+import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 
@@ -127,6 +128,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       backgroundColor: _background,
       appBar: AppBar(
@@ -135,9 +137,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'History',
-          style: TextStyle(
+        title: Text(
+          t(AppStrings.historyTitle),
+          style: const TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 20,
             color: Colors.black87,
@@ -149,9 +151,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           unselectedLabelColor: Colors.grey[600],
           indicatorColor: _brandPink,
           indicatorWeight: 3,
-          tabs: const [
-            Tab(text: 'Activity'),
-            Tab(text: 'Visits'),
+          tabs: [
+            Tab(text: t(AppStrings.historyTabActivity)),
+            Tab(text: t(AppStrings.historyTabVisits)),
           ],
         ),
       ),
@@ -192,18 +194,18 @@ class _ActivityTab extends ConsumerWidget {
     }
   }
 
-  String _titleForType(String type) {
+  String _titleForType(BuildContext context, String type) {
     switch (type) {
       case 'check_in':
-        return 'Check-in';
+        return context.tr(AppStrings.historyTypeCheckin);
       case 'message':
-        return 'Message';
+        return context.tr(AppStrings.historyTypeMessage);
       case 'swarm':
-        return 'Swarm';
+        return context.tr(AppStrings.historyTypeSwarm);
       case 'friend':
-        return 'Friend';
+        return context.tr(AppStrings.historyTypeFriend);
       case 'gift':
-        return 'Gift';
+        return context.tr(AppStrings.historyTypeGift);
       default:
         return type.replaceAll('_', ' ').toUpperCase();
     }
@@ -224,7 +226,7 @@ class _ActivityTab extends ConsumerWidget {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error: ${error.toString()}',
+            Text('${context.tr(AppStrings.error)}: ${error.toString()}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.black54)),
             const SizedBox(height: 16),
@@ -234,7 +236,7 @@ class _ActivityTab extends ConsumerWidget {
                 backgroundColor: _brandPink,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Retry'),
+              child: Text(t(AppStrings.retry)),
             ),
           ],
         ),
@@ -259,9 +261,9 @@ class _ActivityTab extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'No activity yet',
-                  style: TextStyle(
+                Text(
+                  t(AppStrings.historyEmpty),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -269,7 +271,7 @@ class _ActivityTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your activity will appear here',
+                  t(AppStrings.historyEmptySub),
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
@@ -288,7 +290,7 @@ class _ActivityTab extends ConsumerWidget {
               final entry = entries[index];
               return _ActivityTile(
                 icon: _iconForType(entry.activityType),
-                title: _titleForType(entry.activityType),
+                title: _titleForType(context, entry.activityType),
                 content: entry.content,
                 timestamp: entry.createdAt,
               );
@@ -404,7 +406,7 @@ class _VisitsTab extends ConsumerWidget {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error: ${error.toString()}',
+            Text('${context.tr(AppStrings.error)}: ${error.toString()}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.black54)),
             const SizedBox(height: 16),
@@ -414,7 +416,7 @@ class _VisitsTab extends ConsumerWidget {
                 backgroundColor: _brandPink,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Retry'),
+              child: Text(t(AppStrings.retry)),
             ),
           ],
         ),
@@ -439,9 +441,9 @@ class _VisitsTab extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'No venue visits yet',
-                  style: TextStyle(
+                Text(
+                  t(AppStrings.historyVisitsEmpty),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -449,7 +451,7 @@ class _VisitsTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Check in at a venue to see it here',
+                  t(AppStrings.historyVisitsEmptySub),
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],

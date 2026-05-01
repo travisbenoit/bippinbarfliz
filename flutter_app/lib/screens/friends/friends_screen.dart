@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../extensions/localization_extension.dart';
 import '../../models/user_profile.dart';
 import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
-import '../../providers/localization_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Data models
@@ -237,9 +237,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Friends',
-          style: TextStyle(
+        title: Text(
+          context.tr(AppStrings.friendsTitle),
+          style: const TextStyle(
             color: Colors.black87,
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -252,10 +252,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           unselectedLabelColor: Colors.grey[600],
           labelStyle:
               const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-          tabs: const [
-            Tab(text: 'Friends'),
-            Tab(text: 'Requests'),
-            Tab(text: 'Find Friends'),
+          tabs: [
+            Tab(text: context.tr(AppStrings.friendsTabFriends)),
+            Tab(text: context.tr(AppStrings.friendsTabRequests)),
+            Tab(text: context.tr(AppStrings.friendsTabFind)),
           ],
         ),
       ),
@@ -285,7 +285,6 @@ class _FriendsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = ref.watch(tProvider);
     final friendsAsync = ref.watch(acceptedFriendsProvider);
 
     return friendsAsync.when(
@@ -300,8 +299,8 @@ class _FriendsTab extends ConsumerWidget {
         if (friends.isEmpty) {
           return _EmptyState(
             icon: Icons.people_outline,
-            title: 'No friends yet',
-            subtitle: 'Use "Find Friends" to connect with people nearby.',
+            title: context.tr(AppStrings.friendsNoFriendsTitle),
+            subtitle: context.tr(AppStrings.friendsNoFriendsSub),
           );
         }
         return RefreshIndicator(
@@ -389,7 +388,7 @@ class _FriendCard extends StatelessWidget {
                 textStyle: const TextStyle(
                     fontSize: 12, fontWeight: FontWeight.w600),
               ),
-              child: const Text('Message'),
+              child: Text(context.tr(AppStrings.friendsMessage)),
             ),
           ],
         ),
@@ -408,7 +407,6 @@ class _RequestsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = ref.watch(tProvider);
     final requestsAsync = ref.watch(pendingRequestsProvider);
 
     return requestsAsync.when(
@@ -423,8 +421,8 @@ class _RequestsTab extends ConsumerWidget {
         if (requests.isEmpty) {
           return _EmptyState(
             icon: Icons.mark_email_unread_outlined,
-            title: 'No pending requests',
-            subtitle: 'Friend requests will appear here.',
+            title: context.tr(AppStrings.friendsNoPendingTitle),
+            subtitle: context.tr(AppStrings.friendsNoPendingSub),
           );
         }
         return RefreshIndicator(
@@ -468,7 +466,7 @@ class _RequestCardState extends State<_RequestCard> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('${context.tr(AppStrings.error)}: $e'), backgroundColor: Colors.red),
         );
         setState(() => _loading = false);
       }
@@ -551,7 +549,7 @@ class _RequestCardState extends State<_RequestCard> {
                                       fontWeight: FontWeight.w600),
                                   elevation: 0,
                                 ),
-                                child: const Text('Accept'),
+                                child: Text(context.tr(AppStrings.friendsAcceptBtn)),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -571,7 +569,7 @@ class _RequestCardState extends State<_RequestCard> {
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600),
                                 ),
-                                child: const Text('Decline'),
+                                child: Text(context.tr(AppStrings.friendsDeclineBtn)),
                               ),
                             ),
                           ],
@@ -638,8 +636,8 @@ class _FindFriendsTabState extends ConsumerState<_FindFriendsTab> {
               if (filtered.isEmpty) {
                 return _EmptyState(
                   icon: Icons.search_off,
-                  title: 'No one found',
-                  subtitle: 'Try a different search or check back later.',
+                  title: context.tr(AppStrings.friendsNoOneFound),
+                  subtitle: context.tr(AppStrings.friendsNoOneFoundSub),
                 );
               }
 
@@ -700,7 +698,7 @@ class _FindFriendsTabState extends ConsumerState<_FindFriendsTab> {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                  content: Text('Error: $e'),
+                                  content: Text('${context.tr(AppStrings.error)}: $e'),
                                   backgroundColor: Colors.red),
                             );
                           }
@@ -809,9 +807,9 @@ class _FriendStateButton extends StatelessWidget {
             color: Colors.green.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Text(
-            'Friends',
-            style: TextStyle(
+          child: Text(
+            context.tr(AppStrings.friendsFriendsLabel),
+            style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.green),
@@ -825,9 +823,9 @@ class _FriendStateButton extends StatelessWidget {
             color: Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Text(
-            'Pending',
-            style: TextStyle(
+          child: Text(
+            context.tr(AppStrings.friendsPendingLabel),
+            style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.orange),
@@ -847,7 +845,7 @@ class _FriendStateButton extends StatelessWidget {
                 fontSize: 12, fontWeight: FontWeight.w600),
             elevation: 0,
           ),
-          child: const Text('Add Friend'),
+          child: Text(context.tr(AppStrings.friendsAddFriendBtn)),
         );
     }
   }
@@ -868,7 +866,7 @@ class _SearchBar extends StatelessWidget {
       child: TextField(
         controller: controller,
         decoration: InputDecoration(
-          hintText: 'Search by name...',
+          hintText: context.tr(AppStrings.friendsSearchHintName),
           prefixIcon:
               const Icon(Icons.search, color: Color(0xFFE91E63)),
           suffixIcon: controller.text.isNotEmpty
@@ -934,15 +932,15 @@ class _StatusDot extends StatelessWidget {
     switch (status) {
       case TonightStatus.outNow:
         dotColor = Colors.green;
-        label = 'Out Now';
+        label = context.tr(AppStrings.homeOutNow);
         break;
       case TonightStatus.goingOutSoon:
         dotColor = Colors.orange;
-        label = 'Going Out Soon';
+        label = context.tr(AppStrings.homeGoingOut2);
         break;
       case TonightStatus.stayingIn:
         dotColor = Colors.grey;
-        label = 'Staying In';
+        label = context.tr(AppStrings.homeStayingIn);
         break;
     }
 
@@ -1033,7 +1031,7 @@ class _ErrorState extends StatelessWidget {
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              context.tr(AppStrings.friendsSomethingWrong),
               style: const TextStyle(
                   fontSize: 16, fontWeight: FontWeight.w600),
             ),
@@ -1054,7 +1052,7 @@ class _ErrorState extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
               ),
-              child: const Text('Retry'),
+              child: Text(context.tr(AppStrings.retry)),
             ),
           ],
         ),

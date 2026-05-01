@@ -6,6 +6,7 @@ import '../../models/user_profile.dart';
 import '../../models/venue.dart';
 import '../../models/swarm.dart';
 import '../../widgets/first_run_tour.dart';
+import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 
@@ -154,8 +155,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Safe arrival recorded!'),
+        SnackBar(
+          content: Text(context.tr(AppStrings.homeSafeArrivalRecorded)),
           backgroundColor: Colors.green,
         ),
       );
@@ -279,7 +280,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           Text(
-            'Going out made easy',
+            context.tr(AppStrings.homeAppTagline),
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: 11,
@@ -357,15 +358,15 @@ class _UserProfileCard extends StatelessWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: Colors.white),
         ),
-        error: (e, _) => const Text(
-          'Could not load profile',
-          style: TextStyle(color: Colors.white),
+        error: (e, _) => Text(
+          context.tr(AppStrings.homeCouldNotLoadProfile),
+          style: const TextStyle(color: Colors.white),
         ),
         data: (userData) {
           if (userData == null) {
-            return const Text(
-              'Profile not found',
-              style: TextStyle(color: Colors.white),
+            return Text(
+              context.tr(AppStrings.homeProfileNotFound),
+              style: const TextStyle(color: Colors.white),
             );
           }
 
@@ -383,15 +384,15 @@ class _UserProfileCard extends StatelessWidget {
           switch (status) {
             case TonightStatus.outNow:
               dotColor = Colors.greenAccent;
-              statusLabel = 'Out Now';
+              statusLabel = context.tr(AppStrings.homeOutNow);
               break;
             case TonightStatus.goingOutSoon:
               dotColor = Colors.orangeAccent;
-              statusLabel = 'Going Out Soon';
+              statusLabel = context.tr(AppStrings.homeGoingOut2);
               break;
             case TonightStatus.stayingIn:
               dotColor = Colors.white54;
-              statusLabel = 'Staying In';
+              statusLabel = context.tr(AppStrings.homeStayingIn);
               break;
           }
 
@@ -478,9 +479,9 @@ class _UserProfileCard extends StatelessWidget {
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     ),
-                    child: const Text(
-                      'Edit Status',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    child: Text(
+                      context.tr(AppStrings.homeEditStatus),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -488,11 +489,11 @@ class _UserProfileCard extends StatelessWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _ProfileStat(label: 'Vibes', value: vibeTags.length.toString()),
+                  _ProfileStat(label: context.tr(AppStrings.homeVibes), value: vibeTags.length.toString()),
                   const SizedBox(width: 24),
-                  _ProfileStat(label: 'Drinks', value: favDrinks.length.toString()),
+                  _ProfileStat(label: context.tr(AppStrings.homeDrinks), value: favDrinks.length.toString()),
                   const SizedBox(width: 24),
-                  _ProfileStat(label: 'Lush Coins', value: lushCoins.toString()),
+                  _ProfileStat(label: context.tr(AppStrings.homeLushCoins), value: lushCoins.toString()),
                 ],
               ),
             ],
@@ -598,9 +599,9 @@ class _XpBannerContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Your Stats',
-                style: TextStyle(
+              Text(
+                context.tr(AppStrings.homeYourStats),
+                style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -617,9 +618,9 @@ class _XpBannerContent extends StatelessWidget {
             ],
           ),
         ),
-        _XpStat(label: 'Streak', value: '${streak}d', icon: Icons.local_fire_department),
+        _XpStat(label: context.tr(AppStrings.homeStreak), value: '${streak}d', icon: Icons.local_fire_department),
         const SizedBox(width: 16),
-        _XpStat(label: 'Check-ins', value: '$checkins', icon: Icons.check_circle_outline),
+        _XpStat(label: context.tr(AppStrings.homeCheckins), value: '$checkins', icon: Icons.check_circle_outline),
         const SizedBox(width: 8),
         const Icon(Icons.chevron_right, color: Colors.white54, size: 20),
       ],
@@ -666,21 +667,21 @@ class _QuickActionsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const actions = [
-      _QuickAction(icon: Icons.groups_2, label: 'Create Swarm', route: '/create-swarm'),
-      _QuickAction(icon: Icons.send, label: 'Send Message', route: '/messages', isTab: true),
-      _QuickAction(icon: Icons.map_outlined, label: 'Find Venues', route: '/map', isTab: true),
-      _QuickAction(icon: Icons.people_outline, label: 'Find People', route: '/people-nearby'),
-      _QuickAction(icon: Icons.history, label: 'View History', route: '/history'),
-      _QuickAction(icon: Icons.group_outlined, label: 'Friends', route: '/friends'),
+    final actions = [
+      _QuickAction(icon: Icons.groups_2, label: context.tr(AppStrings.homeQuickCreateSwarm), route: '/create-swarm'),
+      _QuickAction(icon: Icons.send, label: context.tr(AppStrings.homeQuickSendMessage), route: '/messages', isTab: true),
+      _QuickAction(icon: Icons.map_outlined, label: context.tr(AppStrings.homeQuickFindVenues), route: '/map', isTab: true),
+      _QuickAction(icon: Icons.people_outline, label: context.tr(AppStrings.homeQuickFindPeople), route: '/people-nearby'),
+      _QuickAction(icon: Icons.history, label: context.tr(AppStrings.homeQuickViewHistory), route: '/history'),
+      _QuickAction(icon: Icons.group_outlined, label: context.tr(AppStrings.homeQuickFriends), route: '/friends'),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Quick Actions',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
+        Text(
+          context.tr(AppStrings.homeQuickActions),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
         ),
         const SizedBox(height: 12),
         GridView.builder(
@@ -798,7 +799,7 @@ class _SocialStatsRow extends StatelessWidget {
       children: [
         _StatChip(
           icon: Icons.people,
-          label: 'Nearby',
+          label: context.tr(AppStrings.homeStatNearby),
           value: '$totalPeople',
           color: Colors.blue,
           onTap: () => context.push('/people-nearby'),
@@ -806,7 +807,7 @@ class _SocialStatsRow extends StatelessWidget {
         const SizedBox(width: 8),
         _StatChip(
           icon: Icons.local_bar,
-          label: 'Out Now',
+          label: context.tr(AppStrings.homeStatOutNow),
           value: '$outNow',
           color: Colors.green,
           onTap: () => context.push('/people-nearby'),
@@ -814,7 +815,7 @@ class _SocialStatsRow extends StatelessWidget {
         const SizedBox(width: 8),
         _StatChip(
           icon: Icons.location_on,
-          label: 'Venues',
+          label: context.tr(AppStrings.homeStatVenues),
           value: '$venues',
           color: _brandPink,
           onTap: () => context.push('/map'),
@@ -822,7 +823,7 @@ class _SocialStatsRow extends StatelessWidget {
         const SizedBox(width: 8),
         _StatChip(
           icon: Icons.groups,
-          label: 'Swarms',
+          label: context.tr(AppStrings.homeSwarms),
           value: '$swarms',
           color: Colors.orange,
           onTap: () => context.push('/swarms'),
@@ -905,16 +906,16 @@ class _TonightsSceneSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text(
-              "Tonight's Scene",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
+            Text(
+              context.tr(AppStrings.homeSceneTonight),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
             ),
             const Spacer(),
             GestureDetector(
               onTap: () => context.push('/people-nearby'),
-              child: const Text(
-                'See All',
-                style: TextStyle(color: _brandPink, fontSize: 13, fontWeight: FontWeight.w600),
+              child: Text(
+                context.tr(AppStrings.homeSeeAll),
+                style: const TextStyle(color: _brandPink, fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -924,7 +925,7 @@ class _TonightsSceneSection extends StatelessWidget {
           loading: () => const Center(
             child: CircularProgressIndicator(color: _brandPink),
           ),
-          error: (_, __) => const Text('Could not load people'),
+          error: (_, __) => Text(context.tr(AppStrings.homeCouldNotLoadPeople)),
           data: (users) {
             final outNowUsers = users
                 .where((u) => u.tonightStatus == TonightStatus.outNow)
@@ -937,10 +938,10 @@ class _TonightsSceneSection extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    'No one is out right now. Be the first!',
-                    style: TextStyle(color: Colors.black54, fontSize: 13),
+                    context.tr(AppStrings.homeNoOneTonightScene),
+                    style: const TextStyle(color: Colors.black54, fontSize: 13),
                   ),
                 ),
               );
@@ -1003,9 +1004,9 @@ class _TonightsSceneSection extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            const Text(
-                              'Out Now',
-                              style: TextStyle(
+                            Text(
+                              context.tr(AppStrings.homeOutNow),
+                              style: const TextStyle(
                                 color: Colors.green,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
@@ -1044,16 +1045,16 @@ class _PopularVenuesSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text(
-              'Popular Venues',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
+            Text(
+              context.tr(AppStrings.homePopularVenues),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
             ),
             const Spacer(),
             GestureDetector(
               onTap: () => context.push('/map'),
-              child: const Text(
-                'See All',
-                style: TextStyle(color: _brandPink, fontSize: 13, fontWeight: FontWeight.w600),
+              child: Text(
+                context.tr(AppStrings.homeSeeAll),
+                style: const TextStyle(color: _brandPink, fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -1061,7 +1062,7 @@ class _PopularVenuesSection extends StatelessWidget {
         const SizedBox(height: 12),
         venuesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator(color: _brandPink)),
-          error: (_, __) => const Text('Could not load venues'),
+          error: (_, __) => Text(context.tr(AppStrings.homeCouldNotLoadVenues)),
           data: (venues) {
             final top = venues.take(5).toList();
             if (top.isEmpty) {
@@ -1071,8 +1072,8 @@ class _PopularVenuesSection extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Center(
-                  child: Text('No venues found', style: TextStyle(color: Colors.black54)),
+                child: Center(
+                  child: Text(context.tr(AppStrings.homeNoVenuesFound), style: const TextStyle(color: Colors.black54)),
                 ),
               );
             }
@@ -1207,16 +1208,16 @@ class _ActiveSwarmsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text(
-              'Active Swarms',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
+            Text(
+              context.tr(AppStrings.homeActiveSwarms),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
             ),
             const Spacer(),
             GestureDetector(
               onTap: () => context.push('/swarms'),
-              child: const Text(
-                'See All',
-                style: TextStyle(color: _brandPink, fontSize: 13, fontWeight: FontWeight.w600),
+              child: Text(
+                context.tr(AppStrings.homeSeeAll),
+                style: const TextStyle(color: _brandPink, fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -1224,7 +1225,7 @@ class _ActiveSwarmsSection extends StatelessWidget {
         const SizedBox(height: 12),
         swarmsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator(color: _brandPink)),
-          error: (_, __) => const Text('Could not load swarms'),
+          error: (_, __) => Text(context.tr(AppStrings.homeCouldNotLoadSwarms)),
           data: (swarms) {
             if (swarms.isEmpty) {
               return Container(
@@ -1237,15 +1238,15 @@ class _ActiveSwarmsSection extends StatelessWidget {
                   children: [
                     Icon(Icons.groups_outlined, size: 48, color: Colors.grey[300]),
                     const SizedBox(height: 12),
-                    const Text(
-                      'No active swarms right now',
-                      style: TextStyle(color: Colors.black54, fontSize: 14),
+                    Text(
+                      context.tr(AppStrings.homeNoActiveSwarmsLong),
+                      style: const TextStyle(color: Colors.black54, fontSize: 14),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: () => context.push('/create-swarm'),
                       icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Create Swarm'),
+                      label: Text(context.tr(AppStrings.homeQuickCreateSwarm)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _brandPink,
                         foregroundColor: Colors.white,
@@ -1275,13 +1276,13 @@ class _SwarmTile extends StatelessWidget {
 
   const _SwarmTile({required this.swarm});
 
-  String _formatTime(DateTime time) {
+  String _formatTime(BuildContext context, DateTime time) {
     final now = DateTime.now();
     final diff = time.difference(now);
     if (diff.inMinutes < 60) {
-      return 'Starts in ${diff.inMinutes}m';
+      return '${context.tr(AppStrings.swarmsStartsInMinutes)} ${diff.inMinutes}m';
     } else if (diff.inHours < 24) {
-      return 'Starts in ${diff.inHours}h';
+      return '${context.tr(AppStrings.swarmsStartsInMinutes)} ${diff.inHours}h';
     } else {
       return '${time.day}/${time.month} at ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
     }
@@ -1336,7 +1337,7 @@ class _SwarmTile extends StatelessWidget {
               ),
             const SizedBox(height: 2),
             Text(
-              _formatTime(swarm.startTime),
+              _formatTime(context, swarm.startTime),
               style: const TextStyle(fontSize: 11, color: _brandPink, fontWeight: FontWeight.w500),
             ),
           ],
@@ -1348,7 +1349,7 @@ class _SwarmTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            '${swarm.maxAttendees} max',
+            '${swarm.maxAttendees} ${context.tr(AppStrings.homeMaxAttendees)}',
             style: const TextStyle(
               color: _brandPink,
               fontSize: 11,
@@ -1409,12 +1410,12 @@ class _DdModeToggle extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "I'm the DD tonight 🚗",
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                Text(
+                  context.tr(AppStrings.homeDdToggleTitle),
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                 ),
                 Text(
-                  'Let your friends know you can drive safely',
+                  context.tr(AppStrings.homeDdToggleSub),
                   style: TextStyle(color: Colors.grey[500], fontSize: 11),
                 ),
               ],
@@ -1453,9 +1454,9 @@ class _SafeArrivalButton extends StatelessWidget {
       child: OutlinedButton.icon(
         onPressed: onTap,
         icon: const Icon(Icons.shield_outlined, color: _brandPink),
-        label: const Text(
-          'Check In Safe Arrival',
-          style: TextStyle(color: _brandPink, fontWeight: FontWeight.w600),
+        label: Text(
+          context.tr(AppStrings.homeCheckInSafeArrival),
+          style: const TextStyle(color: _brandPink, fontWeight: FontWeight.w600),
         ),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: _brandPink, width: 1.5),
@@ -1519,10 +1520,11 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     final options = [
-      (TonightStatus.outNow, 'Out Now', Colors.green, Icons.local_bar),
-      (TonightStatus.goingOutSoon, 'Going Out Soon', Colors.orange, Icons.schedule),
-      (TonightStatus.stayingIn, 'Staying In', Colors.grey, Icons.home_outlined),
+      (TonightStatus.outNow, t(AppStrings.homeOutNow), Colors.green, Icons.local_bar),
+      (TonightStatus.goingOutSoon, t(AppStrings.homeGoingOut2), Colors.orange, Icons.schedule),
+      (TonightStatus.stayingIn, t(AppStrings.homeStayingIn), Colors.grey, Icons.home_outlined),
     ];
 
     return Padding(
@@ -1533,9 +1535,9 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
         children: [
           Row(
             children: [
-              const Text(
-                'Update Tonight Status',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              Text(
+                t(AppStrings.homeUpdateStatus),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
               const Spacer(),
               IconButton(
@@ -1598,7 +1600,7 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
                       width: 20,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                     )
-                  : const Text('Save Status', style: TextStyle(fontWeight: FontWeight.w700)),
+                  : Text(t(AppStrings.homeSaveStatus), style: const TextStyle(fontWeight: FontWeight.w700)),
             ),
           ),
         ],

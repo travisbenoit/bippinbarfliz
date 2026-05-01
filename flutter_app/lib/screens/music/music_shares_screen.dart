@@ -19,12 +19,12 @@ class MusicSharesScreen extends ConsumerWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Music'),
+          title: Text(t(AppStrings.musicTitle)),
           elevation: 0,
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'Discover'),
-              Tab(text: 'My Shares'),
+              Tab(text: t(AppStrings.musicTabDiscover)),
+              Tab(text: t(AppStrings.musicTabMyShares)),
             ],
           ),
         ),
@@ -36,7 +36,7 @@ class MusicSharesScreen extends ConsumerWidget {
                 if (shares.isEmpty) {
                   return Center(
                     child: Text(
-                      'No music shared yet',
+                      t(AppStrings.musicEmpty),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   );
@@ -57,7 +57,7 @@ class MusicSharesScreen extends ConsumerWidget {
                 child: CircularProgressIndicator(),
               ),
               error: (error, stack) => Center(
-                child: Text('Error: $error'),
+                child: Text('${t(AppStrings.error)}: $error'),
               ),
             ),
 
@@ -76,7 +76,7 @@ class MusicSharesScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'You haven\'t shared any music yet',
+                          t(AppStrings.musicNoMyShares),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
@@ -100,7 +100,7 @@ class MusicSharesScreen extends ConsumerWidget {
                 child: CircularProgressIndicator(),
               ),
               error: (error, stack) => Center(
-                child: Text('Error: $error'),
+                child: Text('${t(AppStrings.error)}: $error'),
               ),
             ),
           ],

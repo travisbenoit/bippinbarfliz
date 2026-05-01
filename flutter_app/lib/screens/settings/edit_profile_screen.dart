@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/user_profile.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../extensions/localization_extension.dart';
 
 class _StatusOption {
   final TonightStatus status;
@@ -99,6 +100,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
 
     _userId = user.id;
+    final messenger = ScaffoldMessenger.of(context);
+    final t = ref.read(tProvider);
 
     try {
       final data = await _supabase
@@ -130,23 +133,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load profile: $e')),
+        messenger.showSnackBar(
+          SnackBar(content: Text('${t(AppStrings.editProfileFailedLoad)}: $e')),
         );
       }
     }
   }
 
   Future<void> _pickAvatar() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final msg = context.tr(AppStrings.editProfileAvatarComingSoon);
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked == null) return;
 
-    // Avatar upload not implemented yet — local feedback only
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Avatar upload coming soon')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(msg)));
     }
   }
 
@@ -155,6 +157,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (_userId == null) return;
 
     setState(() => _saving = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final t = ref.read(tProvider);
+    final successMsg = t(AppStrings.editProfileSaved);
+    final failMsg = t(AppStrings.editProfileFailedSave);
 
     try {
       await _supabase.from('users').update({
@@ -174,16 +180,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }).eq('id', _userId!);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile saved!')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text(successMsg)));
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text('$failMsg: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -196,6 +198,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     return Scaffold(
       backgroundColor: _bgColor,
       appBar: AppBar(
@@ -204,9 +207,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(
+        title: Text(
+          t(AppStrings.editProfileTitle),
+          style: const TextStyle(
               color: Colors.black87, fontWeight: FontWeight.w700, fontSize: 18),
         ),
         actions: [
@@ -219,9 +222,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     child:
                         CircularProgressIndicator(strokeWidth: 2, color: _brandColor),
                   )
-                : const Text(
-                    'Save',
-                    style: TextStyle(
+                : Text(
+                    t(AppStrings.editProfileSave),
+                    style: const TextStyle(
                         color: _brandColor,
                         fontWeight: FontWeight.w700,
                         fontSize: 16),
@@ -240,19 +243,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   _buildAvatarSection(),
                   const SizedBox(height: 24),
                   _buildSectionCard(
-                    title: 'Basic Info',
+                    title: t(AppStrings.editProfileBasicInfo),
                     children: [
                       _buildTextField(
                         controller: _nameCtrl,
-                        label: 'Name',
-                        hint: 'Your name',
+                        label: t(AppStrings.editProfileNameLabel),
+                        hint: t(AppStrings.editProfileNameHint),
                         required: true,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _bioCtrl,
-                        label: 'Bio',
-                        hint: 'Tell people about yourself...',
+                        label: t(AppStrings.editProfileBioLabel),
+                        hint: t(AppStrings.editProfileBioHintLong),
                         maxLines: 3,
                         maxLength: 200,
                         showCounter: true,
@@ -260,34 +263,34 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _homeCityCtrl,
-                        label: 'Home City',
-                        hint: 'Where are you from?',
+                        label: t(AppStrings.editProfileHomeCityLabel),
+                        hint: t(AppStrings.editProfileHomeCityHint),
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _occupationCtrl,
-                        label: 'Occupation',
-                        hint: 'What do you do?',
+                        label: t(AppStrings.editProfileOccupationLabel),
+                        hint: t(AppStrings.editProfileOccupationHint),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   _buildSectionCard(
-                    title: 'Preferences',
+                    title: t(AppStrings.editProfilePreferences),
                     children: [
                       _buildLookingForDropdown(),
                     ],
                   ),
                   const SizedBox(height: 16),
                   _buildSectionCard(
-                    title: 'Tonight Status',
+                    title: t(AppStrings.editProfileTonightStatusSection),
                     children: [
                       _buildTonightStatusSelector(),
                     ],
                   ),
                   const SizedBox(height: 16),
                   _buildSectionCard(
-                    title: 'Vibe Tags',
+                    title: t(AppStrings.editProfileVibeTags),
                     children: [
                       _buildMultiChips(
                         options: _vibeTagOptions,
@@ -306,7 +309,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildSectionCard(
-                    title: 'Favorite Drinks',
+                    title: t(AppStrings.editProfileFavDrinks),
                     children: [
                       _buildMultiChips(
                         options: _drinkOptions,
@@ -341,9 +344,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white),
                           )
-                        : const Text(
-                            'Save Profile',
-                            style: TextStyle(
+                        : Text(
+                            t(AppStrings.editProfileSaveProfile),
+                            style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w700),
                           ),
                   ),
@@ -514,7 +517,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           validator: required
               ? (val) {
                   if (val == null || val.trim().isEmpty) {
-                    return '$label is required';
+                    return '$label ${context.tr(AppStrings.editProfileIsRequired)}';
                   }
                   return null;
                 }
@@ -528,9 +531,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Looking For',
-          style: TextStyle(
+        Text(
+          context.tr(AppStrings.editProfileLookingForLabel),
+          style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: Colors.black54),
@@ -539,7 +542,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         DropdownButtonFormField<String>(
           initialValue: _lookingFor,
           hint: Text(
-            'Select an option',
+            context.tr(AppStrings.editProfileLookingForHint),
             style: TextStyle(color: Colors.grey[400], fontSize: 14),
           ),
           decoration: InputDecoration(
@@ -571,9 +574,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Widget _buildTonightStatusSelector() {
     final options = <_StatusOption>[
-      _StatusOption(TonightStatus.outNow, 'Out Now', Icons.local_bar, Colors.green),
-      _StatusOption(TonightStatus.goingOutSoon, 'Going Out Soon', Icons.schedule, Colors.orange),
-      _StatusOption(TonightStatus.stayingIn, 'Staying In', Icons.home, Colors.grey),
+      _StatusOption(TonightStatus.outNow, context.tr(AppStrings.editProfileStatusOutNow), Icons.local_bar, Colors.green),
+      _StatusOption(TonightStatus.goingOutSoon, context.tr(AppStrings.editProfileStatusGoing), Icons.schedule, Colors.orange),
+      _StatusOption(TonightStatus.stayingIn, context.tr(AppStrings.editProfileStatusStaying), Icons.home, Colors.grey),
     ];
 
     return Wrap(

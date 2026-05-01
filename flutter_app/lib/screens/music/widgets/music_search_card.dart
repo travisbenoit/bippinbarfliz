@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../models/music_search_result.dart';
 import '../../../providers/music_provider.dart';
+import '../../../extensions/localization_extension.dart';
 import '../../../i18n/app_strings.dart';
 import '../../../providers/localization_provider.dart';
 
@@ -62,20 +63,20 @@ class MusicSearchCard extends ConsumerWidget {
   void _shareMusic(BuildContext context, WidgetRef ref) async {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Share This Track?'),
-        content: Text('${track.trackName}\nby ${track.artistName}'),
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr(AppStrings.musicShare)),
+        content: Text('${track.trackName}\n${context.tr(AppStrings.musicBy)} ${track.artistName}'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(context.tr(AppStrings.cancel)),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(ctx);
               await _performShare(context, ref);
             },
-            child: const Text('Share'),
+            child: Text(context.tr(AppStrings.share)),
           ),
         ],
       ),
@@ -84,18 +85,16 @@ class MusicSearchCard extends ConsumerWidget {
 
   Future<void> _performShare(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
+    final successMsg = context.tr(AppStrings.musicSharedOk);
+    final failMsg = context.tr(AppStrings.musicShareFailed);
     final result = await ref.read(
       shareMusicMutationProvider(track).future,
     );
 
     if (result != null) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Music shared successfully!')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(successMsg)));
     } else {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Failed to share music')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(failMsg)));
     }
   }
 }

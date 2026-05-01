@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/user_profile.dart';
+import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 
@@ -20,16 +21,16 @@ const _bg = Color(0xFFFFF5F0);
 enum PeopleFilter { all, outNow, goingOutSoon, ddTonight }
 
 extension PeopleFilterX on PeopleFilter {
-  String get label {
+  String label(BuildContext context) {
     switch (this) {
       case PeopleFilter.all:
-        return 'All';
+        return context.tr(AppStrings.peopleFilterAll);
       case PeopleFilter.outNow:
-        return 'Out Now';
+        return context.tr(AppStrings.peopleFilterOut);
       case PeopleFilter.goingOutSoon:
-        return 'Going Out Soon';
+        return context.tr(AppStrings.peopleFilterGoing);
       case PeopleFilter.ddTonight:
-        return 'DD Tonight';
+        return context.tr(AppStrings.peopleFilterDd);
     }
   }
 }
@@ -162,6 +163,7 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(tProvider);
     final peopleAsync = ref.watch(peopleNearbyProvider);
     final friendshipsAsync = ref.watch(_myFriendshipsProvider);
 
@@ -173,9 +175,9 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'People Nearby',
-          style: TextStyle(
+        title: Text(
+          t(AppStrings.peopleTitle),
+          style: const TextStyle(
             color: Colors.black87,
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -184,7 +186,7 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.tune, color: Colors.black87),
-            tooltip: 'Filter',
+            tooltip: t(AppStrings.search),
             onPressed: () {
               // The filter chips row is always visible; this is a visual cue.
             },
@@ -241,9 +243,9 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
                     child: _EmptyState(
                       icon: Icons.people_outline,
                       title: _activeFilter == PeopleFilter.all
-                          ? 'No one nearby yet'
-                          : 'No one matches this filter',
-                      subtitle: 'Pull down to refresh or try a different filter.',
+                          ? t(AppStrings.peopleNoOneNearby)
+                          : t(AppStrings.peopleNoFilter),
+                      subtitle: t(AppStrings.peoplePullRefresh),
                     ),
                   )
                 else
@@ -303,7 +305,7 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(
                                     SnackBar(
-                                      content: Text('Error: $e'),
+                                      content: Text('${context.tr(AppStrings.error)}: $e'),
                                       backgroundColor: Colors.red,
                                     ),
                                   );
@@ -351,7 +353,7 @@ class _CountBanner extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            '$count ${count == 1 ? 'person' : 'people'} out tonight',
+            '$count ${count == 1 ? context.tr(AppStrings.peoplePerson) : context.tr(AppStrings.peoplePeople)} ${context.tr(AppStrings.peopleOutTonight)}',
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -387,7 +389,7 @@ class _FilterChipsRow extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: Text(f.label),
+                label: Text(f.label(context)),
                 selected: isActive,
                 onSelected: (_) => onSelected(f),
                 selectedColor: _pink.withValues(alpha: 0.15),
@@ -432,7 +434,7 @@ class _SearchBar extends StatelessWidget {
       child: TextField(
         controller: controller,
         decoration: InputDecoration(
-          hintText: 'Search by name...',
+          hintText: context.tr(AppStrings.peopleSearchHintName),
           prefixIcon: const Icon(Icons.search, color: _pink),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
@@ -593,7 +595,7 @@ class _PersonCard extends StatelessWidget {
                           onPressed: onChat,
                           icon: const Icon(Icons.chat_bubble_outline,
                               size: 14),
-                          label: const Text('Chat'),
+                          label: Text(context.tr(AppStrings.peopleChat)),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: _pink,
                             side:
@@ -646,9 +648,9 @@ class _AddFriendButton extends StatelessWidget {
             color: Colors.green.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Text(
-            'Friends',
-            style: TextStyle(
+          child: Text(
+            context.tr(AppStrings.peopleFriends),
+            style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.green),
@@ -662,9 +664,9 @@ class _AddFriendButton extends StatelessWidget {
             color: Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Text(
-            'Pending',
-            style: TextStyle(
+          child: Text(
+            context.tr(AppStrings.peoplePending),
+            style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.orange),
@@ -674,7 +676,7 @@ class _AddFriendButton extends StatelessWidget {
         return ElevatedButton.icon(
           onPressed: onAddFriend,
           icon: const Icon(Icons.person_add_alt_1, size: 14),
-          label: const Text('Add Friend'),
+          label: Text(context.tr(AppStrings.peopleAddFriendBtn)),
           style: ElevatedButton.styleFrom(
             backgroundColor: _pink,
             foregroundColor: Colors.white,
@@ -707,17 +709,17 @@ class _StatusBadge extends StatelessWidget {
     switch (status) {
       case TonightStatus.outNow:
         color = Colors.green;
-        text = 'Out Now';
+        text = context.tr(AppStrings.homeOutNow);
         icon = Icons.local_bar;
         break;
       case TonightStatus.goingOutSoon:
         color = Colors.orange;
-        text = 'Going Out Soon';
+        text = context.tr(AppStrings.homeGoingOut2);
         icon = Icons.schedule;
         break;
       case TonightStatus.stayingIn:
         color = Colors.grey;
-        text = 'Staying In';
+        text = context.tr(AppStrings.homeStayingIn);
         icon = Icons.home;
         break;
     }
@@ -846,10 +848,9 @@ class _ErrorState extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            const Text(
-              'Something went wrong',
-              style:
-                  TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            Text(
+              context.tr(AppStrings.peopleSomethingWrong),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
@@ -868,7 +869,7 @@ class _ErrorState extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
               ),
-              child: const Text('Retry'),
+              child: Text(context.tr(AppStrings.retry)),
             ),
           ],
         ),

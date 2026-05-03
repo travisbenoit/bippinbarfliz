@@ -91,6 +91,7 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(tProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(context.tr(AppStrings.musicShareTitle)),

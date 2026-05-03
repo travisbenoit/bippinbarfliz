@@ -6,6 +6,7 @@ import '../../extensions/localization_extension.dart';
 import '../../models/user_profile.dart';
 import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
+import '../../providers/localization_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Data models
@@ -229,6 +230,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(tProvider);
     return Scaffold(
       backgroundColor: _bg,
       appBar: AppBar(
@@ -285,6 +287,7 @@ class _FriendsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(tProvider);
     final friendsAsync = ref.watch(acceptedFriendsProvider);
 
     return friendsAsync.when(
@@ -407,6 +410,7 @@ class _RequestsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(tProvider);
     final requestsAsync = ref.watch(pendingRequestsProvider);
 
     return requestsAsync.when(
@@ -609,6 +613,7 @@ class _FindFriendsTabState extends ConsumerState<_FindFriendsTab> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(tProvider);
     final suggestedAsync = ref.watch(suggestedUsersProvider);
     final myFriendshipsAsync = ref.watch(myFriendshipsProvider);
 

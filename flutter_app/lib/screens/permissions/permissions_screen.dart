@@ -45,6 +45,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(tProvider);
     if (_locationDenied && _currentStep == 0) {
       return _buildLocationDeniedScreen();
     }

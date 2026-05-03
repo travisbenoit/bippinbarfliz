@@ -181,6 +181,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(tProvider);
     final userAsync = ref.watch(currentUserProfileProvider);
     final statsAsync = ref.watch(userStatsProvider);
     final usersAsync = ref.watch(nearbyUsersProvider);

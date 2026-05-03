@@ -254,6 +254,7 @@ class _SafetySettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(tProvider);
     return Scaffold(
       backgroundColor: _bgColor,
       appBar: AppBar(

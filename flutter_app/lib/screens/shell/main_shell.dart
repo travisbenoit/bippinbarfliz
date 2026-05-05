@@ -11,11 +11,7 @@ class MainShell extends ConsumerWidget {
 
   const MainShell({super.key, required this.navigationShell});
 
-  void _onTap(BuildContext context, int index) {
-    if (index == 4) {
-      _showMoreSheet(context);
-      return;
-    }
+  void _goBranch(int index) {
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
@@ -36,47 +32,142 @@ class MainShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(tProvider);
+    final current = navigationShell.currentIndex;
+    final isMapActive = current == 1;
+    final surface = Theme.of(context).colorScheme.surface;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: navigationShell.currentIndex,
-        onTap: (index) => _onTap(context, index),
-        selectedItemColor: _brandPink,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        type: BottomNavigationBarType.fixed,
+
+      // ── Centre FAB (Map) ──────────────────────────────────────────────────
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _goBranch(1),
+        backgroundColor: _brandPink,
+        foregroundColor: Colors.white,
+        elevation: isMapActive ? 8 : 4,
+        shape: const CircleBorder(),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: Icon(
+            isMapActive ? Icons.map : Icons.map_outlined,
+            key: ValueKey(isMapActive),
+            size: 26,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      // ── Bottom bar with notch ─────────────────────────────────────────────
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 6,
+        color: surface,
         elevation: 12,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home_outlined),
-            activeIcon: const Icon(Icons.home),
-            label: t(AppStrings.navHome),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.map_outlined),
-            activeIcon: const Icon(Icons.map),
-            label: t(AppStrings.navMap),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.chat_bubble_outline),
-            activeIcon: const Icon(Icons.chat_bubble),
-            label: t(AppStrings.navMessages),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person_outline),
-            activeIcon: const Icon(Icons.person),
-            label: t(AppStrings.navProfile),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.grid_view_outlined),
-            activeIcon: const Icon(Icons.grid_view),
-            label: t(AppStrings.navMore),
-          ),
-        ],
+        height: 64,
+        padding: EdgeInsets.zero,
+        child: Row(
+          children: [
+            // Left pair
+            _NavItem(
+              icon: Icons.home_outlined,
+              activeIcon: Icons.home,
+              label: t(AppStrings.navHome),
+              isActive: current == 0,
+              onTap: () => _goBranch(0),
+              onSurface: onSurface,
+            ),
+            _NavItem(
+              icon: Icons.chat_bubble_outline,
+              activeIcon: Icons.chat_bubble,
+              label: t(AppStrings.navMessages),
+              isActive: current == 2,
+              onTap: () => _goBranch(2),
+              onSurface: onSurface,
+            ),
+            // Gap for the FAB notch
+            const Expanded(child: SizedBox()),
+            // Right pair
+            _NavItem(
+              icon: Icons.person_outline,
+              activeIcon: Icons.person,
+              label: t(AppStrings.navProfile),
+              isActive: current == 3,
+              onTap: () => _goBranch(3),
+              onSurface: onSurface,
+            ),
+            _NavItem(
+              icon: Icons.grid_view_outlined,
+              activeIcon: Icons.grid_view,
+              label: t(AppStrings.navMore),
+              isActive: false,
+              onTap: () => _showMoreSheet(context),
+              onSurface: onSurface,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
+// ── Single nav bar item ───────────────────────────────────────────────────────
+
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+  final Color onSurface;
+
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+    required this.onSurface,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isActive ? _brandPink : onSurface.withValues(alpha: 0.45);
+
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: Icon(
+                isActive ? activeIcon : icon,
+                key: ValueKey(isActive),
+                color: color,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                color: color,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── More bottom sheet ─────────────────────────────────────────────────────────
 
 class _MoreBottomSheet extends ConsumerWidget {
   const _MoreBottomSheet();
@@ -85,12 +176,12 @@ class _MoreBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(tProvider);
     final items = [
-      (Icons.group_outlined,       t(AppStrings.moreFriends),       '/friends',     Colors.blue),
-      (Icons.history_outlined,     t(AppStrings.moreHistory),       '/history',     Colors.purple),
-      (Icons.payment_outlined,     t(AppStrings.morePayments),      '/payments',    Colors.green),
-      (Icons.leaderboard_outlined, t(AppStrings.moreLeaderboard),   '/leaderboard', Colors.amber),
-      (Icons.nightlight_outlined,  t(AppStrings.moreNightRecap),    '/night-recap', _brandPink),
-      (Icons.notifications_outlined, t(AppStrings.moreNotifications), '/notifications', Colors.orange),
+      (Icons.group_outlined,        t(AppStrings.moreFriends),       '/friends',     Colors.blue),
+      (Icons.history_outlined,      t(AppStrings.moreHistory),       '/history',     Colors.purple),
+      (Icons.payment_outlined,      t(AppStrings.morePayments),      '/payments',    Colors.green),
+      (Icons.leaderboard_outlined,  t(AppStrings.moreLeaderboard),   '/leaderboard', Colors.amber),
+      (Icons.nightlight_outlined,   t(AppStrings.moreNightRecap),    '/night-recap', _brandPink),
+      (Icons.notifications_outlined,t(AppStrings.moreNotifications), '/notifications', Colors.orange),
     ];
 
     return Padding(

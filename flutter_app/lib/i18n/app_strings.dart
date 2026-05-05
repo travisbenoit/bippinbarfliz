@@ -534,6 +534,18 @@ class AppStrings {
   static const swarmsStartsInMinutes = 'swarms.starts_in_minutes';
   static const swarmsStartsInHours = 'swarms.starts_in_hours';
   static const swarmsMax = 'swarms.max';
+  static const swarmsNameLabel = 'swarms.name_label';
+  static const swarmsNameHint = 'swarms.name_hint';
+  static const swarmsNameRequired = 'swarms.name_required';
+  static const swarmsDescLabel = 'swarms.desc_label';
+  static const swarmsDescHint = 'swarms.desc_hint';
+  static const swarmsStartTimeLabel = 'swarms.start_time_label';
+  static const swarmsPickTime = 'swarms.pick_time';
+  static const swarmsMaxAttendeesLabel = 'swarms.max_attendees_label';
+  static const swarmsVibeTagsLabel = 'swarms.vibe_tags_label';
+  static const swarmsCreateSuccess = 'swarms.create_success';
+  static const swarmsCreateFailed = 'swarms.create_failed';
+  static const swarmsPublish = 'swarms.publish';
 
   // ── History (extra) ──────────────────────────────────────────────────────────
   static const historyVisitsEmpty = 'history.visits_empty';
@@ -1440,6 +1452,18 @@ class AppStrings {
     swarmsStartsInMinutes: 'Starts in',
     swarmsStartsInHours: 'Starts in',
     swarmsMax: 'max',
+    swarmsNameLabel: 'Swarm Name',
+    swarmsNameHint: 'e.g. Downtown bar crawl',
+    swarmsNameRequired: 'Please enter a swarm name',
+    swarmsDescLabel: 'Description (optional)',
+    swarmsDescHint: 'What\'s the plan?',
+    swarmsStartTimeLabel: 'Start Time',
+    swarmsPickTime: 'Pick a time',
+    swarmsMaxAttendeesLabel: 'Max Attendees',
+    swarmsVibeTagsLabel: 'Vibe Tags',
+    swarmsCreateSuccess: 'Swarm created! 🎉',
+    swarmsCreateFailed: 'Failed to create swarm',
+    swarmsPublish: 'Publish Swarm',
 
     // History (extra)
     historyVisitsEmpty: 'No venue visits yet',

@@ -99,8 +99,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
 
     _userId = user.id;
-    final messenger = ScaffoldMessenger.of(context);
-    final t = ref.read(tProvider);
 
     try {
       final data = await _supabase
@@ -132,8 +130,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        messenger.showSnackBar(
-          SnackBar(content: Text('${t(AppStrings.editProfileFailedLoad)}: $e')),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${ref.read(tProvider)(AppStrings.editProfileFailedLoad)}: $e')),
         );
       }
     }

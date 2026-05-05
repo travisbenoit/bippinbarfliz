@@ -267,60 +267,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return AppBar(
       elevation: 0,
       centerTitle: false,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      scrolledUnderElevation: 1,
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Barfliz',
-            style: TextStyle(
-              color: _brandPink,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [_brandPink, Color(0xFFFF6B6B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(10),
             ),
+            child: const Icon(Icons.local_bar, color: Colors.white, size: 18),
           ),
-          Text(
-            context.tr(AppStrings.homeAppTagline),
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-              fontSize: 11,
-              fontWeight: FontWeight.w400,
-            ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Barfliz',
+                style: TextStyle(
+                  color: _brandPink,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                context.tr(AppStrings.homeAppTagline),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
         ],
       ),
       actions: [
-        // Messages with badge — go() switches to the Messages tab
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.chat_bubble_outline),
-              onPressed: () => context.go('/messages'),
-            ),
-            Positioned(
-              right: 6,
-              top: 6,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: _brandPink,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          ],
-        ),
+        // Notifications
         IconButton(
           icon: const Icon(Icons.notifications_outlined),
           onPressed: () => context.push('/notifications'),
         ),
-        IconButton(
-          icon: const Icon(Icons.settings_outlined),
-          onPressed: () => context.push('/settings'),
+        // Settings
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push('/settings'),
+          ),
         ),
       ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          height: 1,
+          color: _brandPink.withValues(alpha: 0.12),
+        ),
+      ),
     );
   }
 }

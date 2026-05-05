@@ -147,16 +147,12 @@ class MessagesScreen extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     t(AppStrings.messagesStartConvo),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ],
               ),
@@ -221,7 +217,7 @@ class _ConversationTile extends StatelessWidget {
               fontSize: 12,
               color: conversation.isUnread
                   ? const Color(0xFFE91E63)
-                  : Colors.grey[500],
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -234,7 +230,6 @@ class _ConversationTile extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: conversation.isUnread ? Colors.black87 : Colors.grey[600],
                 fontWeight: conversation.isUnread
                     ? FontWeight.w500
                     : FontWeight.normal,

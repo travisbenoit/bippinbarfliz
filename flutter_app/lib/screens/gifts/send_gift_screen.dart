@@ -157,7 +157,7 @@ class _SendGiftScreenState extends ConsumerState<SendGiftScreen> {
                   selected: selected,
                   selectedColor: const Color(0xFFE91E63),
                   labelStyle: TextStyle(
-                    color: selected ? Colors.white : Colors.black87,
+                    color: selected ? Colors.white : null,
                   ),
                   onSelected: (_) => setState(() => _selectedDrink = value),
                 );

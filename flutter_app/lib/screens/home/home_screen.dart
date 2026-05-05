@@ -90,7 +90,6 @@ final userStatsProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
 // ---------------------------------------------------------------------------
 
 const _brandPink = Color(0xFFE91E63);
-const _bgColor = Color(0xFFFFF5F0);
 
 // ---------------------------------------------------------------------------
 // HomeScreen
@@ -166,7 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _showStatusBottomSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -191,7 +190,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Stack(
       children: [
         Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: RefreshIndicator(
         color: _brandPink,
@@ -283,7 +282,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Text(
             context.tr(AppStrings.homeAppTagline),
             style: TextStyle(
-              color: Colors.grey[500],
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               fontSize: 11,
               fontWeight: FontWeight.w400,
             ),
@@ -296,7 +295,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           clipBehavior: Clip.none,
           children: [
             IconButton(
-              icon: const Icon(Icons.chat_bubble_outline, color: Colors.black87),
+              icon: const Icon(Icons.chat_bubble_outline),
               onPressed: () => context.go('/messages'),
             ),
             Positioned(
@@ -314,11 +313,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         IconButton(
-          icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
+          icon: const Icon(Icons.notifications_outlined),
           onPressed: () => context.push('/notifications'),
         ),
         IconButton(
-          icon: const Icon(Icons.settings_outlined, color: Colors.black87),
+          icon: const Icon(Icons.settings_outlined),
           onPressed: () => context.push('/settings'),
         ),
       ],
@@ -682,7 +681,7 @@ class _QuickActionsGrid extends StatelessWidget {
       children: [
         Text(
           context.tr(AppStrings.homeQuickActions),
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
         GridView.builder(
@@ -730,7 +729,7 @@ class _QuickActionTile extends StatelessWidget {
       onTap: () => action.isTab ? context.go(action.route) : context.push(action.route),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -760,7 +759,6 @@ class _QuickActionTile extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
               ),
             ),
           ],
@@ -857,7 +855,7 @@ class _StatChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
@@ -881,7 +879,7 @@ class _StatChip extends StatelessWidget {
               ),
               Text(
                 label,
-                style: const TextStyle(color: Colors.black54, fontSize: 10),
+                style: const TextStyle(fontSize: 10),
               ),
             ],
           ),
@@ -909,7 +907,7 @@ class _TonightsSceneSection extends StatelessWidget {
           children: [
             Text(
               context.tr(AppStrings.homeSceneTonight),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const Spacer(),
             GestureDetector(
@@ -936,20 +934,20 @@ class _TonightsSceneSection extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
                   child: Text(
                     context.tr(AppStrings.homeNoOneTonightScene),
-                    style: const TextStyle(color: Colors.black54, fontSize: 13),
+                    style: const TextStyle(fontSize: 13),
                   ),
                 ),
               );
             }
             return Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -989,7 +987,6 @@ class _TonightsSceneSection extends StatelessWidget {
                                 user.vibeTags.first,
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  color: Colors.black54,
                                 ),
                               )
                             : null,
@@ -1048,7 +1045,7 @@ class _PopularVenuesSection extends StatelessWidget {
           children: [
             Text(
               context.tr(AppStrings.homePopularVenues),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const Spacer(),
             GestureDetector(
@@ -1070,11 +1067,11 @@ class _PopularVenuesSection extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
-                  child: Text(context.tr(AppStrings.homeNoVenuesFound), style: const TextStyle(color: Colors.black54)),
+                  child: Text(context.tr(AppStrings.homeNoVenuesFound)),
                 ),
               );
             }
@@ -1106,7 +1103,7 @@ class _VenueTile extends StatelessWidget {
       child: Container(
         width: 150,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -1160,7 +1157,7 @@ class _VenueTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       venue.category!,
-                      style: const TextStyle(color: Colors.black45, fontSize: 11),
+                      style: const TextStyle(fontSize: 11),
                     ),
                   ],
                   if (venue.rating != null) ...[
@@ -1178,7 +1175,7 @@ class _VenueTile extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           venue.rating!.toStringAsFixed(1),
-                          style: const TextStyle(fontSize: 10, color: Colors.black54),
+                          style: const TextStyle(fontSize: 10),
                         ),
                       ],
                     ),
@@ -1211,7 +1208,7 @@ class _ActiveSwarmsSection extends StatelessWidget {
           children: [
             Text(
               context.tr(AppStrings.homeActiveSwarms),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const Spacer(),
             GestureDetector(
@@ -1232,16 +1229,16 @@ class _ActiveSwarmsSection extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.groups_outlined, size: 48, color: Colors.grey[300]),
+                    Icon(Icons.groups_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
                     const SizedBox(height: 12),
                     Text(
                       context.tr(AppStrings.homeNoActiveSwarmsLong),
-                      style: const TextStyle(color: Colors.black54, fontSize: 14),
+                      style: const TextStyle(fontSize: 14),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
@@ -1294,7 +1291,7 @@ class _SwarmTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -1334,7 +1331,7 @@ class _SwarmTile extends StatelessWidget {
                 swarm.description!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                style: const TextStyle(fontSize: 12),
               ),
             const SizedBox(height: 2),
             Text(
@@ -1382,7 +1379,7 @@ class _DdModeToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -1417,7 +1414,7 @@ class _DdModeToggle extends StatelessWidget {
                 ),
                 Text(
                   context.tr(AppStrings.homeDdToggleSub),
-                  style: TextStyle(color: Colors.grey[500], fontSize: 11),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 11),
                 ),
               ],
             ),
@@ -1557,7 +1554,7 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: selected ? color.withValues(alpha: 0.1) : Colors.grey[50],
+                  color: selected ? color.withValues(alpha: 0.1) : Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: selected ? color : Colors.transparent,
@@ -1566,13 +1563,13 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
                 ),
                 child: Row(
                   children: [
-                    Icon(icon, color: selected ? color : Colors.grey, size: 22),
+                    Icon(icon, color: selected ? color : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4), size: 22),
                     const SizedBox(width: 14),
                     Text(
                       label,
                       style: TextStyle(
                         fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                        color: selected ? color : Colors.black87,
+                        color: selected ? color : Theme.of(context).colorScheme.onSurface,
                         fontSize: 15,
                       ),
                     ),

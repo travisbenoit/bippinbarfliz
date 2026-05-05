@@ -131,9 +131,9 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text(t(AppStrings.recapTitle), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+        title: Text(t(AppStrings.recapTitle), style: const TextStyle(fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -167,7 +167,7 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
                           ],
                           Text(
                             t(AppStrings.recapTimeline),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 12),
                           _buildTimeline(),
@@ -211,12 +211,12 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
             const SizedBox(height: 16),
             Text(
               context.tr(AppStrings.recapNothingYet),
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               context.tr(AppStrings.recapStartGoingOut),
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -294,9 +294,9 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8)],
+        boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05), blurRadius: 8)],
       ),
       child: Row(
         children: [
@@ -317,7 +317,7 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
                 Text(context.tr(AppStrings.recapNightRoute), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 Text(
                   _nightRoute!['title'] as String? ?? 'Your planned route',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  style: const TextStyle(fontSize: 13),
                 ),
               ],
             ),
@@ -352,7 +352,7 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
                   child: Icon(_iconForType(type), color: _colorForType(type), size: 18),
                 ),
                 if (!isLast)
-                  Container(width: 2, height: 32, color: Colors.grey[200]),
+                  Container(width: 2, height: 32, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)),
               ],
             ),
             const SizedBox(width: 12),
@@ -363,9 +363,9 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(_labelForType(type), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                    Text(_descForActivity(activity), style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                    Text(_descForActivity(activity), style: const TextStyle(fontSize: 13)),
                     const SizedBox(height: 2),
-                    Text(timeStr, style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                    Text(timeStr, style: const TextStyle(fontSize: 11)),
                   ],
                 ),
               ),
@@ -400,7 +400,7 @@ class _StatChip extends StatelessWidget {
             Icon(icon, color: color, size: 20),
             const SizedBox(height: 4),
             Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
-            Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            Text(label, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5))),
           ],
         ),
       ),

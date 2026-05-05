@@ -20,10 +20,10 @@ class SettingsScreen extends ConsumerWidget {
         elevation: 0,
         title: Text(
           t(AppStrings.settingsTitle),
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
       ),
@@ -188,7 +188,7 @@ class SettingsScreen extends ConsumerWidget {
           Center(
             child: Text(
               t(AppStrings.version),
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
             ),
           ),
           const SizedBox(height: 24),
@@ -279,7 +279,7 @@ class _SectionHeader extends StatelessWidget {
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: Colors.grey[500],
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
           letterSpacing: 1.2,
         ),
       ),
@@ -322,7 +322,7 @@ class _SettingsTile extends StatelessWidget {
           : null,
       trailing: trailing ??
           (onTap != null
-              ? const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey)
+              ? Icon(Icons.arrow_forward_ios, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4))
               : null),
       onTap: onTap,
     );

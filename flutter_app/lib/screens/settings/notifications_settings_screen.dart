@@ -114,10 +114,10 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: Text(t(AppStrings.notifSettingsTitle), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+        title: Text(t(AppStrings.notifSettingsTitle), style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           _saving
               ? const Padding(
@@ -220,7 +220,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Text(
         title.toUpperCase(),
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey[500], letterSpacing: 1.2),
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), letterSpacing: 1.2),
       ),
     );
   }

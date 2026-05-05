@@ -52,7 +52,6 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen>
   late final TabController _tabController;
 
   static const _pink = Color(0xFFE91E63);
-  static const _bg = Color(0xFFFFF5F0);
 
   @override
   void initState() {
@@ -70,13 +69,12 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen>
   Widget build(BuildContext context) {
     final t = ref.watch(tProvider);
     return Scaffold(
-      backgroundColor: _bg,
       appBar: AppBar(
         elevation: 0,
-        leading: BackButton(color: Colors.black87),
+        leading: const BackButton(),
         title: Text(
           t(AppStrings.paymentsTitle),
-          style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w700),
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: const [
           Padding(
@@ -88,7 +86,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen>
           controller: _tabController,
           indicatorColor: _pink,
           labelColor: _pink,
-          unselectedLabelColor: Colors.grey,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
           tabs: [
             Tab(text: t(AppStrings.paymentsTabOverview)),
             Tab(text: t(AppStrings.paymentsTabSend)),
@@ -392,7 +390,7 @@ class _PaymentMethodCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -410,7 +408,7 @@ class _PaymentMethodCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: linked
                   ? Colors.green.withValues(alpha: 0.1)
-                  : Colors.grey.withValues(alpha: 0.1),
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -428,7 +426,6 @@ class _PaymentMethodCard extends StatelessWidget {
                   context.tr(AppStrings.paymentsPaymentMethod),
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Colors.grey,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -439,7 +436,6 @@ class _PaymentMethodCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -463,7 +459,6 @@ class _PaymentMethodCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black54,
                     ),
                   ),
                   TextButton(
@@ -610,11 +605,11 @@ class _SendTabState extends ConsumerState<_SendTab> {
         // Search field
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -634,7 +629,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
                         child: CircularProgressIndicator(strokeWidth: 2, color: _pink),
                       ),
                     )
-                  : const Icon(Icons.search, color: Colors.grey),
+                  : const Icon(Icons.search),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
@@ -646,11 +641,11 @@ class _SendTabState extends ConsumerState<_SendTab> {
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -718,7 +713,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
                     children: [
                       Text(
                         context.tr(AppStrings.paymentsSendingTo),
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: const TextStyle(fontSize: 12),
                       ),
                       Text(
                         _selectedUser!['name'] as String? ?? 'Unknown',
@@ -731,7 +726,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.grey),
+                  icon: const Icon(Icons.close),
                   onPressed: () => setState(() {
                     _selectedUser = null;
                     _searchController.clear();
@@ -807,11 +802,11 @@ class _SendTabState extends ConsumerState<_SendTab> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -827,7 +822,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
           prefixText: prefixText,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          labelStyle: const TextStyle(color: Colors.grey),
+          labelStyle: const TextStyle(),
         ),
       ),
     );
@@ -875,7 +870,7 @@ class _HistoryTab extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text(
                   t(AppStrings.paymentsHistoryEmptySub),
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  style: const TextStyle(fontSize: 14),
                 ),
               ],
             ),
@@ -900,11 +895,11 @@ class _HistoryTab extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -920,7 +915,7 @@ class _HistoryTab extends ConsumerWidget {
                         icon: Icons.arrow_upward_rounded,
                       ),
                     ),
-                    Container(width: 1, height: 50, color: Colors.grey[200]),
+                    Container(width: 1, height: 50, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)),
                     Expanded(
                       child: _SummaryTile(
                         label: t(AppStrings.paymentsTotalReceived),
@@ -977,7 +972,7 @@ class _SummaryTile extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(color: Colors.grey, fontSize: 12),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12),
         ),
       ],
     );
@@ -1022,7 +1017,7 @@ class _TransactionTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -1060,7 +1055,7 @@ class _TransactionTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     note,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style: const TextStyle(fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1069,7 +1064,7 @@ class _TransactionTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     DateFormat('MMM d, yyyy • h:mm a').format(createdAt.toLocal()),
-                    style: TextStyle(color: Colors.grey[500], fontSize: 11),
+                    style: const TextStyle(fontSize: 11),
                   ),
                 ],
               ],

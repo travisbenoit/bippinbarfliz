@@ -28,18 +28,18 @@ class MusicSearchCard extends ConsumerWidget {
                 height: 56,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: const Icon(Icons.music_note),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: const Icon(Icons.music_note),
                 ),
               )
             : Container(
                 width: 56,
                 height: 56,
-                color: Colors.grey[300],
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: const Icon(Icons.music_note),
               ),
         title: Text(

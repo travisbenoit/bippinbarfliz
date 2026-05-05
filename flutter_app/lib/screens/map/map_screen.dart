@@ -299,10 +299,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         ),
                         Text(
                           t(AppStrings.mapTapMarker),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ],
                     ),
@@ -360,9 +357,9 @@ class _VenueBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -372,7 +369,7 @@ class _VenueBottomSheet extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.only(top: 12),
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -449,15 +446,12 @@ class _VenueBottomSheet extends StatelessWidget {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 18, color: Colors.grey[600]),
+                      const Icon(Icons.location_on, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           venue.address,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ),
                     ],

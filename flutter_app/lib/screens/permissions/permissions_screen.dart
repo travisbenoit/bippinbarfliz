@@ -101,7 +101,6 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
                   height: 1.2,
                 ),
               ),
@@ -109,9 +108,8 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               Text(
                 context.tr(AppStrings.permissionsLocationBody),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
-                  color: Colors.grey.shade600,
                   height: 1.5,
                 ),
               ),
@@ -136,8 +134,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                         context.tr(AppStrings.permissionsLocationPrivacy),
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey.shade700,
-                        ),
+                          ),
                       ),
                     ),
                   ],
@@ -173,7 +170,6 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 child: Text(
                   context.tr(AppStrings.permissionsNotNow),
                   style: TextStyle(
-                    color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
@@ -216,16 +212,14 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 context.tr(AppStrings.permissionsLimitedExpBody),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 15,
-                  color: Colors.grey.shade600,
                   height: 1.6,
                 ),
               ),
@@ -256,8 +250,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 onPressed: _skipLocation,
                 child: Text(
                   context.tr(AppStrings.permissionsContWithoutLoc),
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
+                  style: const TextStyle(
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -309,16 +302,14 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 context.tr(AppStrings.permissionsCameraBody),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
-                  color: Colors.grey.shade600,
                   height: 1.5,
                 ),
               ),
@@ -352,7 +343,6 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 child: Text(
                   context.tr(AppStrings.permissionsNotNow),
                   style: TextStyle(
-                    color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
@@ -405,16 +395,14 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 context.tr(AppStrings.permissionsNotifsBody),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
-                  color: Colors.grey.shade600,
                   height: 1.5,
                 ),
               ),
@@ -448,7 +436,6 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 child: Text(
                   context.tr(AppStrings.permissionsNotNow),
                   style: TextStyle(
-                    color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),

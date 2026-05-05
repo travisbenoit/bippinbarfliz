@@ -82,7 +82,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         decoration: BoxDecoration(
                           color: _currentPage == index
                               ? const Color(0xFFE91E63)
-                              : Colors.grey.shade300,
+                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -123,7 +123,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     children: [
                       Text(
                         t(AppStrings.onboardingAlreadyAccount),
-                        style: const TextStyle(color: Colors.black54),
+                        style: const TextStyle(),
                       ),
                       TextButton(
                         onPressed: () => context.go('/signin'),
@@ -155,7 +155,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Container(
             height: 300,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Center(
@@ -173,7 +173,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
               height: 1.2,
             ),
           ),
@@ -181,9 +180,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Text(
             slide.subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
-              color: Colors.grey.shade700,
               height: 1.4,
             ),
           ),

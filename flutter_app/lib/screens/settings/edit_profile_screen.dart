@@ -26,7 +26,6 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   static const _brandColor = Color(0xFFE91E63);
-  static const _bgColor = Color(0xFFFFF5F0);
 
   final _supabase = Supabase.instance.client;
   final _formKey = GlobalKey<FormState>();
@@ -200,17 +199,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget build(BuildContext context) {
     final t = ref.watch(tProvider);
     return Scaffold(
-      backgroundColor: _bgColor,
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         title: Text(
           t(AppStrings.editProfileTitle),
-          style: const TextStyle(
-              color: Colors.black87, fontWeight: FontWeight.w700, fontSize: 18),
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
         ),
         actions: [
           TextButton(
@@ -435,11 +432,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -450,8 +447,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
-                fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black87),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 14),
           ...children,
@@ -476,8 +472,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           label,
           style: const TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.black54),
+              fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
         TextFormField(
@@ -491,26 +486,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       required maxLength}) =>
                   Text(
                     '$currentLength/${maxLength ?? 200}',
-                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    style: const TextStyle(fontSize: 11),
                   )
               : null,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+            hintStyle: const TextStyle(fontSize: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: _brandColor),
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
@@ -535,31 +528,28 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           context.tr(AppStrings.editProfileLookingForLabel),
           style: const TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.black54),
+              fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           initialValue: _lookingFor,
           hint: Text(
             context.tr(AppStrings.editProfileLookingForHint),
-            style: TextStyle(color: Colors.grey[400], fontSize: 14),
+            style: const TextStyle(fontSize: 14),
           ),
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: _brandColor),
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
@@ -593,10 +583,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             decoration: BoxDecoration(
               color: isSelected
                   ? opt.color.withValues(alpha: 0.15)
-                  : Colors.grey[100],
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isSelected ? opt.color : Colors.grey[300]!,
+                color: isSelected ? opt.color : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                 width: isSelected ? 1.5 : 1,
               ),
             ),
@@ -605,7 +595,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               children: [
                 Icon(opt.icon,
                     size: 16,
-                    color: isSelected ? opt.color : Colors.grey[500]),
+                    color: isSelected ? opt.color : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
                 const SizedBox(width: 6),
                 Text(
                   opt.label,
@@ -614,7 +604,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     fontWeight: isSelected
                         ? FontWeight.w600
                         : FontWeight.normal,
-                    color: isSelected ? opt.color : Colors.grey[600],
+                    color: isSelected ? opt.color : null,
                   ),
                 ),
               ],
@@ -645,12 +635,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             decoration: BoxDecoration(
               color: isSelected
                   ? accentColor.withValues(alpha: 0.15)
-                  : Colors.grey[100],
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
                     ? accentColor
-                    : Colors.grey[300]!,
+                    : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                 width: isSelected ? 1.5 : 1,
               ),
             ),
@@ -660,7 +650,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 fontSize: 13,
                 fontWeight:
                     isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? accentColor : Colors.grey[600],
+                color: isSelected ? accentColor : null,
               ),
             ),
           ),

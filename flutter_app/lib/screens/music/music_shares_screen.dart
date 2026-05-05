@@ -69,10 +69,9 @@ class MusicSharesScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.music_note,
                           size: 48,
-                          color: Colors.grey[400],
                         ),
                         const SizedBox(height: 16),
                         Text(

@@ -121,12 +121,12 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         title: Text(
           t(AppStrings.blockedTitle),
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       body: _loading
@@ -182,21 +182,20 @@ class _EmptyState extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.person_off_outlined, size: 36, color: Colors.grey[400]),
+              child: Icon(Icons.person_off_outlined, size: 36, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
             ),
             const SizedBox(height: 16),
             Text(
               context.tr(AppStrings.blockedEmpty),
-              style: const TextStyle(
-                  fontSize: 17, fontWeight: FontWeight.w600, color: Colors.black87),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               context.tr(AppStrings.blockedEmptySub),
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 13),
               textAlign: TextAlign.center,
             ),
           ],
@@ -229,16 +228,15 @@ class _BlockedUserTile extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor: Colors.grey[200],
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
               backgroundImage:
                   item.avatarUrl != null ? NetworkImage(item.avatarUrl!) : null,
               child: item.avatarUrl == null
                   ? Text(
                       item.name[0].toUpperCase(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey[500],
                       ),
                     )
                   : null,
@@ -250,14 +248,13 @@ class _BlockedUserTile extends StatelessWidget {
                 children: [
                   Text(
                     item.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, color: Colors.black87),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '${context.tr(AppStrings.blockedOn)} ${_formatDate(item.blockedAt)}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ],
               ),

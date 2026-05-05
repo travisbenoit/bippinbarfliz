@@ -128,17 +128,13 @@ class _ProfileContent extends StatelessWidget {
           style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
           ),
         ),
         if (profile.age != null) ...[
           const SizedBox(height: 4),
           Text(
             '${profile.age} ${context.tr(AppStrings.profileYearsOld)}',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: const TextStyle(fontSize: 16),
           ),
         ],
         if (profile.homeCity != null) ...[
@@ -146,14 +142,11 @@ class _ProfileContent extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.location_on, size: 16, color: Colors.grey[500]),
+              Icon(Icons.location_on, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
               const SizedBox(width: 4),
               Text(
                 profile.homeCity!,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: const TextStyle(fontSize: 14),
               ),
             ],
           ),
@@ -217,10 +210,7 @@ class _ProfileContent extends StatelessWidget {
               children: [
                 Text(
                   context.tr(AppStrings.profileTonightStatus),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 12),
                 ),
                 Text(
                   text,
@@ -274,7 +264,7 @@ class _ProfileContent extends StatelessWidget {
               profile.bio ?? context.tr(AppStrings.profileNoBio),
               style: TextStyle(
                 fontSize: 14,
-                color: profile.bio != null ? Colors.black87 : Colors.grey[500],
+                color: profile.bio != null ? null : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                 height: 1.5,
               ),
             ),
@@ -386,9 +376,9 @@ class _ProfileContent extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _StatItem(label: context.tr(AppStrings.homeSwarms), value: '0'),
-            Container(width: 1, height: 40, color: Colors.grey[200]),
+            Container(width: 1, height: 40, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)),
             _StatItem(label: context.tr(AppStrings.profileFriends), value: '0'),
-            Container(width: 1, height: 40, color: Colors.grey[200]),
+            Container(width: 1, height: 40, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)),
             _StatItem(
               label: context.tr(AppStrings.profilePremium),
               value: profile.isPremium
@@ -425,10 +415,7 @@ class _StatItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
+          style: const TextStyle(fontSize: 12),
         ),
       ],
     );

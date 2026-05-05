@@ -115,13 +115,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   t(AppStrings.signUpSubtitle),
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 48),
                 TextFormField(
@@ -199,9 +198,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     Expanded(
                       child: RichText(
                         text: TextSpan(
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 14,
-                              color: Colors.grey.shade700,
                               height: 1.4),
                           children: [
                             const TextSpan(text: 'I agree to the '),
@@ -268,8 +266,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(t(AppStrings.signUpHaveAccount),
-                        style: const TextStyle(color: Colors.black54)),
+                    Text(t(AppStrings.signUpHaveAccount)),
                     TextButton(
                       onPressed: () => context.go('/signin'),
                       child: Text(

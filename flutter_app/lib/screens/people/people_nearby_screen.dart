@@ -12,7 +12,6 @@ import '../../providers/localization_provider.dart';
 // ---------------------------------------------------------------------------
 
 const _pink = Color(0xFFE91E63);
-const _bg = Color(0xFFFFF5F0);
 
 // ---------------------------------------------------------------------------
 // Filter enum
@@ -168,24 +167,22 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
     final friendshipsAsync = ref.watch(_myFriendshipsProvider);
 
     return Scaffold(
-      backgroundColor: _bg,
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         title: Text(
           t(AppStrings.peopleTitle),
           style: const TextStyle(
-            color: Colors.black87,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.tune, color: Colors.black87),
+            icon: const Icon(Icons.tune),
             tooltip: t(AppStrings.search),
             onPressed: () {
               // The filter chips row is always visible; this is a visual cue.
@@ -340,7 +337,7 @@ class _CountBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Row(
         children: [
           Container(
@@ -357,7 +354,6 @@ class _CountBanner extends StatelessWidget {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
             ),
           ),
         ],
@@ -379,7 +375,7 @@ class _FilterChipsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -395,15 +391,15 @@ class _FilterChipsRow extends StatelessWidget {
                 selectedColor: _pink.withValues(alpha: 0.15),
                 checkmarkColor: _pink,
                 labelStyle: TextStyle(
-                  color: isActive ? _pink : Colors.grey[700],
+                  color: isActive ? _pink : null,
                   fontWeight:
                       isActive ? FontWeight.w600 : FontWeight.normal,
                   fontSize: 13,
                 ),
                 side: BorderSide(
-                  color: isActive ? _pink : Colors.grey.shade300,
+                  color: isActive ? _pink : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
-                backgroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -438,19 +434,17 @@ class _SearchBar extends StatelessWidget {
           prefixIcon: const Icon(Icons.search, color: _pink),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.grey),
+                  icon: const Icon(Icons.clear),
                   onPressed: () => controller.clear(),
                 )
               : null,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: Theme.of(context).colorScheme.surface,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade200),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade200),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
@@ -509,7 +503,6 @@ class _PersonCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -518,8 +511,7 @@ class _PersonCard extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           '${user.age}',
-                          style: TextStyle(
-                              fontSize: 13, color: Colors.grey[600]),
+                          style: const TextStyle(fontSize: 13),
                         ),
                       ],
                     ],
@@ -531,13 +523,11 @@ class _PersonCard extends StatelessWidget {
                       user.homeCity!.isNotEmpty) ...[
                     Row(
                       children: [
-                        const Icon(Icons.location_pin,
-                            size: 13, color: Colors.grey),
+                        const Icon(Icons.location_pin, size: 13),
                         const SizedBox(width: 3),
                         Text(
                           user.homeCity!,
-                          style: TextStyle(
-                              fontSize: 12, color: Colors.grey[600]),
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ],
                     ),
@@ -581,8 +571,7 @@ class _PersonCard extends StatelessWidget {
                       user.bio!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey[600]),
+                      style: const TextStyle(fontSize: 12),
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -811,14 +800,13 @@ class _EmptyState extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -855,7 +843,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               message,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 12),
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,

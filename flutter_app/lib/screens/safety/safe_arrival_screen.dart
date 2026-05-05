@@ -99,7 +99,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
                 const SizedBox(height: 8),
                 Text(
                   notifyMsg,
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: const TextStyle(),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -207,14 +207,14 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         title: Row(
           children: [
             const Icon(Icons.shield_outlined, color: _brandPink, size: 22),
             const SizedBox(width: 8),
-            Text(t(AppStrings.safeArrivalTitle), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+            Text(t(AppStrings.safeArrivalTitle), style: const TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -320,12 +320,12 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
         if (_safetyFriends.isEmpty)
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(12)),
             child: Row(
               children: [
-                const Icon(Icons.person_add_outlined, color: Colors.grey),
+                const Icon(Icons.person_add_outlined),
                 const SizedBox(width: 12),
-                Text(context.tr(AppStrings.safeArrivalAddFriendPrompt), style: const TextStyle(color: Colors.grey)),
+                Text(context.tr(AppStrings.safeArrivalAddFriendPrompt)),
               ],
             ),
           )
@@ -346,7 +346,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
                       : null,
                 ),
                 title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(context.tr(AppStrings.safeArrivalWillNotify), style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                subtitle: Text(context.tr(AppStrings.safeArrivalWillNotify), style: const TextStyle(fontSize: 12)),
                 trailing: const Icon(Icons.shield_outlined, color: Colors.green, size: 18),
               ),
             );
@@ -364,12 +364,12 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
         if (_safeArrivals.isEmpty)
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(12)),
             child: Row(
               children: [
-                const Icon(Icons.history, color: Colors.grey),
+                const Icon(Icons.history),
                 const SizedBox(width: 12),
-                Text(context.tr(AppStrings.safeArrivalNoRecent), style: const TextStyle(color: Colors.grey)),
+                Text(context.tr(AppStrings.safeArrivalNoRecent)),
               ],
             ),
           )
@@ -389,7 +389,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
                 ),
                 title: Text(context.tr(AppStrings.safeArrivalArrivedSafe), style: const TextStyle(fontWeight: FontWeight.w600)),
                 subtitle: Text(a['location_note'] as String? ?? 'Home', style: const TextStyle(fontSize: 12)),
-                trailing: Text(formatted, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                trailing: Text(formatted, style: const TextStyle(fontSize: 11)),
               ),
             );
           })),

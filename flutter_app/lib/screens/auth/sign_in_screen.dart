@@ -145,13 +145,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   t(AppStrings.signInSubtitle),
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 48),
                 TextFormField(
@@ -246,7 +245,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   children: [
                     Text(
                       t(AppStrings.signInNoAccount),
-                      style: const TextStyle(color: Colors.black54),
                     ),
                     TextButton(
                       onPressed: () => context.go('/signup'),

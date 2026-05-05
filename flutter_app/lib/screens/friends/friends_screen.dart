@@ -199,7 +199,6 @@ class FriendsScreen extends ConsumerStatefulWidget {
 class _FriendsScreenState extends ConsumerState<FriendsScreen>
     with SingleTickerProviderStateMixin {
   static const _pink = Color(0xFFE91E63);
-  static const _bg = Color(0xFFFFF5F0);
 
   late final TabController _tabController;
   final _searchController = TextEditingController();
@@ -232,17 +231,15 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
   Widget build(BuildContext context) {
     ref.watch(tProvider);
     return Scaffold(
-      backgroundColor: _bg,
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         title: Text(
           context.tr(AppStrings.friendsTitle),
           style: const TextStyle(
-            color: Colors.black87,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
@@ -251,7 +248,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           controller: _tabController,
           indicatorColor: _pink,
           labelColor: _pink,
-          unselectedLabelColor: Colors.grey[600],
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           labelStyle:
               const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
           tabs: [
@@ -349,7 +346,6 @@ class _FriendCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -358,8 +354,7 @@ class _FriendCard extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           '${user.age}',
-                          style: TextStyle(
-                              fontSize: 13, color: Colors.grey[600]),
+                          style: const TextStyle(fontSize: 13),
                         ),
                       ],
                     ],
@@ -372,7 +367,7 @@ class _FriendCard extends StatelessWidget {
                       user.bio!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: const TextStyle(fontSize: 12),
                     ),
                   ],
                 ],
@@ -501,7 +496,6 @@ class _RequestCardState extends State<_RequestCard> {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -509,8 +503,7 @@ class _RequestCardState extends State<_RequestCard> {
                       if (user.age != null) ...[
                         const SizedBox(width: 6),
                         Text('${user.age}',
-                            style: TextStyle(
-                                fontSize: 13, color: Colors.grey[600])),
+                            style: const TextStyle(fontSize: 13)),
                       ],
                     ],
                   ),
@@ -522,8 +515,7 @@ class _RequestCardState extends State<_RequestCard> {
                       user.bio!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: const TextStyle(fontSize: 12),
                     ),
                   ],
                   const SizedBox(height: 10),
@@ -561,9 +553,8 @@ class _RequestCardState extends State<_RequestCard> {
                               child: OutlinedButton(
                                 onPressed: () => _updateStatus('rejected'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.grey[700],
                                   side: BorderSide(
-                                      color: Colors.grey.shade300),
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2)),
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 8),
                                   shape: RoundedRectangleBorder(
@@ -752,7 +743,6 @@ class _SuggestedUserCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -881,14 +871,14 @@ class _SearchBar extends StatelessWidget {
                 )
               : null,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: Theme.of(context).colorScheme.surface,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade200),
+            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade200),
+            borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
@@ -1002,14 +992,13 @@ class _EmptyState extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -1043,7 +1032,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               message,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 12),
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,

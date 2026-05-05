@@ -319,16 +319,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               '$_otherUserName!',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: const TextStyle(fontSize: 14),
             ),
           ],
         ),
@@ -351,10 +347,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
             offset: const Offset(0, -2),
             blurRadius: 8,
           ),
@@ -373,7 +369,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Colors.grey[100],
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 12,
@@ -439,7 +435,7 @@ class _MessageBubble extends StatelessWidget {
                         colors: [Color(0xFFE91E63), Color(0xFFFF6B6B)],
                       )
                     : null,
-                color: message.isMe ? null : Colors.white,
+                color: message.isMe ? null : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
@@ -448,7 +444,7 @@ class _MessageBubble extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -460,7 +456,7 @@ class _MessageBubble extends StatelessWidget {
                   Text(
                     message.body,
                     style: TextStyle(
-                      color: message.isMe ? Colors.white : Colors.black87,
+                      color: message.isMe ? Colors.white : Theme.of(context).colorScheme.onSurface,
                       fontSize: 15,
                     ),
                   ),
@@ -469,8 +465,8 @@ class _MessageBubble extends StatelessWidget {
                     _formatTime(message.createdAt),
                     style: TextStyle(
                       color: message.isMe
-                          ? Colors.white.withOpacity(0.7)
-                          : Colors.grey[500],
+                          ? Colors.white.withValues(alpha: 0.7)
+                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                       fontSize: 11,
                     ),
                   ),

@@ -30,7 +30,7 @@ class GiftsScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               t(AppStrings.giftsEmptySub),
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(),
             ),
           ],
         ),

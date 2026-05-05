@@ -106,15 +106,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   t(AppStrings.profileSetupTellUs),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
-                    color: Colors.grey.shade600,
                   ),
                 ),
                 const SizedBox(height: 48),
@@ -125,13 +123,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.person,
                           size: 60,
-                          color: Colors.grey.shade400,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
                       ),
                       const Positioned(
@@ -183,8 +181,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                           : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
                       style: TextStyle(
                         color: _selectedDate == null
-                            ? Colors.grey.shade600
-                            : Colors.black87,
+                            ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+                            : null,
                       ),
                     ),
                   ),

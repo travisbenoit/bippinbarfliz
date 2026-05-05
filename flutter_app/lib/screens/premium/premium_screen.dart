@@ -73,7 +73,7 @@ class PremiumScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               Text(
                 t(AppStrings.premiumSubtitle),
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 48),
               const _PremiumFeature(
@@ -160,7 +160,7 @@ class _PremiumFeature extends StatelessWidget {
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  style: const TextStyle(fontSize: 14),
                 ),
               ],
             ),
@@ -191,7 +191,7 @@ class _PricingCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE91E63), width: 2),
       ),
@@ -246,7 +246,7 @@ class _PricingCard extends StatelessWidget {
                     ),
                     Text(
                       period,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ],
                 ),

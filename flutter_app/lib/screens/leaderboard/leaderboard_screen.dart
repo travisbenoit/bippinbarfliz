@@ -149,7 +149,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   late TabController _tabController;
 
   static const _brandPink = Color(0xFFE91E63);
-  static const _background = Color(0xFFFFF5F0);
 
   @override
   void initState() {
@@ -167,7 +166,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   Widget build(BuildContext context) {
     final t = ref.watch(tProvider);
     return Scaffold(
-      backgroundColor: _background,
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
@@ -184,7 +182,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 20,
-                color: Colors.black87,
               ),
             ),
           ],
@@ -192,7 +189,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
         bottom: TabBar(
           controller: _tabController,
           labelColor: _brandPink,
-          unselectedLabelColor: Colors.grey[600],
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           indicatorColor: _brandPink,
           indicatorWeight: 3,
           tabs: [
@@ -239,7 +236,7 @@ class _LeaderboardTab extends ConsumerWidget {
             const SizedBox(height: 16),
             Text('${context.tr(AppStrings.error)}: ${error.toString()}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54)),
+                style: const TextStyle()),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => ref.invalidate(leaderboardProvider),
@@ -464,11 +461,11 @@ class _LeaderboardRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: isCurrentUser
             ? _brandPink.withValues(alpha: 0.08)
-            : Colors.white,
+            : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         border: isCurrentUser
             ? Border.all(color: _brandPink.withValues(alpha: 0.3), width: 1.5)
-            : Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+            : Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -503,7 +500,6 @@ class _LeaderboardRow extends StatelessWidget {
                   fontSize: 14,
                   fontWeight:
                       isCurrentUser ? FontWeight.w700 : FontWeight.w500,
-                  color: Colors.black87,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -564,7 +560,7 @@ class _ChallengesTab extends ConsumerWidget {
             const SizedBox(height: 16),
             Text('${context.tr(AppStrings.error)}: ${error.toString()}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54)),
+                style: const TextStyle()),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => ref.invalidate(userChallengesProvider),
@@ -606,13 +602,12 @@ class _ChallengesTab extends ConsumerWidget {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   t(AppStrings.leaderboardCompleteXp),
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: const TextStyle(fontSize: 14),
                 ),
               ],
             ),
@@ -678,7 +673,7 @@ class _XpEarnedBanner extends StatelessWidget {
               ),
               Text(
                 context.tr(AppStrings.leaderboardFromChallenges),
-                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                style: const TextStyle(fontSize: 13),
               ),
             ],
           ),
@@ -706,9 +701,9 @@ class _ChallengeCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.12)),
+        side: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
       ),
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -726,16 +721,12 @@ class _ChallengeCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         challenge.challengeDescription,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                        style: const TextStyle(fontSize: 13),
                       ),
                     ],
                   ),
@@ -760,7 +751,7 @@ class _ChallengeCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 8,
-                      backgroundColor: Colors.grey.withValues(alpha: 0.15),
+                      backgroundColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         isCompleted ? Colors.green : _brandPink,
                       ),
@@ -770,10 +761,9 @@ class _ChallengeCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   '${challenge.progress}/${challenge.requirementCount}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey[600],
                   ),
                 ),
               ],

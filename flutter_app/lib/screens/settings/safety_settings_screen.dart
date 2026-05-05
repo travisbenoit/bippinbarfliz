@@ -17,7 +17,6 @@ class SafetySettingsScreen extends ConsumerStatefulWidget {
 class _SafetySettingsScreenState
     extends ConsumerState<SafetySettingsScreen> {
   static const _brandColor = Color(0xFFE91E63);
-  static const _bgColor = Color(0xFFFFF5F0);
 
   final _supabase = Supabase.instance.client;
 
@@ -256,17 +255,15 @@ class _SafetySettingsScreenState
   Widget build(BuildContext context) {
     ref.watch(tProvider);
     return Scaffold(
-      backgroundColor: _bgColor,
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         title: Text(
           context.tr(AppStrings.safetyTitle),
           style: const TextStyle(
-              color: Colors.black87,
               fontWeight: FontWeight.w700,
               fontSize: 18),
         ),
@@ -314,13 +311,12 @@ class _SafetySettingsScreenState
                     context.tr(AppStrings.safetyGhostModeTitle),
                     style: const TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87),
+                        fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     context.tr(AppStrings.safetyGhostHideSub),
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    style: const TextStyle(fontSize: 13),
                   ),
                 ],
               ),
@@ -352,8 +348,7 @@ class _SafetySettingsScreenState
                   context.tr(AppStrings.safetyProfileVisibility),
                   style: const TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87),
+                      fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
                 if (_savingPrivacy)
@@ -408,10 +403,10 @@ class _SafetySettingsScreenState
         decoration: BoxDecoration(
           color: isSelected
               ? _brandColor.withValues(alpha: 0.08)
-              : Colors.grey[50],
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? _brandColor : Colors.grey[300]!,
+            color: isSelected ? _brandColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -420,7 +415,7 @@ class _SafetySettingsScreenState
             Icon(
               icon,
               size: 20,
-              color: isSelected ? _brandColor : Colors.grey[500],
+              color: isSelected ? _brandColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -433,13 +428,12 @@ class _SafetySettingsScreenState
                       fontSize: 14,
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.normal,
-                      color: isSelected ? _brandColor : Colors.black87,
+                      color: isSelected ? _brandColor : null,
                     ),
                   ),
                   Text(
                     description,
-                    style:
-                        TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ],
               ),
@@ -467,7 +461,7 @@ class _SafetySettingsScreenState
             child: Center(
               child: Text(
                 context.tr(AppStrings.safetyNoBlocked),
-                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                style: const TextStyle(fontSize: 14),
               ),
             ),
           )
@@ -508,7 +502,7 @@ class _SafetySettingsScreenState
           ),
           subtitle: Text(
             context.tr(AppStrings.safetyDeleteAccountSub),
-            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            style: const TextStyle(fontSize: 12),
           ),
           trailing: _requestingDeletion
               ? const SizedBox(
@@ -518,7 +512,7 @@ class _SafetySettingsScreenState
                       CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
                 )
               : const Icon(Icons.arrow_forward_ios,
-                  size: 14, color: Colors.grey),
+                  size: 14),
           onTap: _requestingDeletion ? null : _showDeleteAccountDialog,
         ),
       ],
@@ -549,16 +543,15 @@ class _SafetySettingsScreenState
           title: Text(
             context.tr(AppStrings.safetyDownloadData),
             style: const TextStyle(
-                color: Colors.black87,
                 fontWeight: FontWeight.w600,
                 fontSize: 15),
           ),
           subtitle: Text(
             context.tr(AppStrings.safetyDownloadDataSub),
-            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            style: const TextStyle(fontSize: 12),
           ),
           trailing: const Icon(Icons.arrow_forward_ios,
-              size: 14, color: Colors.grey),
+              size: 14),
           onTap: _requestDataExport,
         ),
       ],
@@ -626,8 +619,7 @@ class _BlockedUserTile extends StatelessWidget {
               blockedUser.name,
               style: const TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87),
+                  fontWeight: FontWeight.w500),
             ),
           ),
           OutlinedButton(
@@ -666,11 +658,11 @@ class _SectionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -687,8 +679,7 @@ class _SectionCard extends StatelessWidget {
                 title,
                 style: const TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87),
+                    fontWeight: FontWeight.w700),
               ),
             ],
           ),

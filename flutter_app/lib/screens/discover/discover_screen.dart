@@ -114,17 +114,13 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             t(AppStrings.discoverCheckBack),
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: const TextStyle(fontSize: 14),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
@@ -243,7 +239,7 @@ class _ActionButton extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(

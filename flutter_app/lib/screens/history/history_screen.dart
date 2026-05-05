@@ -112,7 +112,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
   late TabController _tabController;
 
   static const _brandPink = Color(0xFFE91E63);
-  static const _background = Color(0xFFFFF5F0);
 
   @override
   void initState() {
@@ -130,7 +129,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
   Widget build(BuildContext context) {
     final t = ref.watch(tProvider);
     return Scaffold(
-      backgroundColor: _background,
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
@@ -142,13 +140,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           style: const TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 20,
-            color: Colors.black87,
           ),
         ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: _brandPink,
-          unselectedLabelColor: Colors.grey[600],
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           indicatorColor: _brandPink,
           indicatorWeight: 3,
           tabs: [
@@ -228,7 +225,7 @@ class _ActivityTab extends ConsumerWidget {
             const SizedBox(height: 16),
             Text('${context.tr(AppStrings.error)}: ${error.toString()}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54)),
+                style: const TextStyle()),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => ref.invalidate(activityFeedProvider),
@@ -266,13 +263,12 @@ class _ActivityTab extends ConsumerWidget {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   t(AppStrings.historyEmptySub),
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: const TextStyle(fontSize: 14),
                 ),
               ],
             ),
@@ -323,9 +319,9 @@ class _ActivityTile extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.12)),
+        side: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
       ),
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
@@ -353,13 +349,12 @@ class _ActivityTile extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
                           ),
                         ),
                       ),
                       Text(
                         timeago.format(timestamp),
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                        style: const TextStyle(fontSize: 12),
                       ),
                     ],
                   ),
@@ -369,7 +364,7 @@ class _ActivityTile extends StatelessWidget {
                       content!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      style: const TextStyle(fontSize: 13),
                     ),
                   ],
                 ],
@@ -408,7 +403,7 @@ class _VisitsTab extends ConsumerWidget {
             const SizedBox(height: 16),
             Text('${context.tr(AppStrings.error)}: ${error.toString()}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54)),
+                style: const TextStyle()),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => ref.invalidate(venueVisitsProvider),
@@ -446,13 +441,12 @@ class _VisitsTab extends ConsumerWidget {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   t(AppStrings.historyVisitsEmptySub),
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: const TextStyle(fontSize: 14),
                 ),
               ],
             ),
@@ -492,9 +486,9 @@ class _VenueVisitTile extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.12)),
+        side: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
       ),
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
@@ -519,7 +513,6 @@ class _VenueVisitTile extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   if (visit.venueAddress != null &&
@@ -529,18 +522,18 @@ class _VenueVisitTile extends StatelessWidget {
                       visit.venueAddress!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: const TextStyle(fontSize: 12),
                     ),
                   ],
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       Icon(Icons.calendar_today,
-                          size: 11, color: Colors.grey[400]),
+                          size: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
                       const SizedBox(width: 4),
                       Text(
                         dateStr,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                        style: const TextStyle(fontSize: 12),
                       ),
                     ],
                   ),

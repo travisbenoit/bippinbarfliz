@@ -90,7 +90,6 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   static const _brandPink = Color(0xFFE91E63);
-  static const _background = Color(0xFFFFF5F0);
 
   bool _markingAll = false;
 
@@ -126,7 +125,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     );
 
     return Scaffold(
-      backgroundColor: _background,
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
@@ -141,7 +139,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 20,
-                color: Colors.black87,
               ),
             ),
             if (unreadCount > 0)
@@ -194,7 +191,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               const SizedBox(height: 16),
               Text('${t(AppStrings.notificationsError)}: ${error.toString()}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.black54)),
+                  style: const TextStyle()),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(notificationsProvider),
@@ -232,13 +229,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     t(AppStrings.notificationsAllCaughtUp),
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ],
               ),
@@ -346,7 +342,7 @@ class _SectionHeader extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: Colors.grey[500],
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
           letterSpacing: 0.8,
         ),
       ),
@@ -464,7 +460,6 @@ class _NotificationCard extends StatelessWidget {
                             fontWeight: isUnread
                                 ? FontWeight.w700
                                 : FontWeight.w600,
-                            color: Colors.black87,
                           ),
                         ),
                       ),
@@ -473,7 +468,7 @@ class _NotificationCard extends StatelessWidget {
                         timeago.format(notification.createdAt),
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.grey[500],
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                     ],
@@ -484,9 +479,8 @@ class _NotificationCard extends StatelessWidget {
                       notification.body,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[600],
                         height: 1.4,
                       ),
                     ),

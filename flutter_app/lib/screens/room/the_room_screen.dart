@@ -110,7 +110,6 @@ class TheRoomScreen extends ConsumerStatefulWidget {
 class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     with SingleTickerProviderStateMixin {
   static const _brandColor = Color(0xFFE91E63);
-  static const _bgColor = Color(0xFFFFF5F0);
 
   late TabController _tabController;
   final _supabase = Supabase.instance.client;
@@ -511,11 +510,10 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
   Widget build(BuildContext context) {
     final t = ref.watch(tProvider);
     return Scaffold(
-      backgroundColor: _bgColor,
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         title: Row(
@@ -524,7 +522,6 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
               child: Text(
                 widget.venueName ?? t(AppStrings.roomTheRoomDefault),
                 style: const TextStyle(
-                  color: Colors.black87,
                   fontWeight: FontWeight.w700,
                   fontSize: 18,
                 ),
@@ -563,7 +560,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
           controller: _tabController,
           indicatorColor: _brandColor,
           labelColor: _brandColor,
-          unselectedLabelColor: Colors.grey,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
           labelStyle:
               const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           tabs: [
@@ -629,13 +626,12 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
               context.tr(AppStrings.roomNoMessages),
               style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87),
+                  fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               context.tr(AppStrings.roomBeFirstSay),
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 14),
             ),
           ],
         ),
@@ -659,10 +655,10 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
             offset: const Offset(0, -2),
             blurRadius: 8,
           ),
@@ -681,7 +677,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Colors.grey[100],
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: 20, vertical: 12),
                 ),
@@ -716,7 +712,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       children: [
         // Header with count + button
         Container(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
@@ -775,16 +771,13 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.person_off_outlined,
-                            size: 48, color: Colors.grey[400]),
+                        const Icon(Icons.person_off_outlined, size: 48),
                         const SizedBox(height: 12),
                         Text(context.tr(AppStrings.roomNoOneCheckedIn),
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600])),
+                            style: const TextStyle(fontSize: 16)),
                         const SizedBox(height: 6),
                         Text(context.tr(AppStrings.roomBeFirst),
-                            style: TextStyle(
-                                fontSize: 14, color: Colors.grey[500])),
+                            style: const TextStyle(fontSize: 14)),
                       ],
                     ),
                   )
@@ -816,7 +809,6 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
 
   Widget _buildPhotoWallTab() {
     return Scaffold(
-      backgroundColor: _bgColor,
       floatingActionButton: FloatingActionButton(
         onPressed: _addPhoto,
         backgroundColor: _brandColor,
@@ -843,12 +835,10 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                       Text(context.tr(AppStrings.roomNoPhotos),
                           style: const TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87)),
+                              fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       Text(context.tr(AppStrings.roomAddFirstPhoto),
-                          style: TextStyle(
-                              fontSize: 14, color: Colors.grey[600])),
+                          style: const TextStyle(fontSize: 14)),
                     ],
                   ),
                 )
@@ -908,13 +898,13 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
                 child: Text(
                   context.tr(AppStrings.roomNoActivePoll),
-                  style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                  style: const TextStyle(fontSize: 14),
                 ),
               ),
             ),
@@ -925,7 +915,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -970,7 +960,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -989,11 +979,10 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                     hintText: context.tr(AppStrings.roomWhatHappening),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          BorderSide(color: Colors.grey[300]!),
+                      borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: Colors.grey[50],
+                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -1028,8 +1017,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
               context.tr(AppStrings.roomRecentMoments),
               style: const TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87),
+                  fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 10),
             ..._moments.map((m) => _MomentCard(moment: m)),
@@ -1121,7 +1109,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: _brandColor,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.grey[300],
+                disabledBackgroundColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
@@ -1186,7 +1174,7 @@ class _MessageBubble extends StatelessWidget {
                     ? const LinearGradient(
                         colors: [Color(0xFFE91E63), Color(0xFFFF6B6B)])
                     : null,
-                color: isMe ? null : Colors.white,
+                color: isMe ? null : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
@@ -1195,7 +1183,7 @@ class _MessageBubble extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -1217,7 +1205,7 @@ class _MessageBubble extends StatelessWidget {
                   Text(
                     message.content,
                     style: TextStyle(
-                      color: isMe ? Colors.white : Colors.black87,
+                      color: isMe ? Colors.white : null,
                       fontSize: 14,
                     ),
                   ),
@@ -1227,7 +1215,7 @@ class _MessageBubble extends StatelessWidget {
                     style: TextStyle(
                       color: isMe
                           ? Colors.white.withValues(alpha: 0.7)
-                          : Colors.grey[500],
+                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                       fontSize: 10,
                     ),
                   ),
@@ -1274,11 +1262,11 @@ class _UserCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1308,8 +1296,7 @@ class _UserCard extends StatelessWidget {
             user.name,
             style: const TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87),
+                fontWeight: FontWeight.w600),
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 6),
@@ -1353,15 +1340,13 @@ class _PhotoCard extends StatelessWidget {
                   photo.photoUrl!,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.broken_image,
-                        size: 40, color: Colors.grey),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: const Icon(Icons.broken_image, size: 40),
                   ),
                 )
               : Container(
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.image_outlined,
-                      size: 40, color: Colors.grey),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: const Icon(Icons.image_outlined, size: 40),
                 ),
           Positioned(
             bottom: 0,
@@ -1420,11 +1405,11 @@ class _MomentCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -1450,14 +1435,12 @@ class _MomentCard extends StatelessWidget {
               children: [
                 Text(
                   moment.content,
-                  style: const TextStyle(
-                      fontSize: 14, color: Colors.black87),
+                  style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _fmtRelative(moment.createdAt, context),
-                  style:
-                      TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
                 ),
               ],
             ),

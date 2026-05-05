@@ -25,7 +25,7 @@ class MainShell extends ConsumerWidget {
   void _showMoreSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -42,8 +42,8 @@ class MainShell extends ConsumerWidget {
         currentIndex: navigationShell.currentIndex,
         onTap: (index) => _onTap(context, index),
         selectedItemColor: _brandPink,
-        unselectedItemColor: Colors.grey[500],
-        backgroundColor: Colors.white,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         type: BottomNavigationBarType.fixed,
         elevation: 12,
         items: [

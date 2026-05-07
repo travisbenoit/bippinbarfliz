@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../extensions/localization_extension.dart';
 import '../../models/venue.dart';
 import '../../services/analytics_service.dart';
@@ -17,7 +18,7 @@ final venuesMapProvider = FutureProvider<List<Venue>>((ref) async {
   try {
     final response = await supabase
         .from('bars')
-        .select()
+        .select('bar_id, name, address, lat, lng, rating, review_count, photo_urls, google_place_id, created_at')
         .order('name')
         .limit(100);
 
@@ -149,8 +150,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       builder: (context) => _VenueBottomSheet(
         venue: venue,
         onClose: () => Navigator.pop(context),
-        onNavigate: () {
+        onNavigate: () async {
           Navigator.pop(context);
+          final uri = Uri.parse(
+            'https://www.google.com/maps/dir/?api=1'
+            '&destination=${venue.lat},${venue.lng}'
+            '&destination_place_id=${venue.placeId ?? ""}'
+            '&travelmode=walking',
+          );
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
         },
       ),
     );

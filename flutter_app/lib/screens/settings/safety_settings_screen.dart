@@ -63,7 +63,7 @@ class _SafetySettingsScreenState
       // Load block list
       final blocks = await _supabase
           .from('user_blocks')
-          .select('id, blocked_user_id')
+          .select('id, blocked_id')
           .eq('blocker_id', user.id);
 
       final blockedUsers = await Future.wait(
@@ -72,7 +72,7 @@ class _SafetySettingsScreenState
             final blocked = await _supabase
                 .from('users')
                 .select('id, name, avatar_url')
-                .eq('id', row['blocked_user_id'] as String)
+                .eq('id', row['blocked_id'] as String)
                 .maybeSingle();
             if (blocked == null) return null;
             return _BlockedUser(

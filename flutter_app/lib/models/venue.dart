@@ -28,19 +28,28 @@ class Venue {
   });
 
   factory Venue.fromJson(Map<String, dynamic> json) {
+    // bars table uses bar_id as primary key; fall back to id for other sources
+    final id = (json['bar_id'] ?? json['id']) as String;
+
+    // photo_urls in bars is a text[], photo_url in other sources is a single string
+    final photoUrl = json['photo_url'] as String? ??
+        ((json['photo_urls'] as List?)?.cast<String>().firstOrNull);
+
     return Venue(
-      id: json['id'] as String,
+      id: id,
       name: json['name'] as String,
-      address: json['address'] as String,
+      address: (json['address'] as String?) ?? '',
       lat: (json['lat'] as num).toDouble(),
       lng: (json['lng'] as num).toDouble(),
       category: json['category'] as String?,
       verified: json['verified'] as bool? ?? false,
-      photoUrl: json['photo_url'] as String?,
-      placeId: json['place_id'] as String?,
+      photoUrl: photoUrl,
+      placeId: json['place_id'] as String? ?? json['google_place_id'] as String?,
       rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
-      userRatingsTotal: json['user_ratings_total'] as int?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      userRatingsTotal: json['user_ratings_total'] as int? ?? json['review_count'] as int?,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 

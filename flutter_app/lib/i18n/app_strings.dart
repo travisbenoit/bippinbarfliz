@@ -606,6 +606,7 @@ class AppStrings {
   static const leaderboardFromChallenges = 'leaderboard.from_challenges';
   static const leaderboardError = 'leaderboard.error';
   static const leaderboardCheckIns = 'leaderboard.check_ins';
+  static const leaderboardNoStatsYet = 'leaderboard.no_stats_yet';
 
   // ── Friends (extra) ──────────────────────────────────────────────────────────
   static const friendsMessage = 'friends.message';
@@ -1524,6 +1525,7 @@ class AppStrings {
     leaderboardFromChallenges: 'from completed challenges',
     leaderboardError: 'Error',
     leaderboardCheckIns: 'check-ins',
+    leaderboardNoStatsYet: 'Check in to a bar to start earning XP!',
 
     // Friends (extra)
     friendsMessage: 'Message',

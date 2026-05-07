@@ -1,4 +1,4 @@
-package com.example.barfliz
+package io.barfliz.app
 
 import io.flutter.embedding.android.FlutterActivity
 

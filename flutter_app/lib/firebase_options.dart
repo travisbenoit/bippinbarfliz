@@ -21,7 +21,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCTALyTkypYQ_aXl55dopoIx-VvOHlaWzY',
-    appId: '1:351924341994:android:3958bb017a9d8cd5b11b93',
+    appId: '1:351924341994:android:e8cb3b8571032f04b11b93',
     messagingSenderId: '351924341994',
     projectId: 'barfliz-app-a37c5',
     storageBucket: 'barfliz-app-a37c5.firebasestorage.app',
@@ -33,7 +33,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '351924341994',
     projectId: 'barfliz-app-a37c5',
     storageBucket: 'barfliz-app-a37c5.firebasestorage.app',
-    iosBundleId: 'com.barfliz.app',
+    iosBundleId: 'io.barfliz.app',
   );
 
   static const FirebaseOptions web = FirebaseOptions(

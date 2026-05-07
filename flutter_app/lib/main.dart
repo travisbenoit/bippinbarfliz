@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/app_config.dart';
 import 'config/theme.dart';
 import 'firebase_options.dart';
+import 'providers/auth_provider.dart';
 import 'routes/app_router.dart';
 import 'services/analytics_service.dart';
 import 'services/notification_service.dart';
@@ -58,8 +59,14 @@ class _BarflizAppState extends ConsumerState<BarflizApp> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final localizationService = ref.read(localizationServiceProvider);
-      localizationService.initialize();
+      ref.read(localizationServiceProvider).initialize();
+
+      // Register FCM token whenever a user becomes authenticated.
+      ref.listenManual(authStateProvider, (previous, next) {
+        next.whenData((user) {
+          if (user != null) NotificationService.registerFCMToken();
+        });
+      }, fireImmediately: true);
     });
   }
 

@@ -122,7 +122,7 @@ final userChallengesProvider = FutureProvider<List<UserChallenge>>((ref) async {
     return UserChallenge(
       id: row['id'] as String,
       challengeId: key,
-      status: row['status'] as String? ?? 'in_progress',
+      status: row['status'] as String? ?? 'active',
       progress: (row['progress'] as num?)?.toInt() ?? 0,
       challengeName: def['name'] as String? ?? key,
       challengeDescription: def['description'] as String? ?? '',
@@ -259,13 +259,39 @@ class _LeaderboardTab extends ConsumerWidget {
           }
         }
 
+        if (entries.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: _brandPink.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.emoji_events_outlined,
+                      size: 40, color: _brandPink),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  t(AppStrings.leaderboardEmpty),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          );
+        }
+
         return RefreshIndicator(
           onRefresh: () async => ref.invalidate(leaderboardProvider),
           color: _brandPink,
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
-                child: _MyStatsCard(entry: myEntry),
+                child: _MyStatsCard(entry: myEntry, isLoggedIn: currentUserId != null),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -293,8 +319,9 @@ class _LeaderboardTab extends ConsumerWidget {
 
 class _MyStatsCard extends StatelessWidget {
   final LeaderboardEntry? entry;
+  final bool isLoggedIn;
 
-  const _MyStatsCard({this.entry});
+  const _MyStatsCard({this.entry, this.isLoggedIn = true});
 
   static const _brandPink = Color(0xFFE91E63);
 
@@ -322,7 +349,9 @@ class _MyStatsCard extends StatelessWidget {
         child: entry == null
             ? Center(
                 child: Text(
-                  context.tr(AppStrings.leaderboardSignInStats),
+                  isLoggedIn
+                      ? context.tr(AppStrings.leaderboardNoStatsYet)
+                      : context.tr(AppStrings.leaderboardSignInStats),
                   style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               )
@@ -441,6 +470,19 @@ class _LeaderboardRow extends StatelessWidget {
 
   static const _brandPink = Color(0xFFE91E63);
 
+  String _rankLabel() {
+    switch (rank) {
+      case 1:
+        return '🥇';
+      case 2:
+        return '🥈';
+      case 3:
+        return '🥉';
+      default:
+        return '#$rank';
+    }
+  }
+
   Color _rankColor() {
     switch (rank) {
       case 1:
@@ -474,9 +516,9 @@ class _LeaderboardRow extends StatelessWidget {
             SizedBox(
               width: 32,
               child: Text(
-                '#$rank',
+                _rankLabel(),
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: rank <= 3 ? 20 : 14,
                   fontWeight: FontWeight.w700,
                   color: _rankColor(),
                 ),
@@ -814,9 +856,26 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = status == 'completed';
-    final color = isCompleted ? Colors.green : Colors.orange;
-    final label = isCompleted ? context.tr(AppStrings.challengeCompleted) : context.tr(AppStrings.challengeInProgress);
+    final Color color;
+    final String label;
+
+    switch (status) {
+      case 'completed':
+        color = Colors.green;
+        label = context.tr(AppStrings.challengeCompleted);
+        break;
+      case 'expired':
+        color = Colors.grey;
+        label = context.tr(AppStrings.challengeLocked); // reuse 'Locked' label for expired
+        break;
+      case 'locked':
+        color = Colors.blueGrey;
+        label = context.tr(AppStrings.challengeLocked);
+        break;
+      default: // 'active', 'in_progress', anything else
+        color = Colors.orange;
+        label = context.tr(AppStrings.challengeInProgress);
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

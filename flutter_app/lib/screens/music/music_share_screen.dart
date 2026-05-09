@@ -5,6 +5,7 @@ import '../../services/itunes_music_service.dart';
 import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
 
 class MusicShareScreen extends ConsumerStatefulWidget {
   const MusicShareScreen({Key? key}) : super(key: key);
@@ -44,8 +45,8 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
     try {
       final results = await _musicService.searchTracks(query);
       setState(() => _searchResults = results);
-    } catch (e) {
-      setState(() => _shareError = '${context.tr(AppStrings.musicSearchFailed)}: ${e.toString()}');
+    } catch (e, st) {
+      setState(() => _shareError = friendlyError(e, stackTrace: st, tag: 'Music.search'));
     } finally {
       setState(() => _isSearching = false);
     }
@@ -82,8 +83,8 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
           context.pop();
         }
       }
-    } catch (e) {
-      setState(() => _shareError = '${context.tr(AppStrings.musicShareFailed)}: ${e.toString()}');
+    } catch (e, st) {
+      setState(() => _shareError = friendlyError(e, stackTrace: st, tag: 'Music.share'));
     } finally {
       setState(() => _isSharing = false);
     }

@@ -60,7 +60,7 @@ String _authMessage(String raw) {
       lower.contains('invalid credentials')) {
     return 'Incorrect email or password.';
   }
-  if (lower.contains('email not confirmed')) {
+  if (lower.contains('email not confirmed') || lower.contains('email_not_confirmed')) {
     return 'Please verify your email before signing in.';
   }
   if (lower.contains('already registered') ||

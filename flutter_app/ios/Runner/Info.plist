@@ -144,7 +144,7 @@
                 <string>barfliz-stripe</string>
             </array>
         </dict>
-    </dict>
+    </array>
 
     <!-- ─── Queried URL Schemes (url_launcher) ──────────────────────── -->
     <key>LSApplicationQueriesSchemes</key>

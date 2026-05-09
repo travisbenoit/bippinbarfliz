@@ -5,6 +5,8 @@
 .pub/
 build/
 flutter_*.iml
+.flutter-plugins
+.flutter-plugins-dependencies
 
 # Android
 android/app/src/main/gen/
@@ -28,6 +30,9 @@ ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 ios/build/
 ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
 
 # macOS
 macos/Flutter/ephemeral/
@@ -92,3 +97,6 @@ screenshots/
 
 # Local development
 local.properties
+
+# Local scripts (scrapers, one-off tools — not part of the app)
+scripts/

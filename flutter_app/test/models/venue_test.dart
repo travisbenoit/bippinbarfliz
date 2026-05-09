@@ -9,6 +9,7 @@ void main() {
       'address': '123 Smith St, Darwin NT 0800',
       'lat': -12.4634,
       'lng': 130.8456,
+      'city': 'Darwin',
       'category': 'Bar',
       'verified': true,
       'photo_url': 'https://example.com/photo.jpg',
@@ -33,6 +34,7 @@ void main() {
       expect(venue.rating, 4.5);
       expect(venue.userRatingsTotal, 128);
       expect(venue.createdAt, DateTime.parse('2024-01-15T10:00:00.000Z'));
+      expect(venue.city, 'Darwin');
     });
 
     test('fromJson handles optional null fields', () {
@@ -53,6 +55,46 @@ void main() {
       expect(venue.placeId, isNull);
       expect(venue.rating, isNull);
       expect(venue.userRatingsTotal, isNull);
+      expect(venue.city, isNull);
+    });
+
+    test('fromJson parses city for Miami venue', () {
+      final json = {...baseJson, 'lat': 25.77, 'lng': -80.19, 'city': 'Miami'};
+      expect(Venue.fromJson(json).city, 'Miami');
+    });
+
+    test('fromJson parses city for Fort Lauderdale venue', () {
+      final json = {...baseJson, 'lat': 26.12, 'lng': -80.14, 'city': 'Fort Lauderdale'};
+      expect(Venue.fromJson(json).city, 'Fort Lauderdale');
+    });
+
+    test('fromJson reads bar_id as id when present', () {
+      final json = {
+        ...baseJson,
+        'bar_id': 'bar-99',
+      }..remove('id');
+      expect(Venue.fromJson(json).id, 'bar-99');
+    });
+
+    test('fromJson reads photo_urls array when photo_url is absent', () {
+      final json = Map<String, dynamic>.from(baseJson)
+        ..remove('photo_url')
+        ..['photo_urls'] = ['https://example.com/a.jpg', 'https://example.com/b.jpg'];
+      expect(Venue.fromJson(json).photoUrl, 'https://example.com/a.jpg');
+    });
+
+    test('fromJson reads google_place_id fallback for placeId', () {
+      final json = Map<String, dynamic>.from(baseJson)
+        ..remove('place_id')
+        ..['google_place_id'] = 'ChIJ_google';
+      expect(Venue.fromJson(json).placeId, 'ChIJ_google');
+    });
+
+    test('fromJson uses review_count fallback for userRatingsTotal', () {
+      final json = Map<String, dynamic>.from(baseJson)
+        ..remove('user_ratings_total')
+        ..['review_count'] = 42;
+      expect(Venue.fromJson(json).userRatingsTotal, 42);
     });
 
     test('fromJson accepts integer lat/lng (num coercion)', () {

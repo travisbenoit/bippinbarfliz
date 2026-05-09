@@ -9,7 +9,7 @@ import '../screens/auth/sign_up_screen.dart';
 import '../screens/auth/verify_email_screen.dart';
 import '../screens/profile_setup/profile_setup_screen.dart';
 import '../screens/permissions/permissions_screen.dart';
-import '../screens/home/home_screen.dart';
+import '../screens/home/home_screen.dart' hide currentUserProfileProvider;
 import '../screens/discover/discover_screen.dart';
 import '../screens/map/map_screen.dart';
 import '../screens/messages/messages_screen.dart';
@@ -46,23 +46,39 @@ final _profileObserver = AnalyticsNavigatorObserver();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final profileState = ref.watch(currentUserProfileProvider);
 
   return GoRouter(
     observers: [_analyticsObserver],
     initialLocation: '/onboarding',
     redirect: (context, state) {
       final isAuthenticated = authState.value != null;
-      final isOnboarding = state.matchedLocation == '/onboarding';
-      final isAuth = state.matchedLocation.startsWith('/signin') ||
-          state.matchedLocation.startsWith('/signup') ||
-          state.matchedLocation.startsWith('/verify-email');
+      final loc = state.matchedLocation;
+      final isOnboarding = loc == '/onboarding';
+      final isAuth = loc.startsWith('/signin') ||
+          loc.startsWith('/signup') ||
+          loc.startsWith('/verify-email');
+      final isSetupRoute = loc == '/profile-setup' || loc == '/permissions';
 
-      if (!isAuthenticated && !isOnboarding && !isAuth) {
+      if (!isAuthenticated && !isOnboarding && !isAuth && !isSetupRoute) {
         return '/onboarding';
       }
 
-      if (isAuthenticated && (isOnboarding || isAuth)) {
-        return '/home';
+      if (isAuthenticated) {
+        // Wait for profile to finish loading before deciding
+        if (profileState.isLoading) return null;
+
+        final hasProfile = profileState.value != null;
+
+        // No profile row yet → must complete setup first
+        if (!hasProfile && !isSetupRoute) {
+          return '/profile-setup';
+        }
+
+        // Profile exists, no reason to stay on auth/onboarding screens
+        if (hasProfile && (isOnboarding || isAuth)) {
+          return '/home';
+        }
       }
 
       return null;

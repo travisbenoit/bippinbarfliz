@@ -1,32 +1,7 @@
 import 'dart:async';
 import 'package:flutter_radar/flutter_radar.dart';
 import 'package:geolocator/geolocator.dart';
-
-// Approved city bounding boxes — only these cities are live in Barfliz
-class _CityBounds {
-  final String name;        // display name
-  final double north;
-  final double south;
-  final double west;
-  final double east;
-
-  const _CityBounds({
-    required this.name,
-    required this.north,
-    required this.south,
-    required this.west,
-    required this.east,
-  });
-
-  bool contains(double lat, double lng) =>
-      lat >= south && lat <= north && lng >= west && lng <= east;
-}
-
-const _approvedCities = [
-  _CityBounds(name: 'Darwin',          north: -12.35, south: -12.55, west: 130.75, east: 131.05),
-  _CityBounds(name: 'Miami',           north:  25.87, south:  25.70, west: -80.35, east: -80.12),
-  _CityBounds(name: 'Fort Lauderdale', north:  26.20, south:  26.08, west: -80.22, east: -80.08),
-];
+import '../utils/approved_cities.dart';
 
 class RadarService {
   static const String _publishableKey = String.fromEnvironment(
@@ -134,9 +109,9 @@ class RadarService {
       );
     }
 
-    final matched = _approvedCities.firstWhere(
+    final matched = approvedCities.firstWhere(
       (c) => c.contains(position.latitude, position.longitude),
-      orElse: () => const _CityBounds(name: '', north: 0, south: 0, west: 0, east: 0),
+      orElse: () => const CityBounds(name: '', north: 0, south: 0, west: 0, east: 0),
     );
 
     if (matched.name.isEmpty) {

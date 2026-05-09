@@ -17,6 +17,7 @@ class SignUpScreen extends ConsumerStatefulWidget {
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -45,7 +46,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
     try {
       final email = _emailController.text.trim();
-      await ref.read(authControllerProvider).signUp(email, _passwordController.text);
+      await ref.read(authControllerProvider).signUp(
+            email,
+            _passwordController.text,
+            name: _nameController.text.trim(),
+          );
 
       if (mounted) {
         context.go('/verify-email?email=${Uri.encodeComponent(email)}');
@@ -95,6 +100,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 48),
+                TextFormField(
+                  controller: _nameController,
+                  keyboardType: TextInputType.name,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'Full Name',
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) return 'Please enter your name';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -261,6 +280,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();

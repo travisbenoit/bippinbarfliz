@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../providers/auth_provider.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
@@ -19,6 +20,16 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _cityController = TextEditingController();
   DateTime? _selectedDate;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final meta = Supabase.instance.client.auth.currentUser?.userMetadata;
+    final savedName = meta?['name'] as String?;
+    if (savedName != null && savedName.isNotEmpty) {
+      _nameController.text = savedName;
+    }
+  }
 
   Future<void> _selectDate() async {
     final picked = await showDatePicker(

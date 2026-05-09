@@ -142,10 +142,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         });
         _scrollToBottom();
       }
-    } catch (e) {
+    } catch (e, st) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = friendlyError(e, stackTrace: st, tag: 'Chat.loadMessages');
           _loading = false;
         });
       }

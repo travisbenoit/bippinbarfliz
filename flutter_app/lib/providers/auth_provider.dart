@@ -56,8 +56,12 @@ class AuthController {
     }
   }
 
-  Future<void> signUp(String email, String password) async {
-    await _supabase.signUp(email: email, password: password);
+  Future<void> signUp(String email, String password, {String? name}) async {
+    await _supabase.signUp(
+      email: email,
+      password: password,
+      data: name != null && name.isNotEmpty ? {'name': name} : {},
+    );
     // Users table row is created after email verification, during profile setup.
   }
 

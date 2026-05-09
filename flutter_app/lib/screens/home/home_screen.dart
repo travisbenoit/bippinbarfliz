@@ -93,6 +93,83 @@ final userStatsProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
 const _brandPink = Color(0xFFE91E63);
 
 // ---------------------------------------------------------------------------
+// Profile Completion Banner
+// ---------------------------------------------------------------------------
+
+class _ProfileCompletionBanner extends StatelessWidget {
+  final AsyncValue<Map<String, dynamic>?> userAsync;
+  const _ProfileCompletionBanner({required this.userAsync});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = userAsync.value;
+    if (user == null) return const SizedBox.shrink();
+
+    final missing = <String>[];
+    if ((user['avatar_url'] as String?) == null) missing.add('photo');
+    if ((user['bio'] as String?)?.isEmpty ?? true) missing.add('bio');
+    final tags = (user['vibe_tags'] as List?)?.cast<String>() ?? [];
+    if (tags.isEmpty) missing.add('vibe tags');
+
+    if (missing.isEmpty) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () => context.go('/edit-profile'),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              _brandPink.withValues(alpha: 0.12),
+              _brandPink.withValues(alpha: 0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _brandPink.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: _brandPink.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.person_add_outlined, color: _brandPink, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Complete your profile',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: _brandPink,
+                    ),
+                  ),
+                  Text(
+                    'Add your ${missing.join(', ')} to get noticed',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _brandPink.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: _brandPink, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // HomeScreen
 // ---------------------------------------------------------------------------
 
@@ -214,6 +291,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onEditStatus: _showStatusBottomSheet,
               ),
               const SizedBox(height: 16),
+
+              // Profile completion nudge
+              _ProfileCompletionBanner(userAsync: userAsync),
 
               // 2. XP / Leaderboard Banner
               _XpBanner(statsAsync: statsAsync),

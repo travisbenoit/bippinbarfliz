@@ -4,12 +4,12 @@ class Swarm {
   final String title;
   final String? description;
   final String? venueId;
+  final String? venueName;
   final DateTime startTime;
-  final int maxAttendees;
+  final int maxSize;
+  final int currentSize;
   final String status;
   final List<String> vibeTags;
-  final double? lat;
-  final double? lng;
   final DateTime createdAt;
 
   Swarm({
@@ -18,45 +18,49 @@ class Swarm {
     required this.title,
     this.description,
     this.venueId,
+    this.venueName,
     required this.startTime,
-    required this.maxAttendees,
+    required this.maxSize,
+    this.currentSize = 1,
     required this.status,
     this.vibeTags = const [],
-    this.lat,
-    this.lng,
     required this.createdAt,
   });
 
   factory Swarm.fromJson(Map<String, dynamic> json) {
     return Swarm(
       id: json['id'] as String,
-      creatorId: json['creator_id'] as String,
+      creatorId: json['host_user_id'] as String,
       title: json['title'] as String,
       description: json['description'] as String?,
       venueId: json['venue_id'] as String?,
-      startTime: DateTime.parse(json['start_time'] as String),
-      maxAttendees: json['max_attendees'] as int,
-      status: json['status'] as String,
+      venueName: json['venue_name'] as String?,
+      startTime: json['start_time'] != null
+          ? DateTime.parse(json['start_time'] as String)
+          : DateTime.now(),
+      maxSize: (json['max_size'] as int?) ?? 50,
+      currentSize: (json['current_size'] as int?) ?? 1,
+      status: json['status'] as String? ?? 'active',
       vibeTags: (json['vibe_tags'] as List<dynamic>?)?.cast<String>() ?? [],
-      lat: json['lat'] != null ? (json['lat'] as num).toDouble() : null,
-      lng: json['lng'] != null ? (json['lng'] as num).toDouble() : null,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'creator_id': creatorId,
+      'host_user_id': creatorId,
       'title': title,
       'description': description,
       'venue_id': venueId,
+      'venue_name': venueName,
       'start_time': startTime.toIso8601String(),
-      'max_attendees': maxAttendees,
+      'max_size': maxSize,
+      'current_size': currentSize,
       'status': status,
       'vibe_tags': vibeTags,
-      'lat': lat,
-      'lng': lng,
       'created_at': createdAt.toIso8601String(),
     };
   }

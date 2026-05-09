@@ -9,20 +9,21 @@ import '../../widgets/first_run_tour.dart';
 import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../providers/auth_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Providers
 // ---------------------------------------------------------------------------
 
 final nearbyUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
-  final supabase = Supabase.instance.client;
-  final currentUser = supabase.auth.currentUser;
-  if (currentUser == null) return [];
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return [];
 
+  final supabase = Supabase.instance.client;
   final response = await supabase
       .from('users')
       .select()
-      .neq('id', currentUser.id)
+      .neq('id', user.id)
       .neq('ghost_mode', true)
       .inFilter('tonight_status', ['out_now', 'going_out_soon'])
       .order('last_active_at', ascending: false)
@@ -58,28 +59,28 @@ final activeSwarmsProvider = FutureProvider<List<Swarm>>((ref) async {
 });
 
 final currentUserProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
-  final supabase = Supabase.instance.client;
-  final currentUser = supabase.auth.currentUser;
-  if (currentUser == null) return null;
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return null;
 
+  final supabase = Supabase.instance.client;
   final response = await supabase
       .from('users')
       .select()
-      .eq('id', currentUser.id)
+      .eq('id', user.id)
       .maybeSingle();
 
   return response;
 });
 
 final userStatsProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
-  final supabase = Supabase.instance.client;
-  final currentUser = supabase.auth.currentUser;
-  if (currentUser == null) return null;
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return null;
 
+  final supabase = Supabase.instance.client;
   final response = await supabase
       .from('user_stats')
       .select()
-      .eq('user_id', currentUser.id)
+      .eq('user_id', user.id)
       .maybeSingle();
 
   return response;
@@ -1359,7 +1360,7 @@ class _SwarmTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            '${swarm.maxAttendees} ${context.tr(AppStrings.homeMaxAttendees)}',
+            '${swarm.currentSize}/${swarm.maxSize} ${context.tr(AppStrings.homeMaxAttendees)}',
             style: const TextStyle(
               color: _brandPink,
               fontSize: 11,

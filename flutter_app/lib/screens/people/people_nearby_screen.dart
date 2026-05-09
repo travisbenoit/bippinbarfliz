@@ -6,6 +6,8 @@ import '../../models/user_profile.dart';
 import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
+import '../../services/notification_sender.dart';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -72,8 +74,8 @@ final _myFriendshipsProvider =
 
   final rows = await _supabase
       .from('friendships')
-      .select('requester_id, addressee_id, status')
-      .or('requester_id.eq.${me.id},addressee_id.eq.${me.id}');
+      .select('user_id, friend_id, status')
+      .or('user_id.eq.${me.id},friend_id.eq.${me.id}');
 
   return (rows as List).cast<Map<String, dynamic>>();
 });
@@ -195,7 +197,7 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
           child: CircularProgressIndicator(color: _pink),
         ),
         error: (e, _) => _ErrorState(
-          message: e.toString(),
+          message: friendlyError(e),
           onRetry: _invalidateAll,
         ),
         data: (allPeople) {
@@ -258,8 +260,8 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
                               _localFriendState[user.id] ?? 'none';
                           if (friendState == 'none' && me != null) {
                             for (final f in friendships) {
-                              final rid = f['requester_id'] as String;
-                              final aid = f['addressee_id'] as String;
+                              final rid = f['user_id'] as String;
+                              final aid = f['friend_id'] as String;
                               final involves = (rid == me.id &&
                                       aid == user.id) ||
                                   (aid == me.id && rid == user.id);
@@ -280,6 +282,8 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
                             friendState: friendState,
                             onChat: () =>
                                 context.push('/chat/${user.id}'),
+                            onSendGift: () =>
+                                context.push('/send-gift/${user.id}'),
                             onAddFriend: () async {
                               setState(() =>
                                   _localFriendState[user.id] = 'pending');
@@ -290,22 +294,26 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
                                 await _supabase
                                     .from('friendships')
                                     .insert({
-                                  'requester_id': currentUser.id,
-                                  'addressee_id': user.id,
+                                  'user_id': currentUser.id,
+                                  'friend_id': user.id,
                                   'status': 'pending',
                                 });
+                                final profile = await _supabase
+                                    .from('users')
+                                    .select('name')
+                                    .eq('id', currentUser.id)
+                                    .single();
+                                final fromName = (profile['name'] as String?)?.trim();
+                                NotificationSender.friendRequestSent(
+                                  toUserId: user.id,
+                                  fromName: (fromName == null || fromName.isEmpty) ? 'Someone' : fromName,
+                                );
                                 ref.invalidate(_myFriendshipsProvider);
                               } catch (e) {
                                 setState(() =>
                                     _localFriendState.remove(user.id));
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(
-                                    SnackBar(
-                                      content: Text('${context.tr(AppStrings.error)}: $e'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
+                                  showErrorSnackBar(context, e, tag: 'PeopleNearby.addFriend');
                                 }
                               }
                             },
@@ -466,12 +474,14 @@ class _PersonCard extends StatelessWidget {
   final UserProfile user;
   final String friendState; // 'none' | 'pending' | 'friends'
   final VoidCallback onChat;
+  final VoidCallback onSendGift;
   final VoidCallback onAddFriend;
 
   const _PersonCard({
     required this.user,
     required this.friendState,
     required this.onChat,
+    required this.onSendGift,
     required this.onAddFriend,
   });
 
@@ -598,6 +608,23 @@ class _PersonCard extends StatelessWidget {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600),
                           ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Gift button
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.amber.shade600),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: IconButton(
+                          onPressed: onSendGift,
+                          icon: Icon(Icons.card_giftcard,
+                              size: 18, color: Colors.amber.shade700),
+                          tooltip: 'Send a drink',
+                          constraints: const BoxConstraints(
+                              minWidth: 36, minHeight: 36),
+                          padding: const EdgeInsets.all(8),
                         ),
                       ),
                       const SizedBox(width: 8),

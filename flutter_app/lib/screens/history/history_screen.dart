@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
 
 // ---------------------------------------------------------------------------
 // Data models
@@ -223,7 +224,7 @@ class _ActivityTab extends ConsumerWidget {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('${context.tr(AppStrings.error)}: ${error.toString()}',
+            Text(friendlyError(error, tag: 'History'),
                 textAlign: TextAlign.center,
                 style: const TextStyle()),
             const SizedBox(height: 16),
@@ -401,7 +402,7 @@ class _VisitsTab extends ConsumerWidget {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('${context.tr(AppStrings.error)}: ${error.toString()}',
+            Text(friendlyError(error, tag: 'History'),
                 textAlign: TextAlign.center,
                 style: const TextStyle()),
             const SizedBox(height: 16),

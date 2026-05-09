@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
+import '../../services/notification_sender.dart';
 
 const _brandPink = Color(0xFFE91E63);
 
@@ -88,16 +90,24 @@ class _CreateSwarmScreenState extends ConsumerState<CreateSwarmScreen> {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      await supabase.from('swarms').insert({
-        'creator_id': user.id,
-        'title': _titleCtrl.text.trim(),
+      final title = _titleCtrl.text.trim();
+      final result = await supabase.from('swarms').insert({
+        'host_user_id': user.id,
+        'title': title,
         'description': _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
         'start_time': _startTime!.toIso8601String(),
-        'max_attendees': _maxAttendees,
-        'status': 'active',
+        'max_size': _maxAttendees,
         'vibe_tags': _selectedTags.toList(),
-        'created_at': DateTime.now().toIso8601String(),
-      });
+      }).select('id').single();
+
+      final swarmId = result['id'] as String;
+      final profile = await supabase.from('users').select('name').eq('id', user.id).single();
+      final hostName = (profile['name'] as String?)?.trim();
+      NotificationSender.swarmCreated(
+        swarmId: swarmId,
+        swarmTitle: title,
+        hostName: (hostName == null || hostName.isEmpty) ? 'Someone' : hostName,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -110,12 +120,7 @@ class _CreateSwarmScreenState extends ConsumerState<CreateSwarmScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${t(AppStrings.swarmsCreateFailed)}: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        showErrorSnackBar(context, e, tag: 'CreateSwarm');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

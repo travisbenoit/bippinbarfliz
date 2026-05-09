@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +12,9 @@ import '../../models/venue.dart';
 import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
+
+const _approvedCities = ['Darwin', 'Miami', 'Fort Lauderdale'];
 
 final venuesMapProvider = FutureProvider<List<Venue>>((ref) async {
   final supabase = Supabase.instance.client;
@@ -18,9 +22,11 @@ final venuesMapProvider = FutureProvider<List<Venue>>((ref) async {
   try {
     final response = await supabase
         .from('bars')
-        .select('bar_id, name, address, lat, lng, rating, review_count, photo_urls, google_place_id, created_at')
+        .select('bar_id, name, address, lat, lng, rating, review_count, photo_urls, google_place_id, created_at, city')
+        .inFilter('city', _approvedCities)
+        .eq('serves_alcohol', true)
         .order('name')
-        .limit(100);
+        .limit(200);
 
     return (response as List).map((json) => Venue.fromJson(json)).toList();
   } catch (e, stackTrace) {
@@ -43,6 +49,82 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   final Set<Marker> _markers = {};
   bool _isLoading = true;
   String? _error;
+
+  // Cached per-city pin bitmaps — only built once per city
+  final Map<String, BitmapDescriptor> _pinCache = {};
+
+  Future<BitmapDescriptor> _buildPinIcon(String? city) async {
+    final key = city ?? 'default';
+    if (_pinCache.containsKey(key)) return _pinCache[key]!;
+
+    final emoji = switch (city) {
+      'Darwin'          => '🦘',
+      'Miami'           => '🌴',
+      'Fort Lauderdale' => '⛵',
+      _                 => '🍸',
+    };
+
+    // Draw at 2× so pins look sharp on Retina/high-DPI screens.
+    const double scale = 2.0;
+    const double lw = 48.0;  // logical width  (points)
+    const double lh = 68.0;  // logical height (points)
+    final double pw = lw * scale;
+    final double ph = lh * scale;
+    final double cr = 18.0 * scale;   // circle radius
+    final double cx = pw / 2;
+    final double cy = cr + 5.0 * scale;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, pw, ph));
+
+    // Drop shadow behind circle
+    canvas.drawCircle(
+      Offset(cx, cy + 3.0 * scale),
+      cr,
+      Paint()
+        ..color = Colors.black.withValues(alpha: 0.25)
+        ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, 4.0 * scale),
+    );
+
+    // Teardrop pointer — drawn first so circle overlaps its top edge cleanly
+    final pink = Paint()..color = const Color(0xFFE91E63);
+    canvas.drawPath(
+      Path()
+        ..moveTo(cx - 10.0 * scale, cy + cr * 0.55)
+        ..lineTo(cx + 10.0 * scale, cy + cr * 0.55)
+        ..lineTo(cx, ph - 3.0 * scale)
+        ..close(),
+      pink,
+    );
+
+    // Circle body
+    canvas.drawCircle(Offset(cx, cy), cr, pink);
+
+    // White ring border
+    canvas.drawCircle(
+      Offset(cx, cy),
+      cr - 1.5 * scale,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5 * scale,
+    );
+
+    // City emoji centred in circle
+    final tp = TextPainter(textDirection: ui.TextDirection.ltr)
+      ..text = TextSpan(text: emoji, style: TextStyle(fontSize: 22.0 * scale))
+      ..layout();
+    tp.paint(canvas, Offset(cx - tp.width / 2, cy - tp.height / 2));
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(pw.toInt(), ph.toInt());
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final bytes = byteData!.buffer.asUint8List();
+
+    final descriptor = BitmapDescriptor.bytes(bytes, width: lw, height: lh);
+    _pinCache[key] = descriptor;
+    return descriptor;
+  }
 
   static const CameraPosition _darwinCenter = CameraPosition(
     target: LatLng(-12.4634, 130.8456),
@@ -110,21 +192,26 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       final venues = await ref.read(venuesMapProvider.future);
       if (!mounted) return;
 
-      final markers = venues.map((venue) {
+      // Build icons per city (cached — only 3 bitmaps created total)
+      final markers = await Future.wait(venues.map((venue) async {
+        final icon = await _buildPinIcon(venue.city);
         return Marker(
           markerId: MarkerId(venue.id),
           position: LatLng(venue.lat, venue.lng),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose),
+          icon: icon,
           infoWindow: InfoWindow(
             title: venue.name,
             snippet: venue.address,
           ),
           onTap: () => _showVenueDetails(venue),
         );
-      }).toSet();
+      }));
 
+      if (!mounted) return;
       setState(() {
-        _markers.addAll(markers);
+        _markers
+          ..clear()
+          ..addAll(markers);
         _isLoading = false;
       });
     } catch (e, stackTrace) {
@@ -132,7 +219,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       debugPrint('[MapScreen] $stackTrace');
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = friendlyError(e, tag: 'MapScreen.loadVenues');
         _isLoading = false;
       });
     }
@@ -321,9 +408,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Text(
-                      'Darwin',
+                      'Darwin · Miami · Fort Lauderdale',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFFE91E63),
                       ),

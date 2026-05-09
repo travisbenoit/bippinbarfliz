@@ -129,7 +129,7 @@ class NotificationService {
         'native_token': token,
         'platform': Platform.isIOS ? 'ios' : 'android',
         'updated_at': DateTime.now().toIso8601String(),
-      }, onConflict: 'user_id');
+      }, onConflict: 'user_id,platform');
 
       debugPrint('[FCM] Token saved to Supabase');
     } catch (e) {

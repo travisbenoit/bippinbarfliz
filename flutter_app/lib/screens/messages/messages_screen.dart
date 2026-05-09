@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
 
 class Conversation {
   final String id;
@@ -113,7 +114,7 @@ class MessagesScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
-              Text('${t(AppStrings.error)}: ${error.toString()}'),
+              Text(friendlyError(error, tag: 'Messages')),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(conversationsProvider),

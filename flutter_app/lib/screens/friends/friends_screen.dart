@@ -7,6 +7,8 @@ import '../../models/user_profile.dart';
 import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
+import '../../services/notification_sender.dart';
 
 // ---------------------------------------------------------------------------
 // Data models
@@ -292,7 +294,7 @@ class _FriendsTab extends ConsumerWidget {
         child: CircularProgressIndicator(color: Color(0xFFE91E63)),
       ),
       error: (e, _) => _ErrorState(
-        message: e.toString(),
+        message: friendlyError(e),
         onRetry: () => ref.invalidate(acceptedFriendsProvider),
       ),
       data: (friends) {
@@ -374,6 +376,23 @@ class _FriendCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
+            // Gift button
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.amber.shade600),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: IconButton(
+                onPressed: () => context.push('/send-gift/${user.id}'),
+                icon: Icon(Icons.card_giftcard,
+                    size: 18, color: Colors.amber.shade700),
+                tooltip: 'Send a drink',
+                constraints:
+                    const BoxConstraints(minWidth: 36, minHeight: 36),
+                padding: const EdgeInsets.all(8),
+              ),
+            ),
+            const SizedBox(width: 6),
             OutlinedButton(
               onPressed: () => context.push('/chat/${user.id}'),
               style: OutlinedButton.styleFrom(
@@ -413,7 +432,7 @@ class _RequestsTab extends ConsumerWidget {
         child: CircularProgressIndicator(color: Color(0xFFE91E63)),
       ),
       error: (e, _) => _ErrorState(
-        message: e.toString(),
+        message: friendlyError(e),
         onRetry: () => ref.invalidate(pendingRequestsProvider),
       ),
       data: (requests) {
@@ -457,16 +476,28 @@ class _RequestCardState extends State<_RequestCard> {
   Future<void> _updateStatus(String status) async {
     setState(() => _loading = true);
     try {
-      await Supabase.instance.client
+      final db = Supabase.instance.client;
+      await db
           .from('friendships')
           .update({'status': status})
           .eq('id', widget.item.friendship.id);
+
+      if (status == 'accepted') {
+        final me = db.auth.currentUser;
+        if (me != null) {
+          final profile = await db.from('users').select('name').eq('id', me.id).single();
+          final name = (profile['name'] as String?)?.trim();
+          NotificationSender.friendRequestAccepted(
+            toUserId: widget.item.friendship.requesterId,
+            accepterName: (name == null || name.isEmpty) ? 'Someone' : name,
+          );
+        }
+      }
+
       widget.onDecision();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${context.tr(AppStrings.error)}: $e'), backgroundColor: Colors.red),
-        );
+        showErrorSnackBar(context, e, tag: 'Friends.friendRequest');
         setState(() => _loading = false);
       }
     }
@@ -617,7 +648,7 @@ class _FindFriendsTabState extends ConsumerState<_FindFriendsTab> {
               child: CircularProgressIndicator(color: Color(0xFFE91E63)),
             ),
             error: (e, _) => _ErrorState(
-              message: e.toString(),
+              message: friendlyError(e),
               onRetry: () => ref.invalidate(suggestedUsersProvider),
             ),
             data: (users) {
@@ -687,16 +718,22 @@ class _FindFriendsTabState extends ConsumerState<_FindFriendsTab> {
                             'status': 'pending',
                           });
                           await AnalyticsService.instance.friendRequestSent(user.id);
+                          final profile = await _supabase
+                              .from('users')
+                              .select('name')
+                              .eq('id', currentUser.id)
+                              .single();
+                          final fromName = (profile['name'] as String?)?.trim();
+                          NotificationSender.friendRequestSent(
+                            toUserId: user.id,
+                            fromName: (fromName == null || fromName.isEmpty) ? 'Someone' : fromName,
+                          );
                           ref.invalidate(myFriendshipsProvider);
                         } catch (e) {
                           setState(() =>
                               _localState.remove(user.id));
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text('${context.tr(AppStrings.error)}: $e'),
-                                  backgroundColor: Colors.red),
-                            );
+                            showErrorSnackBar(context, e, tag: 'Friends.addFriend');
                           }
                         }
                       },

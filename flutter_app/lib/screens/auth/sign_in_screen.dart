@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -23,25 +25,40 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    final messenger = ScaffoldMessenger.of(context);
-    final t = ref.read(tProvider);
-
+    final email = _emailController.text.trim();
     try {
-      await ref.read(authControllerProvider).signIn(
-            _emailController.text.trim(),
-            _passwordController.text,
-          );
+      await ref.read(authControllerProvider).signIn(email, _passwordController.text);
 
-      if (mounted) {
+      if (!mounted) return;
+
+      // Check if the user has completed profile setup
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      String? name;
+      if (userId != null) {
+        final row = await Supabase.instance.client
+            .from('users')
+            .select('name')
+            .eq('id', userId)
+            .maybeSingle();
+        name = row?['name'] as String?;
+      }
+
+      if (!mounted) return;
+      if (name == null || name.trim().isEmpty) {
+        context.go('/profile-setup');
+      } else {
         context.go('/home');
       }
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      final msg = e.message.toLowerCase();
+      if (msg.contains('email not confirmed') || msg.contains('email_not_confirmed')) {
+        context.go('/verify-email?email=${Uri.encodeComponent(email)}');
+      } else {
+        showErrorSnackBar(context, e, tag: 'SignIn');
+      }
     } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('${t(AppStrings.authSignInFailed)}: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) showErrorSnackBar(context, e, tag: 'SignIn');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -56,7 +73,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final enterEmailMsg = t(AppStrings.signInEnterEmail);
     final resetSentMsg = t(AppStrings.signInResetEmailSent);
     final sendResetLabel = t(AppStrings.signInSendResetLink);
-    final errorPrefix = t(AppStrings.error);
 
     showDialog(
       context: context,
@@ -104,14 +120,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   );
                 }
               } catch (e) {
-                if (ctx.mounted) {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text('$errorPrefix: ${e.toString()}'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+                if (ctx.mounted) showErrorSnackBar(ctx, e, tag: 'SignIn.resetPassword');
               }
             },
             style: ElevatedButton.styleFrom(

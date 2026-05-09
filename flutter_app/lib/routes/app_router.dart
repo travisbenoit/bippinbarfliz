@@ -6,6 +6,7 @@ import '../screens/shell/main_shell.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/sign_in_screen.dart';
 import '../screens/auth/sign_up_screen.dart';
+import '../screens/auth/verify_email_screen.dart';
 import '../screens/profile_setup/profile_setup_screen.dart';
 import '../screens/permissions/permissions_screen.dart';
 import '../screens/home/home_screen.dart';
@@ -53,7 +54,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState.value != null;
       final isOnboarding = state.matchedLocation == '/onboarding';
       final isAuth = state.matchedLocation.startsWith('/signin') ||
-          state.matchedLocation.startsWith('/signup');
+          state.matchedLocation.startsWith('/signup') ||
+          state.matchedLocation.startsWith('/verify-email');
 
       if (!isAuthenticated && !isOnboarding && !isAuth) {
         return '/onboarding';
@@ -72,6 +74,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/signup', builder: (_, __) => const SignUpScreen()),
       GoRoute(path: '/profile-setup', builder: (_, __) => const ProfileSetupScreen()),
       GoRoute(path: '/permissions', builder: (_, __) => const PermissionsScreen()),
+      GoRoute(
+        path: '/verify-email',
+        builder: (_, state) => VerifyEmailScreen(
+          email: state.uri.queryParameters['email'] ?? '',
+        ),
+      ),
 
       // ── Main shell with persistent bottom nav ─────────────────────────
       StatefulShellRoute.indexedStack(

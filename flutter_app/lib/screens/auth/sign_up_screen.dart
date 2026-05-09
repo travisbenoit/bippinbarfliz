@@ -1,14 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -46,25 +44,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(authControllerProvider).signUp(
-            _emailController.text.trim(),
-            _passwordController.text,
-          );
+      final email = _emailController.text.trim();
+      await ref.read(authControllerProvider).signUp(email, _passwordController.text);
 
       if (mounted) {
-        context.go('/profile-setup');
+        context.go('/verify-email?email=${Uri.encodeComponent(email)}');
       }
     } catch (e, stackTrace) {
-      print('[SignUpScreen] signup exception: ${e.runtimeType} - $e');
-      print(stackTrace);
-      final errorMessage = _extractAuthErrorMessage(e);
-
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('${t(AppStrings.authSignUpFailed)}: $errorMessage'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) showErrorSnackBar(context, e, stackTrace: stackTrace, tag: 'SignUp');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -77,21 +64,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
-  }
-
-  String _extractAuthErrorMessage(Object error) {
-    if (error is AuthException) {
-      final message = error.message;
-      try {
-        final json = jsonDecode(message);
-        if (json is Map<String, dynamic>) {
-          return json['message']?.toString() ?? message;
-        }
-      } catch (_) {
-        return message;
-      }
-    }
-    return error.toString();
   }
 
   @override

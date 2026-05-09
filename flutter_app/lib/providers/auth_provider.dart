@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/analytics_service.dart';
 import '../services/supabase_service.dart';
 import '../models/user_profile.dart';
+import 'music_provider.dart';
+import 'radar_provider.dart';
 
 final supabaseServiceProvider = Provider<SupabaseService>((ref) {
   return SupabaseService();
@@ -13,18 +15,20 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return supabase.authStateChanges.map((event) => event.session?.user);
 });
 
+// Watches authStateProvider so it re-evaluates whenever the signed-in user
+// changes — ensuring stale data from a previous account is never shown.
 final currentUserProfileProvider = StreamProvider<UserProfile?>((ref) async* {
-  final supabase = ref.watch(supabaseServiceProvider);
-  final userId = supabase.currentUserId;
+  final authUser = ref.watch(authStateProvider).value;
 
-  if (userId == null) {
+  if (authUser == null) {
     yield null;
     return;
   }
 
+  final supabase = ref.watch(supabaseServiceProvider);
   await for (final snapshot in supabase.client
       .from('users')
-      .stream(primaryKey: ['id']).eq('id', userId)) {
+      .stream(primaryKey: ['id']).eq('id', authUser.id)) {
     if (snapshot.isNotEmpty) {
       yield UserProfile.fromJson(snapshot.first);
     } else {
@@ -53,40 +57,25 @@ class AuthController {
   }
 
   Future<void> signUp(String email, String password) async {
-    try {
-      final response = await _supabase.signUp(email: email, password: password);
-      print(
-          '[AuthController] signUp response: user=${response.user?.id}, session=${response.session?.accessToken}');
+    await _supabase.signUp(email: email, password: password);
+    // Users table row is created after email verification, during profile setup.
+  }
 
-      if (response.user != null) {
-        try {
-          await _supabase.client.from('users').insert({
-            'id': response.user!.id,
-            'name': '',
-            'tonight_status': 'staying_in',
-            'vibe_tags': [],
-            'favorite_drinks': [],
-            'is_premium': false,
-            'created_at': DateTime.now().toIso8601String(),
-          }).select();
-          await AnalyticsService.instance.userSignedUp(response.user!.id);
-        } catch (e, stackTrace) {
-          print(
-              '[AuthController] User profile creation failed: ${e.runtimeType} - $e');
-          print(stackTrace);
-          rethrow;
-        }
-      }
-    } catch (e, stackTrace) {
-      print('[AuthController] signUp exception: ${e.runtimeType} - $e');
-      print(stackTrace);
-      rethrow;
-    }
+  Future<void> resendVerificationEmail(String email) async {
+    await _supabase.resendVerificationEmail(email);
   }
 
   Future<void> signOut() async {
     await AnalyticsService.instance.userSignedOut();
+
+    // Stop location tracking so it doesn't continue under a stale user ID
+    await ref.read(radarTrackingStateProvider.notifier).stopTracking();
+
     await _supabase.signOut();
+
+    // Invalidate cached user-specific providers so the next sign-in starts fresh
+    ref.invalidate(userMusicSharesProvider);
+    ref.invalidate(currentUserProfileProvider);
   }
 
   Future<void> resetPassword(String email) async {

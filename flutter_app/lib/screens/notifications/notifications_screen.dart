@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -15,7 +16,8 @@ class AppNotification {
   final String type;
   final String title;
   final String body;
-  final Map<String, dynamic> data;
+  final String? actorUserId;
+  final String? swarmId;
   final bool read;
   final DateTime createdAt;
 
@@ -24,7 +26,8 @@ class AppNotification {
     required this.type,
     required this.title,
     required this.body,
-    required this.data,
+    this.actorUserId,
+    this.swarmId,
     required this.read,
     required this.createdAt,
   });
@@ -35,7 +38,8 @@ class AppNotification {
       type: json['notification_type'] as String? ?? 'default',
       title: json['title'] as String? ?? '',
       body: json['body'] as String? ?? '',
-      data: (json['metadata'] as Map<String, dynamic>?) ?? {},
+      actorUserId: json['actor_user_id'] as String?,
+      swarmId: json['swarm_id'] as String?,
       read: json['is_read'] as bool? ?? false,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
@@ -49,7 +53,8 @@ class AppNotification {
       type: type,
       title: title,
       body: body,
-      data: data,
+      actorUserId: actorUserId,
+      swarmId: swarmId,
       read: read ?? this.read,
       createdAt: createdAt,
     );
@@ -191,7 +196,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
-              Text('${t(AppStrings.notificationsError)}: ${error.toString()}',
+              Text(friendlyError(error, tag: 'Notifications'),
                   textAlign: TextAlign.center,
                   style: const TextStyle()),
               const SizedBox(height: 16),
@@ -308,16 +313,23 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     // Navigate based on type
     switch (notification.type) {
       case 'message':
-        context.push('/messages');
+        if (notification.actorUserId != null) {
+          context.push('/chat/${notification.actorUserId}');
+        } else {
+          context.push('/messages');
+        }
         break;
+      case 'swarm_created':
+      case 'swarm_joined':
       case 'swarm':
         context.push('/swarms');
         break;
       case 'gift':
         context.push('/gifts');
         break;
-      case 'friend':
       case 'friend_request':
+      case 'friend_accepted':
+      case 'friend':
         context.push('/friends');
         break;
       default:
@@ -372,8 +384,12 @@ class _NotificationCard extends StatelessWidget {
       case 'friend_request':
       case 'friend':
         return Icons.person_add;
+      case 'friend_accepted':
+        return Icons.people;
       case 'message':
         return Icons.chat_bubble;
+      case 'swarm_created':
+      case 'swarm_joined':
       case 'swarm':
         return Icons.groups;
       case 'gift':
@@ -390,8 +406,13 @@ class _NotificationCard extends StatelessWidget {
       case 'friend_request':
       case 'friend':
         return Colors.blue;
-      case 'message':
+      case 'friend_accepted':
         return Colors.teal;
+      case 'message':
+        return Colors.indigo;
+      case 'swarm_created':
+        return _brandPink;
+      case 'swarm_joined':
       case 'swarm':
         return Colors.deepPurple;
       case 'gift':

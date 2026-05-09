@@ -2,12 +2,39 @@ import 'dart:async';
 import 'package:flutter_radar/flutter_radar.dart';
 import 'package:geolocator/geolocator.dart';
 
+// Approved city bounding boxes — only these cities are live in Barfliz
+class _CityBounds {
+  final String name;        // display name
+  final double north;
+  final double south;
+  final double west;
+  final double east;
+
+  const _CityBounds({
+    required this.name,
+    required this.north,
+    required this.south,
+    required this.west,
+    required this.east,
+  });
+
+  bool contains(double lat, double lng) =>
+      lat >= south && lat <= north && lng >= west && lng <= east;
+}
+
+const _approvedCities = [
+  _CityBounds(name: 'Darwin',          north: -12.35, south: -12.55, west: 130.75, east: 131.05),
+  _CityBounds(name: 'Miami',           north:  25.87, south:  25.70, west: -80.35, east: -80.12),
+  _CityBounds(name: 'Fort Lauderdale', north:  26.20, south:  26.08, west: -80.22, east: -80.08),
+];
+
 class RadarService {
   static const String _publishableKey = String.fromEnvironment(
     'RADAR_PUBLISHABLE_KEY',
     defaultValue: '',
   );
 
+  // Keep for backward compatibility with any callers that reference darwinBounds
   static const DarwinBounds darwinBounds = DarwinBounds(
     north: -12.35,
     south: -12.55,
@@ -92,30 +119,32 @@ class RadarService {
   Future<bool> isInDarwinBounds() async {
     final position = await getCurrentPosition();
     if (position == null) return false;
-
     return darwinBounds.contains(position.latitude, position.longitude);
   }
 
-  Future<LocationCheckResult> checkDarwinLocation() async {
+  /// Returns true if the user is within any approved Barfliz city:
+  /// Darwin AU, Miami FL, or Fort Lauderdale FL.
+  Future<LocationCheckResult> checkApprovedLocation() async {
     final position = await getCurrentPosition();
 
     if (position == null) {
       return LocationCheckResult(
         isInBounds: false,
-        errorMessage:
-            'Unable to determine location. Please enable location services.',
+        errorMessage: 'Unable to determine location. Please enable location services.',
       );
     }
 
-    final inBounds =
-        darwinBounds.contains(position.latitude, position.longitude);
+    final matched = _approvedCities.firstWhere(
+      (c) => c.contains(position.latitude, position.longitude),
+      orElse: () => const _CityBounds(name: '', north: 0, south: 0, west: 0, east: 0),
+    );
 
-    if (!inBounds) {
+    if (matched.name.isEmpty) {
       return LocationCheckResult(
         isInBounds: false,
         latitude: position.latitude,
         longitude: position.longitude,
-        errorMessage: 'Barfliz is in Darwin only during beta.',
+        errorMessage: 'Barfliz is available in Darwin AU, Miami FL, and Fort Lauderdale FL only.',
       );
     }
 
@@ -123,8 +152,12 @@ class RadarService {
       isInBounds: true,
       latitude: position.latitude,
       longitude: position.longitude,
+      cityName: matched.name,
     );
   }
+
+  // Keep for any existing callers
+  Future<LocationCheckResult> checkDarwinLocation() => checkApprovedLocation();
 
   Future<bool> startTracking({String? userId}) async {
     if (!_isInitialized) {
@@ -274,11 +307,13 @@ class LocationCheckResult {
   final double? latitude;
   final double? longitude;
   final String? errorMessage;
+  final String? cityName;
 
   LocationCheckResult({
     required this.isInBounds,
     this.latitude,
     this.longitude,
     this.errorMessage,
+    this.cityName,
   });
 }

@@ -4,6 +4,7 @@ class Venue {
   final String address;
   final double lat;
   final double lng;
+  final String? city;
   final String? category;
   final bool verified;
   final String? photoUrl;
@@ -18,6 +19,7 @@ class Venue {
     required this.address,
     required this.lat,
     required this.lng,
+    this.city,
     this.category,
     this.verified = false,
     this.photoUrl,
@@ -41,6 +43,7 @@ class Venue {
       address: (json['address'] as String?) ?? '',
       lat: (json['lat'] as num).toDouble(),
       lng: (json['lng'] as num).toDouble(),
+      city: json['city'] as String?,
       category: json['category'] as String?,
       verified: json['verified'] as bool? ?? false,
       photoUrl: photoUrl,

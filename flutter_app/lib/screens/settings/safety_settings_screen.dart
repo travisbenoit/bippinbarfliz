@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../extensions/localization_extension.dart';
+import '../../utils/app_error.dart';
 
 class SafetySettingsScreen extends ConsumerStatefulWidget {
   const SafetySettingsScreen({super.key});
@@ -96,9 +97,7 @@ class _SafetySettingsScreenState
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${context.tr(AppStrings.safetyFailedLoad)}: $e')),
-        );
+        showErrorSnackBar(context, e, tag: 'SafetySettings.load');
       }
     }
   }
@@ -115,9 +114,6 @@ class _SafetySettingsScreenState
       _ghostMode = value;
       _savingGhost = true;
     });
-    final messenger = ScaffoldMessenger.of(context);
-    final errMsg = context.tr(AppStrings.safetyFailedGhost);
-
     try {
       await _supabase
           .from('users')
@@ -125,7 +121,7 @@ class _SafetySettingsScreenState
     } catch (e) {
       if (mounted) {
         setState(() => _ghostMode = !value);
-        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
+        showErrorSnackBar(context, e, tag: 'SafetySettings.ghostMode');
       }
     } finally {
       if (mounted) setState(() => _savingGhost = false);
@@ -141,8 +137,6 @@ class _SafetySettingsScreenState
       _privacyMode = mode;
       _savingPrivacy = true;
     });
-    final messenger = ScaffoldMessenger.of(context);
-    final errMsg = context.tr(AppStrings.safetyFailedPrivacy);
 
     try {
       await _supabase
@@ -151,7 +145,7 @@ class _SafetySettingsScreenState
     } catch (e) {
       if (mounted) {
         setState(() => _privacyMode = previous);
-        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
+        showErrorSnackBar(context, e, tag: 'SafetySettings.privacyMode');
       }
     } finally {
       if (mounted) setState(() => _savingPrivacy = false);
@@ -159,9 +153,7 @@ class _SafetySettingsScreenState
   }
 
   Future<void> _unblock(_BlockedUser blocked) async {
-    final messenger = ScaffoldMessenger.of(context);
     final unblockMsg = '${blocked.name} ${context.tr(AppStrings.safetyUnblockedUser)}';
-    final errMsg = context.tr(AppStrings.safetyFailedUnblock);
 
     try {
       await _supabase
@@ -172,12 +164,10 @@ class _SafetySettingsScreenState
       if (mounted) {
         setState(() =>
             _blockedUsers.removeWhere((b) => b.blockId == blocked.blockId));
-        messenger.showSnackBar(SnackBar(content: Text(unblockMsg)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(unblockMsg)));
       }
     } catch (e) {
-      if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
-      }
+      if (mounted) showErrorSnackBar(context, e, tag: 'SafetySettings.unblock');
     }
   }
 
@@ -215,9 +205,7 @@ class _SafetySettingsScreenState
     if (user == null) return;
 
     setState(() => _requestingDeletion = true);
-    final messenger = ScaffoldMessenger.of(context);
     final successMsg = context.tr(AppStrings.safetyDeletionRequested);
-    final errMsg = context.tr(AppStrings.safetyFailedSubmit);
 
     try {
       await _supabase.from('account_deletion_requests').insert({
@@ -226,15 +214,13 @@ class _SafetySettingsScreenState
       });
 
       if (mounted) {
-        messenger.showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(successMsg),
           duration: const Duration(seconds: 5),
         ));
       }
     } catch (e) {
-      if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
-      }
+      if (mounted) showErrorSnackBar(context, e, tag: 'SafetySettings.deletionRequest');
     } finally {
       if (mounted) setState(() => _requestingDeletion = false);
     }

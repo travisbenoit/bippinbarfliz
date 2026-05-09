@@ -7,6 +7,7 @@ import '../../extensions/localization_extension.dart';
 import '../../models/user_profile.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
 
 final discoverUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
   final supabase = Supabase.instance.client;
@@ -71,7 +72,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
-              Text('${t(AppStrings.error)}: ${error.toString()}'),
+              Text(friendlyError(error, tag: 'Discover')),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(discoverUsersProvider),

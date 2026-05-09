@@ -8,6 +8,7 @@ import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../extensions/localization_extension.dart';
+import '../../utils/app_error.dart';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -238,8 +239,6 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     final user = _supabase.auth.currentUser;
     if (user == null) return;
 
-    final messenger = ScaffoldMessenger.of(context);
-    final errMsg = context.tr(AppStrings.roomFailedSend);
     try {
       await _supabase.from('venue_room_messages').insert({
         'venue_id': widget.venueId,
@@ -248,9 +247,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
         'message_type': 'text',
       });
     } catch (e) {
-      if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('$errMsg: $e')));
-      }
+      if (mounted) showErrorSnackBar(context, e, tag: 'Room.sendMessage');
     }
   }
 
@@ -310,7 +307,6 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     setState(() => _checkingIn = true);
     final messenger = ScaffoldMessenger.of(context);
     final successMsg = context.tr(AppStrings.roomCheckedIn);
-    final failMsg = context.tr(AppStrings.roomCheckinFailed);
     try {
       final now = DateTime.now().toIso8601String();
 
@@ -339,7 +335,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('$failMsg: $e')));
+        showErrorSnackBar(context, e, tag: 'Room.checkIn');
       }
     } finally {
       if (mounted) setState(() => _checkingIn = false);
@@ -450,7 +446,6 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     setState(() => _submittingVote = true);
     final messenger = ScaffoldMessenger.of(context);
     final successMsg = context.tr(AppStrings.roomVoteSuccess);
-    final failMsg = context.tr(AppStrings.roomVoteFailed);
 
     try {
       final votes = Map<String, dynamic>.from(_currentPoll!.votes);
@@ -467,7 +462,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('$failMsg: $e')));
+        showErrorSnackBar(context, e, tag: 'Room.submitVote');
       }
     } finally {
       if (mounted) setState(() => _submittingVote = false);
@@ -482,8 +477,6 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     if (user == null) return;
 
     setState(() => _postingMoment = true);
-    final messenger = ScaffoldMessenger.of(context);
-    final failMsg = context.tr(AppStrings.roomMomentFailed);
     try {
       await _supabase.from('venue_room_moments').insert({
         'venue_id': widget.venueId,
@@ -494,9 +487,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       _momentController.clear();
       await _loadVibe();
     } catch (e) {
-      if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('$failMsg: $e')));
-      }
+      if (mounted) showErrorSnackBar(context, e, tag: 'Room.postMoment');
     } finally {
       if (mounted) setState(() => _postingMoment = false);
     }

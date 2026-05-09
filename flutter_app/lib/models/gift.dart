@@ -2,57 +2,63 @@ class Gift {
   final String id;
   final String fromUserId;
   final String toUserId;
-  final String drinkType;
-  final double amount;
+  final String? itemId;
   final String? message;
   final String status;
-  final String? venueId;
+  final String contextType;
   final DateTime? redeemedAt;
   final DateTime createdAt;
+
+  // Joined from virtual_items
+  final String? itemName;
+  final String? itemEmoji;
+  final int? itemPrice;
+
+  // Joined from users
+  final String? fromUserName;
 
   Gift({
     required this.id,
     required this.fromUserId,
     required this.toUserId,
-    required this.drinkType,
-    required this.amount,
+    this.itemId,
     this.message,
     required this.status,
-    this.venueId,
+    required this.contextType,
     this.redeemedAt,
     required this.createdAt,
+    this.itemName,
+    this.itemEmoji,
+    this.itemPrice,
+    this.fromUserName,
   });
 
   factory Gift.fromJson(Map<String, dynamic> json) {
+    final item = json['virtual_items'] as Map<String, dynamic>?;
+    final sender = json['users'] as Map<String, dynamic>?;
+
+    // Support both new (item_id) and legacy (drink_type) rows
+    final itemName = item?['name'] as String? ?? json['drink_type'] as String?;
+    final itemPrice = item?['price'] as int? ??
+        (json['amount'] != null ? (json['amount'] as num).round() : null);
+
     return Gift(
       id: json['id'] as String,
       fromUserId: json['from_user_id'] as String,
       toUserId: json['to_user_id'] as String,
-      drinkType: json['drink_type'] as String,
-      amount: (json['amount'] as num).toDouble(),
+      itemId: json['item_id'] as String?,
       message: json['message'] as String?,
-      status: json['status'] as String,
-      venueId: json['venue_id'] as String?,
+      status: json['status'] as String? ?? 'pending',
+      contextType: json['context_type'] as String? ?? 'profile',
       redeemedAt: json['redeemed_at'] != null
           ? DateTime.parse(json['redeemed_at'] as String)
           : null,
       createdAt: DateTime.parse(json['created_at'] as String),
+      itemName: itemName,
+      itemEmoji: item?['emoji'] as String?,
+      itemPrice: itemPrice,
+      fromUserName: sender?['name'] as String?,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'from_user_id': fromUserId,
-      'to_user_id': toUserId,
-      'drink_type': drinkType,
-      'amount': amount,
-      'message': message,
-      'status': status,
-      'venue_id': venueId,
-      'redeemed_at': redeemedAt?.toIso8601String(),
-      'created_at': createdAt.toIso8601String(),
-    };
   }
 
   bool get isPending => status == 'pending';

@@ -7,6 +7,7 @@ import '../../services/analytics_service.dart';
 import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
 
 // ---------------------------------------------------------------------------
 // Providers
@@ -126,7 +127,7 @@ class _OverviewTab extends ConsumerWidget {
       loading: () => const Center(
         child: CircularProgressIndicator(color: _pink),
       ),
-      error: (e, _) => Center(child: Text('${context.tr(AppStrings.error)}: $e')),
+      error: (e, _) => Center(child: Text(friendlyError(e, tag: 'Payments.profile'))),
       data: (profile) {
         final lushBalance = (profile?['lush_coin_balance'] as num?)?.toInt() ?? 0;
         final providerLinked = profile?['payment_provider_linked'] == true;
@@ -589,7 +590,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
     } catch (e) {
       if (mounted) {
         messenger.showSnackBar(
-          SnackBar(content: Text('${t(AppStrings.paymentsFailedSend)}: $e')),
+          SnackBar(content: Text(friendlyError(e, tag: 'Payments.sendPayment'))),
         );
       }
     } finally {
@@ -846,7 +847,7 @@ class _HistoryTab extends ConsumerWidget {
 
     return historyAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(color: _pink)),
-      error: (e, _) => Center(child: Text('${context.tr(AppStrings.error)}: $e')),
+      error: (e, _) => Center(child: Text(friendlyError(e, tag: 'Payments.history'))),
       data: (transactions) {
         if (transactions.isEmpty) {
           return Center(

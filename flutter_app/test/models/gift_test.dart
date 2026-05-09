@@ -7,35 +7,57 @@ void main() {
       'id': 'gift-1',
       'from_user_id': 'user-a',
       'to_user_id': 'user-b',
-      'drink_type': 'Beer',
-      'amount': 12.50,
+      'item_id': 'item-beer-1',
       'message': 'Cheers!',
       'status': 'pending',
-      'venue_id': 'venue-1',
+      'context_type': 'profile',
       'redeemed_at': null,
       'created_at': '2024-06-01T19:00:00.000Z',
     };
 
-    test('fromJson parses all fields correctly', () {
+    test('fromJson parses all required fields correctly', () {
       final gift = Gift.fromJson(baseJson);
 
       expect(gift.id, 'gift-1');
       expect(gift.fromUserId, 'user-a');
       expect(gift.toUserId, 'user-b');
-      expect(gift.drinkType, 'Beer');
-      expect(gift.amount, 12.50);
+      expect(gift.itemId, 'item-beer-1');
       expect(gift.message, 'Cheers!');
       expect(gift.status, 'pending');
-      expect(gift.venueId, 'venue-1');
+      expect(gift.contextType, 'profile');
       expect(gift.redeemedAt, isNull);
       expect(gift.createdAt, DateTime.parse('2024-06-01T19:00:00.000Z'));
     });
 
-    test('fromJson coerces int amount to double', () {
-      final json = {...baseJson, 'amount': 10};
+    test('fromJson parses joined virtual_items fields', () {
+      final json = {
+        ...baseJson,
+        'virtual_items': {'name': 'Cold Beer', 'emoji': '🍺', 'price': 50},
+      };
       final gift = Gift.fromJson(json);
-      expect(gift.amount, 10.0);
-      expect(gift.amount, isA<double>());
+
+      expect(gift.itemName, 'Cold Beer');
+      expect(gift.itemEmoji, '🍺');
+      expect(gift.itemPrice, 50);
+    });
+
+    test('fromJson parses joined users (sender) name', () {
+      final json = {
+        ...baseJson,
+        'users': {'name': 'Alice'},
+      };
+      final gift = Gift.fromJson(json);
+
+      expect(gift.fromUserName, 'Alice');
+    });
+
+    test('fromJson returns null joined fields when not present', () {
+      final gift = Gift.fromJson(baseJson);
+
+      expect(gift.itemName, isNull);
+      expect(gift.itemEmoji, isNull);
+      expect(gift.itemPrice, isNull);
+      expect(gift.fromUserName, isNull);
     });
 
     test('fromJson parses redeemed_at when present', () {
@@ -47,46 +69,22 @@ void main() {
       expect(gift.redeemedAt, DateTime.parse('2024-06-02T21:00:00.000Z'));
     });
 
-    test('fromJson handles optional null fields', () {
-      final json = {
-        ...baseJson,
-        'message': null,
-        'venue_id': null,
-        'redeemed_at': null,
-      };
+    test('fromJson handles optional null message', () {
+      final json = {...baseJson, 'message': null};
       final gift = Gift.fromJson(json);
-
       expect(gift.message, isNull);
-      expect(gift.venueId, isNull);
-      expect(gift.redeemedAt, isNull);
     });
 
-    test('toJson round-trips through fromJson', () {
-      final gift = Gift.fromJson(baseJson);
-      final json = gift.toJson();
-      final restored = Gift.fromJson(json);
-
-      expect(restored.id, gift.id);
-      expect(restored.fromUserId, gift.fromUserId);
-      expect(restored.toUserId, gift.toUserId);
-      expect(restored.drinkType, gift.drinkType);
-      expect(restored.amount, gift.amount);
-      expect(restored.status, gift.status);
+    test('fromJson defaults status to pending when absent', () {
+      final json = Map<String, dynamic>.from(baseJson)..remove('status');
+      final gift = Gift.fromJson(json);
+      expect(gift.status, 'pending');
     });
 
-    test('toJson contains all expected keys', () {
-      final json = Gift.fromJson(baseJson).toJson();
-
-      expect(json.containsKey('id'), isTrue);
-      expect(json.containsKey('from_user_id'), isTrue);
-      expect(json.containsKey('to_user_id'), isTrue);
-      expect(json.containsKey('drink_type'), isTrue);
-      expect(json.containsKey('amount'), isTrue);
-      expect(json.containsKey('message'), isTrue);
-      expect(json.containsKey('status'), isTrue);
-      expect(json.containsKey('venue_id'), isTrue);
-      expect(json.containsKey('redeemed_at'), isTrue);
-      expect(json.containsKey('created_at'), isTrue);
+    test('fromJson defaults context_type to profile when absent', () {
+      final json = Map<String, dynamic>.from(baseJson)..remove('context_type');
+      final gift = Gift.fromJson(json);
+      expect(gift.contextType, 'profile');
     });
 
     // ── Computed status properties ────────────────────────────────────────────

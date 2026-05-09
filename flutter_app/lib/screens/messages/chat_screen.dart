@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
+import '../../services/notification_sender.dart';
 
 class ChatMessage {
   final String id;
@@ -46,6 +48,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   String? _error;
   String _otherUserName = 'Chat';
   String? _otherUserAvatar;
+  String _myName = '';
   StreamSubscription? _subscription;
 
   @override
@@ -64,18 +67,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _loadOtherUser() async {
-    final response = await _supabase
-        .from('users')
-        .select('name, avatar_url')
-        .eq('id', widget.userId)
-        .maybeSingle();
+    final currentUser = _supabase.auth.currentUser;
+    final (other, me) = await (
+      _supabase.from('users').select('name, avatar_url').eq('id', widget.userId).maybeSingle(),
+      currentUser != null
+          ? _supabase.from('users').select('name').eq('id', currentUser.id).maybeSingle()
+          : Future<Map<String, dynamic>?>.value(null),
+    ).wait;
 
-    if (response != null && mounted) {
-      setState(() {
-        _otherUserName = response['name'] ?? 'Unknown';
-        _otherUserAvatar = response['avatar_url'];
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _otherUserName = (other?['name'] as String?) ?? 'Unknown';
+      _otherUserAvatar = other?['avatar_url'] as String?;
+      _myName = ((me?['name'] as String?) ?? '').trim();
+    });
   }
 
   Future<void> _loadMessages() async {
@@ -224,11 +229,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         'body': text,
       });
       AnalyticsService.instance.messageSent();
+      NotificationSender.messageSent(
+        toUserId: widget.userId,
+        senderName: _myName.isEmpty ? 'Someone' : _myName,
+        messagePreview: text.length > 80 ? '${text.substring(0, 80)}…' : text,
+      );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${ref.read(tProvider)(AppStrings.chatFailedSend)}: $e')),
-        );
+        showErrorSnackBar(context, e, tag: 'Chat.sendMessage');
       }
     }
   }

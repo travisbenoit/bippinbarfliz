@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../utils/app_error.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -69,14 +70,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         context.go('/permissions');
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${t(AppStrings.profileSetupFailedCreate)}: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (mounted) showErrorSnackBar(context, e, tag: 'ProfileSetup');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

@@ -42,6 +42,10 @@ class SupabaseService {
     await client.auth.resetPasswordForEmail(email);
   }
 
+  Future<void> resendVerificationEmail(String email) async {
+    await client.auth.resend(type: OtpType.signup, email: email);
+  }
+
   Future<UserResponse> updateUser({
     String? email,
     String? password,

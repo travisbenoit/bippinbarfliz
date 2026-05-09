@@ -7,6 +7,7 @@ import '../../models/user_profile.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../extensions/localization_extension.dart';
+import '../../utils/app_error.dart';
 
 class _StatusOption {
   final TonightStatus status;
@@ -130,9 +131,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${ref.read(tProvider)(AppStrings.editProfileFailedLoad)}: $e')),
-        );
+        showErrorSnackBar(context, e, tag: 'EditProfile.load');
       }
     }
   }
@@ -155,9 +154,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     setState(() => _saving = true);
     final messenger = ScaffoldMessenger.of(context);
-    final t = ref.read(tProvider);
-    final successMsg = t(AppStrings.editProfileSaved);
-    final failMsg = t(AppStrings.editProfileFailedSave);
+    final successMsg = ref.read(tProvider)(AppStrings.editProfileSaved);
 
     try {
       await _supabase.from('users').update({
@@ -182,7 +179,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('$failMsg: $e')));
+        showErrorSnackBar(context, e, tag: 'EditProfile.save');
       }
     } finally {
       if (mounted) setState(() => _saving = false);

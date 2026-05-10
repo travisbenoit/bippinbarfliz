@@ -6,6 +6,7 @@ import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../extensions/localization_extension.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 class SafetySettingsScreen extends ConsumerStatefulWidget {
   const SafetySettingsScreen({super.key});
@@ -261,7 +262,7 @@ class _SafetySettingsScreenState
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: _brandColor))
+          ? const AppFullLoader(color: _brandColor)
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -309,12 +310,7 @@ class _SafetySettingsScreenState
             ),
             const SizedBox(width: 12),
             _savingGhost
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: _brandColor),
-                  )
+                ? const AppButtonLoader(color: _brandColor, size: 24)
                 : Switch(
                     value: _ghostMode,
                     onChanged: _toggleGhostMode,
@@ -338,12 +334,7 @@ class _SafetySettingsScreenState
                 ),
                 const Spacer(),
                 if (_savingPrivacy)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: _brandColor),
-                  ),
+                  const AppButtonLoader(color: _brandColor, size: 16),
               ],
             ),
             const SizedBox(height: 12),
@@ -491,12 +482,7 @@ class _SafetySettingsScreenState
             style: const TextStyle(fontSize: 12),
           ),
           trailing: _requestingDeletion
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child:
-                      CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
-                )
+              ? const AppButtonLoader(color: Colors.red, size: 20)
               : const Icon(Icons.arrow_forward_ios,
                   size: 14),
           onTap: _requestingDeletion ? null : _showDeleteAccountDialog,

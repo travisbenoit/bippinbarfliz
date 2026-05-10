@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
 import '../../services/notification_sender.dart';
+import '../../widgets/app_loader.dart';
 
 const _brandPink = Color(0xFFE91E63);
 
@@ -33,11 +37,25 @@ class _CreateSwarmScreenState extends ConsumerState<CreateSwarmScreen> {
   final Set<String> _selectedTags = {};
   bool _submitting = false;
 
+  File? _coverImage;
+  bool _uploadingCover = false;
+
   @override
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickCoverImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1200,
+      imageQuality: 82,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _coverImage = File(picked.path));
   }
 
   Future<void> _pickStartTime() async {
@@ -90,6 +108,17 @@ class _CreateSwarmScreenState extends ConsumerState<CreateSwarmScreen> {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
+      // Upload cover image if selected
+      String? coverImageUrl;
+      if (_coverImage != null) {
+        setState(() => _uploadingCover = true);
+        final ext = _coverImage!.path.split('.').last.toLowerCase();
+        final path = 'swarm-covers/${user.id}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+        await supabase.storage.from('swarm-images').upload(path, _coverImage!);
+        coverImageUrl = supabase.storage.from('swarm-images').getPublicUrl(path);
+        if (mounted) setState(() => _uploadingCover = false);
+      }
+
       final title = _titleCtrl.text.trim();
       final result = await supabase.from('swarms').insert({
         'host_user_id': user.id,
@@ -98,6 +127,7 @@ class _CreateSwarmScreenState extends ConsumerState<CreateSwarmScreen> {
         'start_time': _startTime!.toIso8601String(),
         'max_size': _maxAttendees,
         'vibe_tags': _selectedTags.toList(),
+        if (coverImageUrl != null) 'cover_image_url': coverImageUrl,
       }).select('id').single();
 
       final swarmId = result['id'] as String;
@@ -197,7 +227,74 @@ class _CreateSwarmScreenState extends ConsumerState<CreateSwarmScreen> {
                 ),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
+
+              // ── Cover photo (optional) ───────────────────────────────────
+              const _SectionLabel('Cover Photo (Optional)'),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _uploadingCover ? null : _pickCoverImage,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: _coverImage != null
+                      ? Stack(
+                          children: [
+                            Image.file(
+                              _coverImage!,
+                              height: 160,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () => setState(() => _coverImage = null),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.close,
+                                      color: Colors.white, size: 16),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Container(
+                          height: 100,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: cs.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: cs.onSurface.withValues(alpha: 0.15),
+                              style: BorderStyle.solid,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_photo_alternate_outlined,
+                                  size: 32,
+                                  color: cs.onSurface.withValues(alpha: 0.4)),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Add a cover photo',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: cs.onSurface.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
 
               // ── Swarm name ───────────────────────────────────────────────
               _SectionLabel(t(AppStrings.swarmsNameLabel)),
@@ -372,11 +469,7 @@ class _CreateSwarmScreenState extends ConsumerState<CreateSwarmScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _submitting ? null : _submit,
                   icon: _submitting
-                      ? const SizedBox(
-                          width: 18, height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
+                      ? const AppButtonLoader(size: 18)
                       : const Icon(Icons.rocket_launch_outlined),
                   label: Text(
                     t(AppStrings.swarmsPublish),

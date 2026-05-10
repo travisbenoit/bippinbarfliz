@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/auth_provider.dart' show authControllerProvider, profileSetupDoneProvider;
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -76,6 +77,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             dob: _selectedDate!,
             homeCity: _cityController.text.trim(),
           );
+
+      // Mark setup complete immediately so the router doesn't bounce back
+      // to /profile-setup while the realtime stream is still propagating.
+      ref.read(profileSetupDoneProvider.notifier).complete();
 
       if (mounted) {
         context.go('/permissions');
@@ -219,14 +224,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       ),
                     ),
                     child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
+                        ? const AppButtonLoader()
                         : Text(
                             t(AppStrings.profileSetupContinue),
                             style: const TextStyle(

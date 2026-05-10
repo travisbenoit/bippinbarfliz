@@ -34,7 +34,7 @@ void showErrorSnackBar(
 
 String _toFriendlyMessage(dynamic error) {
   if (error is AuthException) {
-    return _authMessage(error.message);
+    return _authMessage(error.message, code: error.code, statusCode: error.statusCode);
   }
   if (error is PostgrestException) {
     return _postgrestMessage(error);
@@ -54,17 +54,38 @@ String _toFriendlyMessage(dynamic error) {
   return 'Something went wrong. Please try again.';
 }
 
-String _authMessage(String raw) {
+String _authMessage(String raw, {String? code, String? statusCode}) {
+  // Match by Supabase error code first — more stable than text matching.
+  switch (code) {
+    case 'over_email_send_rate_limit':
+    case 'over_request_rate_limit':
+      return 'Too many attempts. Please try again later.';
+    case 'email_not_confirmed':
+      return 'Please verify your email before signing in.';
+    case 'invalid_credentials':
+      return 'Incorrect email or password.';
+    case 'user_already_exists':
+    case 'email_exists':
+      return 'An account with this email already exists.';
+    case 'weak_password':
+      return 'Password is too weak. Please choose a stronger one.';
+    case 'user_not_found':
+      return 'No account found with that email.';
+    case 'invalid_email':
+      return 'Please enter a valid email address.';
+  }
+  // 429 by status code covers any unlisted rate-limit variants.
+  if (statusCode == '429') return 'Too many attempts. Please try again later.';
+
+  // Fallback: text-match for older Supabase versions or unknown codes.
   final lower = raw.toLowerCase();
-  if (lower.contains('invalid login') ||
-      lower.contains('invalid credentials')) {
+  if (lower.contains('invalid login') || lower.contains('invalid credentials')) {
     return 'Incorrect email or password.';
   }
   if (lower.contains('email not confirmed') || lower.contains('email_not_confirmed')) {
     return 'Please verify your email before signing in.';
   }
-  if (lower.contains('already registered') ||
-      lower.contains('already exists')) {
+  if (lower.contains('already registered') || lower.contains('already exists')) {
     return 'An account with this email already exists.';
   }
   if (lower.contains('password') && lower.contains('6')) {
@@ -79,7 +100,8 @@ String _authMessage(String raw) {
   if (lower.contains('weak password')) {
     return 'Password is too weak. Please choose a stronger one.';
   }
-  if (lower.contains('invalid email')) {
+  if (lower.contains('invalid email') ||
+      (lower.contains('email') && lower.contains('is invalid'))) {
     return 'Please enter a valid email address.';
   }
   return 'Authentication failed. Please try again.';

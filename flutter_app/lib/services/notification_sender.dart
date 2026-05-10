@@ -15,6 +15,33 @@ class NotificationSender {
 
   // ── Public entry points ──────────────────────────────────────────────────
 
+  /// Notifies followers that the current user is being DD tonight.
+  static Future<void> ddTonight({required String userName}) async {
+    final followerIds = await _acceptedFriendIds();
+    if (followerIds.isEmpty) return;
+    await _notify(
+      recipientIds: followerIds,
+      type: 'dd_tonight',
+      title: '$userName is the DD tonight! 🚗',
+      body: 'They\'re staying sober to keep everyone safe.',
+      preferenceKey: _Pref.friendRequests,
+    );
+  }
+
+  /// Notifies a user that someone started following them.
+  static Future<void> followStarted({
+    required String toUserId,
+    required String followerName,
+  }) async {
+    await _notify(
+      recipientIds: [toUserId],
+      type: 'friend_request',
+      title: '$followerName started following you',
+      body: 'Check out their profile',
+      preferenceKey: _Pref.friendRequests,
+    );
+  }
+
   /// Notifies all accepted friends when the current user creates a swarm.
   static Future<void> swarmCreated({
     required String swarmId,

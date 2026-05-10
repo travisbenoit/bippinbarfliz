@@ -9,6 +9,7 @@ import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../extensions/localization_extension.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -589,9 +590,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
 
   Widget _buildMessageList() {
     if (_chatLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: _brandColor),
-      );
+      return const AppFullLoader(color: _brandColor);
     }
 
     if (_messages.isEmpty) {
@@ -734,12 +733,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
               ElevatedButton.icon(
                 onPressed: _checkingIn ? null : _checkIn,
                 icon: _checkingIn
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
+                    ? const AppButtonLoader(size: 14)
                     : const Icon(Icons.location_on, size: 16),
                 label: Text(context.tr(AppStrings.roomIAmHere)),
                 style: ElevatedButton.styleFrom(
@@ -755,8 +749,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
           ),
         ),
         Expanded(child: _presenceLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: _brandColor))
+            ? const AppFullLoader(color: _brandColor)
             : _presenceUsers.isEmpty
                 ? Center(
                     child: Column(
@@ -806,7 +799,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
         child: const Icon(Icons.add_a_photo, color: Colors.white),
       ),
       body: _photosLoading
-          ? const Center(child: CircularProgressIndicator(color: _brandColor))
+          ? const AppFullLoader(color: _brandColor)
           : _wallPhotos.isEmpty
               ? Center(
                   child: Column(
@@ -872,7 +865,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
 
   Widget _buildVibeTab() {
     if (_vibeLoading) {
-      return const Center(child: CircularProgressIndicator(color: _brandColor));
+      return const AppFullLoader(color: _brandColor);
     }
 
     return RefreshIndicator(
@@ -988,11 +981,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                           borderRadius: BorderRadius.circular(12)),
                     ),
                     child: _postingMoment
-                        ? const SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
+                        ? const AppButtonLoader(size: 16)
                         : Text(context.tr(AppStrings.roomPostMoment)),
                   ),
                 ),
@@ -1105,11 +1094,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                     borderRadius: BorderRadius.circular(12)),
               ),
               child: _submittingVote
-                  ? const SizedBox(
-                      height: 16,
-                      width: 16,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
+                  ? const AppButtonLoader(size: 16)
                   : Text(context.tr(AppStrings.roomSubmitVote)),
             ),
           ),

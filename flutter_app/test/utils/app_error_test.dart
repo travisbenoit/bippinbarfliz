@@ -22,8 +22,22 @@ void main() {
         expect(friendlyError(e), 'An account with this email already exists.');
       });
 
-      test('rate limit returns retry-later message', () {
-        final e = const AuthException('Too many requests');
+      test('rate limit by message returns retry-later message', () {
+        const e = AuthException('Too many requests');
+        expect(friendlyError(e), 'Too many attempts. Please try again later.');
+      });
+
+      test('over_email_send_rate_limit code (429) returns retry-later message', () {
+        const e = AuthException(
+          'email rate limit exceeded',
+          statusCode: '429',
+          code: 'over_email_send_rate_limit',
+        );
+        expect(friendlyError(e), 'Too many attempts. Please try again later.');
+      });
+
+      test('429 statusCode without known code returns retry-later message', () {
+        const e = AuthException('rate limit hit', statusCode: '429');
         expect(friendlyError(e), 'Too many attempts. Please try again later.');
       });
 
@@ -39,6 +53,11 @@ void main() {
 
       test('invalid email returns validation message', () {
         final e = const AuthException('Invalid email format or invalid email');
+        expect(friendlyError(e), 'Please enter a valid email address.');
+      });
+
+      test('supabase v2 "email address is invalid" format is caught', () {
+        const e = AuthException('Email address "dkygd73gd@gamil.com" is invalid');
         expect(friendlyError(e), 'Please enter a valid email address.');
       });
 

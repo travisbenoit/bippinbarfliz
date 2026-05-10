@@ -13,6 +13,7 @@ import 'services/analytics_service.dart';
 import 'services/notification_service.dart';
 import 'providers/localization_provider.dart';
 import 'providers/theme_provider.dart';
+import 'widgets/app_loader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -102,9 +103,7 @@ class _BarflizAppState extends ConsumerState<BarflizApp> {
           Locale('ru', 'RU'),
         ],
         home: const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
+          body: AppFullLoader(),
         ),
       );
     }

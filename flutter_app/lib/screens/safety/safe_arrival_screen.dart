@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../extensions/localization_extension.dart';
+import '../../widgets/app_loader.dart';
 
 class SafeArrivalScreen extends ConsumerStatefulWidget {
   const SafeArrivalScreen({super.key});
@@ -219,7 +220,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
         ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: _brandPink))
+          ? const AppFullLoader(color: _brandPink)
           : RefreshIndicator(
               color: _brandPink,
               onRefresh: _loadData,
@@ -284,7 +285,7 @@ class _SafeArrivalScreenState extends ConsumerState<SafeArrivalScreen> {
       child: ElevatedButton.icon(
         onPressed: _checkingIn ? null : _checkInSafe,
         icon: _checkingIn
-            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+            ? const AppButtonLoader()
             : const Text('🏠', style: TextStyle(fontSize: 20)),
         label: Text(
           _checkingIn ? context.tr(AppStrings.safeArrivalRecordingState) : context.tr(AppStrings.safeArrivalIAmHome),

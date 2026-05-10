@@ -5,6 +5,7 @@ import '../../providers/music_provider.dart';
 import 'widgets/music_search_card.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../widgets/app_loader.dart';
 
 class MusicSearchScreen extends ConsumerWidget {
   const MusicSearchScreen({Key? key}) : super(key: key);
@@ -67,9 +68,7 @@ class MusicSearchScreen extends ConsumerWidget {
                   },
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loading: () => const AppFullLoader(),
               error: (error, stack) => Center(
                 child: Text('${t(AppStrings.error)}: $error'),
               ),

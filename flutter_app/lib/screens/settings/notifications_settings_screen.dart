@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../extensions/localization_extension.dart';
+import '../../widgets/app_loader.dart';
 
 class NotificationsSettingsScreen extends ConsumerStatefulWidget {
   const NotificationsSettingsScreen({super.key});
@@ -122,7 +123,7 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
           _saving
               ? const Padding(
                   padding: EdgeInsets.all(12),
-                  child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: _brandPink)),
+                  child: AppButtonLoader(color: _brandPink, size: 24),
                 )
               : TextButton(
                   onPressed: _save,
@@ -131,7 +132,7 @@ class _NotificationsSettingsScreenState extends ConsumerState<NotificationsSetti
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: _brandPink))
+          ? const AppFullLoader(color: _brandPink)
           : ListView(
               children: [
                 _SectionHeader(title: t(AppStrings.notifSettingsSocial)),

@@ -5,86 +5,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/user_profile.dart';
 import '../../models/venue.dart';
 import '../../models/swarm.dart';
+import '../../services/notification_sender.dart';
+import '../../utils/app_error.dart';
 import '../../widgets/first_run_tour.dart';
 import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
-import '../../providers/auth_provider.dart';
-
-// ---------------------------------------------------------------------------
-// Providers
-// ---------------------------------------------------------------------------
-
-final nearbyUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
-  final user = ref.watch(authStateProvider).value;
-  if (user == null) return [];
-
-  final supabase = Supabase.instance.client;
-  final response = await supabase
-      .from('users')
-      .select()
-      .neq('id', user.id)
-      .neq('ghost_mode', true)
-      .inFilter('tonight_status', ['out_now', 'going_out_soon'])
-      .order('last_active_at', ascending: false)
-      .limit(50);
-
-  return (response as List).map((json) => UserProfile.fromJson(json)).toList();
-});
-
-final nearbyVenuesProvider = FutureProvider<List<Venue>>((ref) async {
-  final supabase = Supabase.instance.client;
-
-  final response = await supabase
-      .from('venues')
-      .select()
-      .eq('is_active', true)
-      .order('name')
-      .limit(50);
-
-  return (response as List).map((json) => Venue.fromJson(json)).toList();
-});
-
-final activeSwarmsProvider = FutureProvider<List<Swarm>>((ref) async {
-  final supabase = Supabase.instance.client;
-
-  final response = await supabase
-      .from('swarms')
-      .select()
-      .eq('status', 'active')
-      .order('start_time')
-      .limit(20);
-
-  return (response as List).map((json) => Swarm.fromJson(json)).toList();
-});
-
-final currentUserProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
-  final user = ref.watch(authStateProvider).value;
-  if (user == null) return null;
-
-  final supabase = Supabase.instance.client;
-  final response = await supabase
-      .from('users')
-      .select()
-      .eq('id', user.id)
-      .maybeSingle();
-
-  return response;
-});
-
-final userStatsProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
-  final user = ref.watch(authStateProvider).value;
-  if (user == null) return null;
-
-  final supabase = Supabase.instance.client;
-  final response = await supabase
-      .from('user_stats')
-      .select()
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-  return response;
-});
+import '../../providers/home_providers.dart';
+import '../../widgets/app_loader.dart';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -96,25 +24,26 @@ const _brandPink = Color(0xFFE91E63);
 // Profile Completion Banner
 // ---------------------------------------------------------------------------
 
-class _ProfileCompletionBanner extends StatelessWidget {
+class _ProfileCompletionBanner extends ConsumerWidget {
   final AsyncValue<Map<String, dynamic>?> userAsync;
   const _ProfileCompletionBanner({required this.userAsync});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(tProvider);
     final user = userAsync.value;
     if (user == null) return const SizedBox.shrink();
 
     final missing = <String>[];
-    if ((user['avatar_url'] as String?) == null) missing.add('photo');
-    if ((user['bio'] as String?)?.isEmpty ?? true) missing.add('bio');
+    if ((user['avatar_url'] as String?) == null) missing.add(t(AppStrings.homeProfileItemPhoto));
+    if ((user['bio'] as String?)?.isEmpty ?? true) missing.add(t(AppStrings.homeProfileItemBio));
     final tags = (user['vibe_tags'] as List?)?.cast<String>() ?? [];
-    if (tags.isEmpty) missing.add('vibe tags');
+    if (tags.isEmpty) missing.add(t(AppStrings.homeProfileItemVibeTags));
 
     if (missing.isEmpty) return const SizedBox.shrink();
 
     return GestureDetector(
-      onTap: () => context.go('/edit-profile'),
+      onTap: () => context.push('/edit-profile'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -143,16 +72,16 @@ class _ProfileCompletionBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Complete your profile',
-                    style: TextStyle(
+                  Text(
+                    t(AppStrings.homeProfileNudgeTitle),
+                    style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
                       color: _brandPink,
                     ),
                   ),
                   Text(
-                    'Add your ${missing.join(', ')} to get noticed',
+                    '${t(AppStrings.homeProfileNudgeAdd)} ${missing.join(', ')} ${t(AppStrings.homeProfileNudgeSuffix)}',
                     style: TextStyle(
                       fontSize: 12,
                       color: _brandPink.withValues(alpha: 0.8),
@@ -211,32 +140,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _isDdTonight = value;
       _ddLoading = true;
     });
-    final supabase = Supabase.instance.client;
-    final currentUser = supabase.auth.currentUser;
-    if (currentUser == null) return;
-    await supabase
-        .from('users')
-        .update({'is_dd_tonight': value})
-        .eq('id', currentUser.id);
-    if (mounted) setState(() => _ddLoading = false);
+    try {
+      final supabase = Supabase.instance.client;
+      final currentUser = supabase.auth.currentUser;
+      if (currentUser == null) return;
+      await supabase
+          .from('users')
+          .update({'is_dd_tonight': value})
+          .eq('id', currentUser.id);
+
+      // Notify followers when turning DD mode ON
+      if (value) {
+        final profile = await supabase
+            .from('users')
+            .select('name')
+            .eq('id', currentUser.id)
+            .maybeSingle();
+        final name = (profile?['name'] as String?)?.trim() ?? '';
+        NotificationSender.ddTonight(
+          userName: name.isEmpty ? 'Someone' : name,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDdTonight = !value); // revert optimistic update
+        showErrorSnackBar(context, e, tag: 'Home.toggleDD');
+      }
+    } finally {
+      if (mounted) setState(() => _ddLoading = false);
+    }
   }
 
   Future<void> _checkInSafeArrival() async {
-    final supabase = Supabase.instance.client;
-    final currentUser = supabase.auth.currentUser;
-    if (currentUser == null) return;
-    await supabase.from('safe_arrivals').insert({
-      'user_id': currentUser.id,
-      'created_at': DateTime.now().toIso8601String(),
-      'status': 'safe',
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.tr(AppStrings.homeSafeArrivalRecorded)),
-          backgroundColor: Colors.green,
-        ),
-      );
+    try {
+      final supabase = Supabase.instance.client;
+      final currentUser = supabase.auth.currentUser;
+      if (currentUser == null) return;
+      await supabase.from('safe_arrivals').insert({
+        'user_id': currentUser.id,
+        'created_at': DateTime.now().toIso8601String(),
+        'status': 'safe',
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr(AppStrings.homeSafeArrivalRecorded)),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorSnackBar(context, e, tag: 'Home.safeArrival');
+      }
     }
   }
 
@@ -249,7 +205,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       builder: (ctx) => _StatusBottomSheet(
         onStatusChanged: () {
-          ref.invalidate(currentUserProfileProvider);
+          ref.invalidate(homeCurrentUserProfileProvider);
           ref.invalidate(nearbyUsersProvider);
         },
       ),
@@ -259,10 +215,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     ref.watch(tProvider);
-    final userAsync = ref.watch(currentUserProfileProvider);
+    final userAsync = ref.watch(homeCurrentUserProfileProvider);
     final statsAsync = ref.watch(userStatsProvider);
     final usersAsync = ref.watch(nearbyUsersProvider);
     final venuesAsync = ref.watch(nearbyVenuesProvider);
+    final venueCountAsync = ref.watch(venueCountProvider);
     final swarmsAsync = ref.watch(activeSwarmsProvider);
 
     return Stack(
@@ -273,10 +230,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: RefreshIndicator(
         color: _brandPink,
         onRefresh: () async {
-          ref.invalidate(currentUserProfileProvider);
+          ref.invalidate(homeCurrentUserProfileProvider);
           ref.invalidate(userStatsProvider);
           ref.invalidate(nearbyUsersProvider);
           ref.invalidate(nearbyVenuesProvider);
+          ref.invalidate(venueCountProvider);
           ref.invalidate(activeSwarmsProvider);
         },
         child: SingleChildScrollView(
@@ -307,6 +265,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               _SocialStatsRow(
                 usersAsync: usersAsync,
                 venuesAsync: venuesAsync,
+                venueCountAsync: venueCountAsync,
                 swarmsAsync: swarmsAsync,
               ),
               const SizedBox(height: 20),
@@ -448,9 +407,7 @@ class _UserProfileCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(20),
       child: userAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
+        loading: () => const AppFullLoader(color: Colors.white),
         error: (e, _) => Text(
           context.tr(AppStrings.homeCouldNotLoadProfile),
           style: const TextStyle(color: Colors.white),
@@ -652,13 +609,7 @@ class _XpBanner extends StatelessWidget {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: statsAsync.when(
-          loading: () => const Center(
-            child: SizedBox(
-              height: 24,
-              width: 24,
-              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-            ),
-          ),
+          loading: () => const AppFullLoader(color: Colors.white),
           error: (_, __) => _XpBannerContent(totalXp: 0, streak: 0, checkins: 0),
           data: (stats) => _XpBannerContent(
             totalXp: stats?['total_xp'] as int? ?? 0,
@@ -868,23 +819,24 @@ class _QuickActionTile extends StatelessWidget {
 class _SocialStatsRow extends StatelessWidget {
   final AsyncValue<List<UserProfile>> usersAsync;
   final AsyncValue<List<Venue>> venuesAsync;
+  final AsyncValue<int> venueCountAsync;
   final AsyncValue<List<Swarm>> swarmsAsync;
 
   const _SocialStatsRow({
     required this.usersAsync,
     required this.venuesAsync,
+    required this.venueCountAsync,
     required this.swarmsAsync,
   });
 
   @override
   Widget build(BuildContext context) {
     final usersList = usersAsync.when(data: (v) => v, loading: () => <UserProfile>[], error: (_, __) => <UserProfile>[]);
-    final venuesList = venuesAsync.when(data: (v) => v, loading: () => <Venue>[], error: (_, __) => <Venue>[]);
     final swarmsList = swarmsAsync.when(data: (v) => v, loading: () => <Swarm>[], error: (_, __) => <Swarm>[]);
 
     final totalPeople = usersList.length;
     final outNow = usersList.where((u) => u.tonightStatus == TonightStatus.outNow).length;
-    final venues = venuesList.length;
+    final venues = venueCountAsync.when(data: (v) => v, loading: () => 0, error: (_, __) => 0);
     final swarms = swarmsList.length;
 
     return Row(
@@ -1014,9 +966,7 @@ class _TonightsSceneSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         usersAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: _brandPink),
-          ),
+          loading: () => const AppFullLoader(),
           error: (_, __) => Text(context.tr(AppStrings.homeCouldNotLoadPeople)),
           data: (users) {
             final outNowUsers = users
@@ -1152,7 +1102,7 @@ class _PopularVenuesSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         venuesAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: _brandPink)),
+          loading: () => const AppFullLoader(),
           error: (_, __) => Text(context.tr(AppStrings.homeCouldNotLoadVenues)),
           data: (venues) {
             final top = venues.take(5).toList();
@@ -1315,7 +1265,7 @@ class _ActiveSwarmsSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         swarmsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: _brandPink)),
+          loading: () => const AppFullLoader(),
           error: (_, __) => Text(context.tr(AppStrings.homeCouldNotLoadSwarms)),
           data: (swarms) {
             if (swarms.isEmpty) {
@@ -1513,11 +1463,7 @@ class _DdModeToggle extends StatelessWidget {
             ),
           ),
           loading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.green),
-                )
+              ? const AppButtonLoader(color: Colors.green, size: 24)
               : Switch(
                   value: value,
                   onChanged: onChanged,
@@ -1686,11 +1632,7 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               child: _saving
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
+                  ? const AppButtonLoader()
                   : Text(t(AppStrings.homeSaveStatus), style: const TextStyle(fontWeight: FontWeight.w700)),
             ),
           ),

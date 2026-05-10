@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 const _brandPink = Color(0xFFE91E63);
 
@@ -159,12 +160,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                         borderRadius: BorderRadius.circular(30)),
                   ),
                   child: _resending
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                              color: _brandPink, strokeWidth: 2),
-                        )
+                      ? const AppButtonLoader(color: _brandPink)
                       : Text(
                           _cooldown > 0
                               ? 'Resend in ${_cooldown}s'

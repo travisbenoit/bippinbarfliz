@@ -8,6 +8,7 @@ import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
 import '../../services/notification_sender.dart';
+import '../../widgets/app_loader.dart';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -193,9 +194,7 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
         ],
       ),
       body: peopleAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: _pink),
-        ),
+        loading: () => const AppFullLoader(color: _pink),
         error: (e, _) => _ErrorState(
           message: friendlyError(e),
           onRetry: _invalidateAll,

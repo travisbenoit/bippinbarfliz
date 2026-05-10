@@ -11,6 +11,7 @@ class Swarm {
   final String status;
   final List<String> vibeTags;
   final DateTime createdAt;
+  final String? imageUrl;
 
   Swarm({
     required this.id,
@@ -25,6 +26,7 @@ class Swarm {
     required this.status,
     this.vibeTags = const [],
     required this.createdAt,
+    this.imageUrl,
   });
 
   factory Swarm.fromJson(Map<String, dynamic> json) {
@@ -45,6 +47,7 @@ class Swarm {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
+      imageUrl: json['cover_image_url'] as String?,
     );
   }
 
@@ -62,6 +65,7 @@ class Swarm {
       'status': status,
       'vibe_tags': vibeTags,
       'created_at': createdAt.toIso8601String(),
+      'cover_image_url': imageUrl,
     };
   }
 }

@@ -880,6 +880,35 @@ class AppStrings {
   static const roomPollLabel = 'room.poll_label';
   static const roomTheRoomDefault = 'room.the_room_default';
 
+  // ── Follow system ────────────────────────────────────────────────────────────
+  static const followFollow = 'follow.follow';
+  static const followFollowing = 'follow.following';
+  static const followUnfollow = 'follow.unfollow';
+  static const followFollowBack = 'follow.follow_back';
+  static const followFollowingTab = 'follow.following_tab';
+  static const followFollowersTab = 'follow.followers_tab';
+  static const followNoFollowing = 'follow.no_following';
+  static const followNoFollowingSub = 'follow.no_following_sub';
+  static const followNoFollowers = 'follow.no_followers';
+  static const followNoFollowersSub = 'follow.no_followers_sub';
+
+  // ── Home nudge ────────────────────────────────────────────────────────────────
+  static const homeProfileNudgeTitle = 'home.profile_nudge_title';
+  static const homeProfileNudgeAdd = 'home.profile_nudge_add';
+  static const homeProfileNudgeSuffix = 'home.profile_nudge_suffix';
+  static const homeProfileItemPhoto = 'home.profile_item_photo';
+  static const homeProfileItemBio = 'home.profile_item_bio';
+  static const homeProfileItemVibeTags = 'home.profile_item_vibe_tags';
+  static const homeSafeArrivalError = 'home.safe_arrival_error';
+  static const homeDdError = 'home.dd_error';
+
+  // ── Block dialog ─────────────────────────────────────────────────────────────
+  static const blockConfirmTitle = 'block.confirm_title';
+  static const blockConfirmMsg = 'block.confirm_msg';
+
+  // ── Chat blocked ──────────────────────────────────────────────────────────────
+  static const chatBlockedBanner = 'chat.blocked_banner';
+
   // ── Safe Arrival (extra 2) ───────────────────────────────────────────────────
   static const safeArrivalFriendsSection = 'safe_arrival.friends_section';
   static const safeArrivalAddBtn = 'safe_arrival.add_btn';
@@ -1843,5 +1872,34 @@ class AppStrings {
     recapGiftDefault: 'A gift',
     recapMessagesLabel: 'Messages',
     recapSwarmsLabel: 'Swarms',
+
+    // Follow system
+    followFollow: 'Follow',
+    followFollowing: 'Following',
+    followUnfollow: 'Unfollow',
+    followFollowBack: 'Follow Back',
+    followFollowingTab: 'Following',
+    followFollowersTab: 'Followers',
+    followNoFollowing: "You're not following anyone yet",
+    followNoFollowingSub: 'Find people to follow in the Find tab',
+    followNoFollowers: 'No followers yet',
+    followNoFollowersSub: 'Share your profile to get followers',
+
+    // Home nudge
+    homeProfileNudgeTitle: 'Complete your profile',
+    homeProfileNudgeAdd: 'Add your',
+    homeProfileNudgeSuffix: 'to get noticed',
+    homeProfileItemPhoto: 'photo',
+    homeProfileItemBio: 'bio',
+    homeProfileItemVibeTags: 'vibe tags',
+    homeSafeArrivalError: 'Could not record safe arrival',
+    homeDdError: 'Could not update DD status',
+
+    // Block dialog
+    blockConfirmTitle: 'Block this person?',
+    blockConfirmMsg: "They won't be able to see your profile or message you.",
+
+    // Chat blocked
+    chatBlockedBanner: "You can't send messages to this person.",
   };
 }

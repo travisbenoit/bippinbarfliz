@@ -8,6 +8,7 @@ import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 // ---------------------------------------------------------------------------
 // Data models
@@ -215,9 +216,7 @@ class _ActivityTab extends ConsumerWidget {
     final feedAsync = ref.watch(activityFeedProvider);
 
     return feedAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: _brandPink),
-      ),
+      loading: () => const AppFullLoader(color: _brandPink),
       error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -393,9 +392,7 @@ class _VisitsTab extends ConsumerWidget {
     final visitsAsync = ref.watch(venueVisitsProvider);
 
     return visitsAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: _brandPink),
-      ),
+      loading: () => const AppFullLoader(color: _brandPink),
       error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -7,6 +7,7 @@ import '../../i18n/app_strings.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -237,12 +238,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           borderRadius: BorderRadius.circular(30)),
                     ),
                     child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2),
-                          )
+                        ? const AppButtonLoader()
                         : Text(
                             t(AppStrings.signUpButton),
                             style: const TextStyle(

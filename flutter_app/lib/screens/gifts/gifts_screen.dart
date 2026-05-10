@@ -7,6 +7,7 @@ import '../../models/gift.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 const _brandPink = Color(0xFFE91E63);
 
@@ -198,7 +199,7 @@ class _GiftList extends ConsumerWidget {
     final t = ref.watch(tProvider);
 
     return giftsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: _brandPink)),
+      loading: () => const AppFullLoader(color: _brandPink),
       error: (e, _) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

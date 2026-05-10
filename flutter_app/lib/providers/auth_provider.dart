@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/analytics_service.dart';
@@ -9,6 +10,20 @@ import 'radar_provider.dart';
 final supabaseServiceProvider = Provider<SupabaseService>((ref) {
   return SupabaseService();
 });
+
+// Set to true immediately when createUserProfile succeeds so the router
+// doesn't send the user back to /profile-setup while the realtime stream
+// is still propagating the updated row. Cleared on sign-out.
+final profileSetupDoneProvider =
+    NotifierProvider<_ProfileSetupDoneNotifier, bool>(
+        _ProfileSetupDoneNotifier.new);
+
+class _ProfileSetupDoneNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void complete() => state = true;
+  void reset() => state = false;
+}
 
 final authStateProvider = StreamProvider<User?>((ref) {
   final supabase = ref.watch(supabaseServiceProvider);
@@ -26,12 +41,29 @@ final currentUserProfileProvider = StreamProvider<UserProfile?>((ref) async* {
   }
 
   final supabase = ref.watch(supabaseServiceProvider);
-  await for (final snapshot in supabase.client
-      .from('users')
-      .stream(primaryKey: ['id']).eq('id', authUser.id)) {
-    if (snapshot.isNotEmpty) {
-      yield UserProfile.fromJson(snapshot.first);
-    } else {
+  try {
+    await for (final snapshot in supabase.client
+        .from('users')
+        .stream(primaryKey: ['id']).eq('id', authUser.id)) {
+      if (snapshot.isNotEmpty) {
+        yield UserProfile.fromJson(snapshot.first);
+      } else {
+        yield null;
+      }
+    }
+  } catch (e) {
+    // Realtime WebSocket can time out on poor connections — fall back to a
+    // one-shot REST fetch so the app stays usable.
+    debugPrint('[currentUserProfileProvider] stream error: $e — falling back to REST');
+    try {
+      final data = await supabase.client
+          .from('users')
+          .select()
+          .eq('id', authUser.id)
+          .maybeSingle();
+      yield data != null ? UserProfile.fromJson(data) : null;
+    } catch (e2) {
+      debugPrint('[currentUserProfileProvider] REST fallback failed: $e2');
       yield null;
     }
   }

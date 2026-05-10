@@ -8,6 +8,9 @@ import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../extensions/localization_extension.dart';
 import '../../utils/app_error.dart';
+import '../../providers/auth_provider.dart' show currentUserProfileProvider;
+import '../../providers/home_providers.dart';
+import '../../widgets/app_loader.dart';
 
 class _StatusOption {
   final TonightStatus status;
@@ -40,6 +43,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   // State
   bool _loading = true;
   bool _saving = false;
+  bool _uploadingAvatar = false;
   String? _avatarUrl;
   String? _lookingFor;
   TonightStatus _tonightStatus = TonightStatus.stayingIn;
@@ -136,15 +140,96 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
-  Future<void> _pickAvatar() async {
-    final messenger = ScaffoldMessenger.of(context);
-    final msg = context.tr(AppStrings.editProfileAvatarComingSoon);
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
-    if (picked == null) return;
+  void _pickAvatar() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('Take a photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickAndUploadAvatar(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickAndUploadAvatar(ImageSource.gallery);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
 
-    if (mounted) {
-      messenger.showSnackBar(SnackBar(content: Text(msg)));
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
+    if (_userId == null) return;
+
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 800,
+      maxHeight: 800,
+    );
+    if (picked == null || !mounted) return;
+
+    setState(() => _uploadingAvatar = true);
+    try {
+      final bytes = await picked.readAsBytes();
+      final ext = picked.name.contains('.')
+          ? picked.name.split('.').last.toLowerCase()
+          : 'jpg';
+      final mimeType = ext == 'png' ? 'image/png' : 'image/jpeg';
+      // Store under userId/ so RLS path check passes
+      final storagePath = '$_userId/avatar.$ext';
+
+      await _supabase.storage.from('avatars').uploadBinary(
+            storagePath,
+            bytes,
+            fileOptions: FileOptions(contentType: mimeType, upsert: true),
+          );
+
+      // Append cache-buster so Flutter re-fetches the new image
+      final publicUrl = _supabase.storage.from('avatars').getPublicUrl(storagePath);
+      final url = '$publicUrl?t=${DateTime.now().millisecondsSinceEpoch}';
+
+      await _supabase
+          .from('users')
+          .update({'avatar_url': publicUrl})
+          .eq('id', _userId!);
+
+      if (mounted) {
+        setState(() => _avatarUrl = url);
+        ref.invalidate(homeCurrentUserProfileProvider);
+        ref.invalidate(currentUserProfileProvider);
+      }
+    } catch (e, st) {
+      if (mounted) {
+        showErrorSnackBar(context, e, stackTrace: st, tag: 'EditProfile.uploadAvatar');
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingAvatar = false);
     }
   }
 
@@ -173,9 +258,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         if (_avatarUrl != null) 'avatar_url': _avatarUrl,
       }).eq('id', _userId!);
 
+      ref.invalidate(homeCurrentUserProfileProvider);
+      ref.invalidate(userStatsProvider);
+      ref.invalidate(currentUserProfileProvider);
+
       if (mounted) {
         messenger.showSnackBar(SnackBar(content: Text(successMsg)));
-        context.pop();
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/home');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -198,7 +291,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
         ),
         title: Text(
           t(AppStrings.editProfileTitle),
@@ -208,12 +301,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child:
-                        CircularProgressIndicator(strokeWidth: 2, color: _brandColor),
-                  )
+                ? const AppButtonLoader(color: _brandColor, size: 18)
                 : Text(
                     t(AppStrings.editProfileSave),
                     style: const TextStyle(
@@ -226,7 +314,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: _brandColor))
+          ? const AppFullLoader(color: _brandColor)
           : Form(
               key: _formKey,
               child: ListView(
@@ -330,12 +418,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           borderRadius: BorderRadius.circular(14)),
                     ),
                     child: _saving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
-                          )
+                        ? const AppButtonLoader()
                         : Text(
                             t(AppStrings.editProfileSaveProfile),
                             style: const TextStyle(
@@ -359,7 +442,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     return Center(
       child: GestureDetector(
-        onTap: _pickAvatar,
+        onTap: _uploadingAvatar ? null : _pickAvatar,
         child: Stack(
           children: [
             Container(
@@ -397,7 +480,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   color: _brandColor,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.edit, size: 16, color: Colors.white),
+                child: _uploadingAvatar
+                    ? const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: AppButtonLoader(size: 18),
+                      )
+                    : const Icon(Icons.edit, size: 16, color: Colors.white),
               ),
             ),
           ],

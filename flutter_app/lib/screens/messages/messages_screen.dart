@@ -6,6 +6,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 class Conversation {
   final String id;
@@ -105,9 +106,7 @@ class MessagesScreen extends ConsumerWidget {
             : null,
       ),
       body: conversationsAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFE91E63)),
-        ),
+        loading: () => const AppFullLoader(),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

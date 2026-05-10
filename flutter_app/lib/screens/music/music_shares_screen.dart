@@ -5,6 +5,7 @@ import '../../providers/music_provider.dart';
 import 'widgets/music_share_card.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../widgets/app_loader.dart';
 
 class MusicSharesScreen extends ConsumerWidget {
   const MusicSharesScreen({Key? key}) : super(key: key);
@@ -53,9 +54,7 @@ class MusicSharesScreen extends ConsumerWidget {
                   },
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loading: () => const AppFullLoader(),
               error: (error, stack) => Center(
                 child: Text('${t(AppStrings.error)}: $error'),
               ),
@@ -95,9 +94,7 @@ class MusicSharesScreen extends ConsumerWidget {
                   },
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loading: () => const AppFullLoader(),
               error: (error, stack) => Center(
                 child: Text('${t(AppStrings.error)}: $error'),
               ),

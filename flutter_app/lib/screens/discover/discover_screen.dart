@@ -8,6 +8,7 @@ import '../../models/user_profile.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 final discoverUsersProvider = FutureProvider<List<UserProfile>>((ref) async {
   final supabase = Supabase.instance.client;
@@ -63,9 +64,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         ],
       ),
       body: usersAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFE91E63)),
-        ),
+        loading: () => const AppFullLoader(),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

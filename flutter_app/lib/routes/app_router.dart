@@ -1,5 +1,8 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/user_profile.dart';
 import '../providers/auth_provider.dart';
 import '../services/analytics_service.dart';
 import '../screens/shell/main_shell.dart';
@@ -9,7 +12,7 @@ import '../screens/auth/sign_up_screen.dart';
 import '../screens/auth/verify_email_screen.dart';
 import '../screens/profile_setup/profile_setup_screen.dart';
 import '../screens/permissions/permissions_screen.dart';
-import '../screens/home/home_screen.dart' hide currentUserProfileProvider;
+import '../screens/home/home_screen.dart';
 import '../screens/discover/discover_screen.dart';
 import '../screens/map/map_screen.dart';
 import '../screens/messages/messages_screen.dart';
@@ -44,45 +47,77 @@ final _mapObserver = AnalyticsNavigatorObserver();
 final _messagesObserver = AnalyticsNavigatorObserver();
 final _profileObserver = AnalyticsNavigatorObserver();
 
-final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final profileState = ref.watch(currentUserProfileProvider);
+// ---------------------------------------------------------------------------
+// RouterNotifier
+// Holds redirect logic and notifies GoRouter when auth/profile state changes,
+// so GoRouter re-evaluates the redirect WITHOUT recreating the router instance.
+// ---------------------------------------------------------------------------
 
+class _RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  _RouterNotifier(this._ref) {
+    _ref.listen<AsyncValue<User?>>(authStateProvider, (_, next) {
+      final signedOut =
+          next.when(data: (u) => u, error: (_, __) => null, loading: () => null) == null;
+      if (signedOut) _ref.read(profileSetupDoneProvider.notifier).reset();
+      notifyListeners();
+    });
+    _ref.listen<AsyncValue<UserProfile?>>(currentUserProfileProvider, (_, next) {
+      notifyListeners();
+    });
+  }
+
+  String? redirect(BuildContext context, GoRouterState state) {
+    final authState = _ref.read(authStateProvider);
+    final profileState = _ref.read(currentUserProfileProvider);
+
+    final isAuthenticated = authState.value != null;
+    final loc = state.matchedLocation;
+    final isOnboarding = loc == '/onboarding';
+    final isAuth = loc.startsWith('/signin') ||
+        loc.startsWith('/signup') ||
+        loc.startsWith('/verify-email');
+    final isSetupRoute = loc == '/profile-setup' || loc == '/permissions';
+
+    if (!isAuthenticated && !isOnboarding && !isAuth && !isSetupRoute) {
+      return '/onboarding';
+    }
+
+    if (isAuthenticated) {
+      // Wait for profile to finish loading before deciding.
+      if (profileState.isLoading) return null;
+
+      // profileSetupDoneProvider is set to true immediately after the upsert
+      // in profile_setup_screen, before the realtime stream propagates the
+      // change.  This prevents bouncing back to /profile-setup while the
+      // stream is still catching up.
+      final setupDone = _ref.read(profileSetupDoneProvider);
+      final profile = profileState.when(data: (p) => p, error: (_, __) => null, loading: () => null);
+      final hasProfile = setupDone || (profile != null && profile.age != null);
+
+      // No complete profile yet → must complete setup first.
+      if (!hasProfile && !isSetupRoute) return '/profile-setup';
+
+      // Profile complete, no reason to stay on auth/onboarding screens.
+      if (hasProfile && (isOnboarding || isAuth)) return '/home';
+    }
+
+    return null;
+  }
+}
+
+final _routerNotifierProvider = Provider<_RouterNotifier>((ref) {
+  return _RouterNotifier(ref);
+});
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final notifier = ref.watch(_routerNotifierProvider);
   return GoRouter(
     observers: [_analyticsObserver],
     initialLocation: '/onboarding',
-    redirect: (context, state) {
-      final isAuthenticated = authState.value != null;
-      final loc = state.matchedLocation;
-      final isOnboarding = loc == '/onboarding';
-      final isAuth = loc.startsWith('/signin') ||
-          loc.startsWith('/signup') ||
-          loc.startsWith('/verify-email');
-      final isSetupRoute = loc == '/profile-setup' || loc == '/permissions';
-
-      if (!isAuthenticated && !isOnboarding && !isAuth && !isSetupRoute) {
-        return '/onboarding';
-      }
-
-      if (isAuthenticated) {
-        // Wait for profile to finish loading before deciding
-        if (profileState.isLoading) return null;
-
-        final hasProfile = profileState.value != null;
-
-        // No profile row yet → must complete setup first
-        if (!hasProfile && !isSetupRoute) {
-          return '/profile-setup';
-        }
-
-        // Profile exists, no reason to stay on auth/onboarding screens
-        if (hasProfile && (isOnboarding || isAuth)) {
-          return '/home';
-        }
-      }
-
-      return null;
-    },
+    refreshListenable: notifier,
+    redirect: notifier.redirect,
     routes: [
       // ── Auth (no shell) ───────────────────────────────────────────────
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),

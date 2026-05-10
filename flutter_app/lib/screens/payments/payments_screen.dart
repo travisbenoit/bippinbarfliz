@@ -8,6 +8,7 @@ import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 // ---------------------------------------------------------------------------
 // Providers
@@ -124,9 +125,7 @@ class _OverviewTab extends ConsumerWidget {
     final profileAsync = ref.watch(_currentUserProfileProvider);
 
     return profileAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: _pink),
-      ),
+      loading: () => const AppFullLoader(color: _pink),
       error: (e, _) => Center(child: Text(friendlyError(e, tag: 'Payments.profile'))),
       data: (profile) {
         final lushBalance = (profile?['lush_coin_balance'] as num?)?.toInt() ?? 0;
@@ -624,11 +623,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
               prefixIcon: _isSearching
                   ? const Padding(
                       padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: _pink),
-                      ),
+                      child: AppButtonLoader(color: _pink, size: 20),
                     )
                   : const Icon(Icons.search),
               border: InputBorder.none,
@@ -777,14 +772,7 @@ class _SendTabState extends ConsumerState<_SendTab> {
                 ),
               ),
               child: _isSending
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? const AppButtonLoader(size: 22)
                   : Text(context.tr(AppStrings.paymentsSendPayment)),
             ),
           ),
@@ -846,7 +834,7 @@ class _HistoryTab extends ConsumerWidget {
     final uid = Supabase.instance.client.auth.currentUser?.id;
 
     return historyAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: _pink)),
+      loading: () => const AppFullLoader(color: _pink),
       error: (e, _) => Center(child: Text(friendlyError(e, tag: 'Payments.history'))),
       data: (transactions) {
         if (transactions.isEmpty) {

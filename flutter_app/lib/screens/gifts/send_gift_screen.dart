@@ -7,6 +7,7 @@ import '../../providers/localization_provider.dart';
 import '../../services/analytics_service.dart';
 import '../../services/notification_sender.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 const _brandPink = Color(0xFFE91E63);
 
@@ -146,7 +147,7 @@ class _SendGiftScreenState extends ConsumerState<SendGiftScreen> {
         ),
       ),
       body: itemsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: _brandPink)),
+        loading: () => const AppFullLoader(color: _brandPink),
         error: (e, _) => Center(child: Text(friendlyError(e, tag: 'SendGift.items'))),
         data: (items) => _buildBody(context, t, items),
       ),
@@ -288,12 +289,7 @@ class _SendGiftScreenState extends ConsumerState<SendGiftScreen> {
                     borderRadius: BorderRadius.circular(24)),
               ),
               child: _isSending
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2),
-                    )
+                  ? const AppButtonLoader()
                   : Text(
                       t(AppStrings.giftSendButton),
                       style: const TextStyle(

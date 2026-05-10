@@ -8,6 +8,7 @@ import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
 import '../../services/notification_sender.dart';
+import '../../widgets/app_loader.dart';
 
 class ChatMessage {
   final String id;
@@ -46,6 +47,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   List<ChatMessage> _messages = [];
   bool _loading = true;
   String? _error;
+  bool _isBlocked = false;
   String _otherUserName = 'Chat';
   String? _otherUserAvatar;
   String _myName = '';
@@ -98,6 +100,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           _error = ref.read(tProvider)(AppStrings.chatNotLoggedIn);
           _loading = false;
         });
+        return;
+      }
+
+      // Check blocks in either direction
+      final blockRows = await _supabase
+          .from('user_blocks')
+          .select('id')
+          .or('and(blocker_id.eq.${currentUser.id},blocked_id.eq.${widget.userId}),and(blocker_id.eq.${widget.userId},blocked_id.eq.${currentUser.id})')
+          .limit(1);
+      if (mounted) {
+        setState(() => _isBlocked = (blockRows as List).isNotEmpty);
+      }
+      if (_isBlocked) {
+        setState(() => _loading = false);
         return;
       }
 
@@ -271,7 +287,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Expanded(
             child: _buildMessageList(),
           ),
-          _buildMessageInput(),
+          if (_isBlocked)
+            _buildBlockedBanner()
+          else
+            _buildMessageInput(),
         ],
       ),
     );
@@ -280,9 +299,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget _buildMessageList() {
     final t = ref.read(tProvider);
     if (_loading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xFFE91E63)),
-      );
+      return const AppFullLoader();
     }
 
     if (_error != null) {
@@ -347,6 +364,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         final message = _messages[index];
         return _MessageBubble(message: message);
       },
+    );
+  }
+
+  Widget _buildBlockedBanner() {
+    final t = ref.read(tProvider);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+            offset: const Offset(0, -2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.block, color: Colors.red, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              t(AppStrings.chatBlockedBanner),
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

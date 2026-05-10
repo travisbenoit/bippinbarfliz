@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../widgets/app_loader.dart';
 
 class BlockedUsersScreen extends ConsumerStatefulWidget {
   const BlockedUsersScreen({super.key});
@@ -130,7 +131,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
         ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: _pink))
+          ? const AppFullLoader(color: _pink)
           : _items.isEmpty
               ? _EmptyState()
               : RefreshIndicator(
@@ -261,12 +262,7 @@ class _BlockedUserTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             removing
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Color(0xFFE91E63)),
-                  )
+                ? const AppButtonLoader(size: 20)
                 : OutlinedButton(
                     onPressed: onUnblock,
                     style: OutlinedButton.styleFrom(

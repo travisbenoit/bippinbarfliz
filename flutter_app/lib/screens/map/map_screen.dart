@@ -13,27 +13,21 @@ import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 const _approvedCities = ['Darwin', 'Miami', 'Fort Lauderdale'];
 
 final venuesMapProvider = FutureProvider<List<Venue>>((ref) async {
   final supabase = Supabase.instance.client;
+  final response = await supabase
+      .from('venues')
+      .select('id, name, address, lat, lng, rating, user_ratings_total, photo_url, google_place_id, created_at, city, category, type')
+      .inFilter('city', _approvedCities)
+      .eq('is_active', true)
+      .order('name')
+      .limit(500);
 
-  try {
-    final response = await supabase
-        .from('bars')
-        .select('bar_id, name, address, lat, lng, rating, review_count, photo_urls, google_place_id, created_at, city')
-        .inFilter('city', _approvedCities)
-        .eq('serves_alcohol', true)
-        .order('name')
-        .limit(200);
-
-    return (response as List).map((json) => Venue.fromJson(json)).toList();
-  } catch (e, stackTrace) {
-    debugPrint('[venuesMapProvider] Error fetching venues: $e');
-    debugPrint('[venuesMapProvider] $stackTrace');
-    rethrow;
-  }
+  return (response as List).map((json) => Venue.fromJson(json)).toList();
 });
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -46,8 +40,9 @@ class MapScreen extends ConsumerStatefulWidget {
 class _MapScreenState extends ConsumerState<MapScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   GoogleMapController? _mapController;
-  final Set<Marker> _markers = {};
+  Set<Marker> _markers = {};
   bool _isLoading = true;
+  bool _loadingMarkers = false; // guard against concurrent calls
   String? _error;
 
   // Cached per-city pin bitmaps — only built once per city
@@ -68,22 +63,22 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     const double scale = 2.0;
     const double lw = 48.0;  // logical width  (points)
     const double lh = 68.0;  // logical height (points)
-    final double pw = lw * scale;
-    final double ph = lh * scale;
-    final double cr = 18.0 * scale;   // circle radius
-    final double cx = pw / 2;
-    final double cy = cr + 5.0 * scale;
+    const double pw = lw * scale;
+    const double ph = lh * scale;
+    const double cr = 18.0 * scale;   // circle radius
+    const double cx = pw / 2;
+    const double cy = cr + 5.0 * scale;
 
     final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, pw, ph));
+    final canvas = Canvas(recorder, const Rect.fromLTWH(0, 0, pw, ph));
 
     // Drop shadow behind circle
     canvas.drawCircle(
-      Offset(cx, cy + 3.0 * scale),
+      const Offset(cx, cy + 3.0 * scale),
       cr,
       Paint()
         ..color = Colors.black.withValues(alpha: 0.25)
-        ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, 4.0 * scale),
+        ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4.0 * scale),
     );
 
     // Teardrop pointer — drawn first so circle overlaps its top edge cleanly
@@ -98,11 +93,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
 
     // Circle body
-    canvas.drawCircle(Offset(cx, cy), cr, pink);
+    canvas.drawCircle(const Offset(cx, cy), cr, pink);
 
     // White ring border
     canvas.drawCircle(
-      Offset(cx, cy),
+      const Offset(cx, cy),
       cr - 1.5 * scale,
       Paint()
         ..color = Colors.white.withValues(alpha: 0.85)
@@ -112,7 +107,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     // City emoji centred in circle
     final tp = TextPainter(textDirection: ui.TextDirection.ltr)
-      ..text = TextSpan(text: emoji, style: TextStyle(fontSize: 22.0 * scale))
+      ..text = TextSpan(text: emoji, style: const TextStyle(fontSize: 22.0 * scale))
       ..layout();
     tp.paint(canvas, Offset(cx - tp.width / 2, cy - tp.height / 2));
 
@@ -184,11 +179,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     _loadVenueMarkers();
   }
 
-  Future<void> _loadVenueMarkers() async {
-    if (!mounted) return;
+  Future<void> _loadVenueMarkers({bool invalidate = false}) async {
+    if (_loadingMarkers || !mounted) return;
+    _loadingMarkers = true;
     setState(() => _isLoading = true);
 
     try {
+      if (invalidate) ref.invalidate(venuesMapProvider);
       final venues = await ref.read(venuesMapProvider.future);
       if (!mounted) return;
 
@@ -208,20 +205,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       }));
 
       if (!mounted) return;
+      // Assign a new Set — never mutate in place to avoid accumulation bugs
       setState(() {
-        _markers
-          ..clear()
-          ..addAll(markers);
+        _markers = Set<Marker>.from(markers);
         _isLoading = false;
       });
     } catch (e, stackTrace) {
-      debugPrint('[MapScreen] Error loading venue markers: $e');
-      debugPrint('[MapScreen] $stackTrace');
       if (!mounted) return;
       setState(() {
-        _error = friendlyError(e, tag: 'MapScreen.loadVenues');
+        _error = friendlyError(e, stackTrace: stackTrace, tag: 'MapScreen.loadVenues');
         _isLoading = false;
       });
+    } finally {
+      _loadingMarkers = false;
     }
   }
 
@@ -272,7 +268,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadVenueMarkers,
+            onPressed: () => _loadVenueMarkers(invalidate: true),
           ),
         ],
       ),
@@ -311,14 +307,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Color(0xFFE91E63),
-                        ),
-                      ),
+                      const AppButtonLoader(size: 16),
                       const SizedBox(width: 8),
                       Text(t(AppStrings.mapLoadingVenues)),
                     ],

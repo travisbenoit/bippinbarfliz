@@ -6,6 +6,7 @@ import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 class MusicShareScreen extends ConsumerStatefulWidget {
   const MusicShareScreen({Key? key}) : super(key: key);
@@ -119,7 +120,7 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
             ),
             const SizedBox(height: 16),
             if (_isSearching)
-              const Center(child: CircularProgressIndicator())
+              const AppFullLoader()
             else if (_shareError != null)
               Container(
                 padding: const EdgeInsets.all(12),

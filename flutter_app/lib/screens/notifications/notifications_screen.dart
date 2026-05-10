@@ -6,6 +6,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
+import '../../widgets/app_loader.dart';
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -164,14 +165,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             _markingAll
                 ? const Padding(
                     padding: EdgeInsets.all(14),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: _brandPink,
-                      ),
-                    ),
+                    child: AppButtonLoader(color: _brandPink, size: 20),
                   )
                 : TextButton(
                     onPressed: _markAllRead,
@@ -187,9 +181,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ],
       ),
       body: notificationsAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: _brandPink),
-        ),
+        loading: () => const AppFullLoader(color: _brandPink),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

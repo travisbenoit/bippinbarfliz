@@ -1,4 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Location -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Camera (avatar upload) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Push notifications (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Internet -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:label="barfliz"
         android:name="${applicationName}"

@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../extensions/localization_extension.dart';
+import '../../widgets/app_loader.dart';
 
 class NightRecapScreen extends ConsumerStatefulWidget {
   const NightRecapScreen({super.key});
@@ -145,7 +146,7 @@ class _NightRecapScreenState extends ConsumerState<NightRecapScreen> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: _brandPink))
+          ? const AppFullLoader(color: _brandPink)
           : RefreshIndicator(
               color: _brandPink,
               onRefresh: _loadRecap,

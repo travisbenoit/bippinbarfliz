@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../routes/app_router.dart';
 
 // Top-level handler required by firebase_messaging for background/terminated state.
 @pragma('vm:entry-point')
@@ -18,10 +20,21 @@ class NotificationService {
   static const _androidChannelId = 'barfliz_channel';
   static const _androidChannelName = 'Barfliz Notifications';
 
+  // Stored when app is opened from a terminated-state notification tap.
+  static String? _pendingRoute;
+
+  // Called by BarflizApp after auth is confirmed to consume and navigate.
+  static String? consumePendingRoute() {
+    final r = _pendingRoute;
+    _pendingRoute = null;
+    return r;
+  }
+
   // ── Initialise ──────────────────────────────────────────────────────────────
 
   static Future<void> initialize() async {
     await _initLocalNotifications();
+    await _captureTerminatedNotification();
     _setupFCMHandlers();
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
   }
@@ -30,7 +43,7 @@ class NotificationService {
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: false, // we request explicitly via requestPermission()
+      requestAlertPermission: false,
       requestBadgePermission: false,
       requestSoundPermission: false,
     );
@@ -38,11 +51,18 @@ class NotificationService {
     await _local.initialize(
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
       onDidReceiveNotificationResponse: (details) {
-        // payload-based deep-link routing can be added here
+        // Foreground notification tap — payload is JSON-encoded FCM data map.
+        final payload = details.payload;
+        if (payload == null) return;
+        try {
+          final data = jsonDecode(payload) as Map<String, dynamic>;
+          navigateFromNotification(_routeFor(data));
+        } catch (_) {
+          navigateFromNotification('/notifications');
+        }
       },
     );
 
-    // Create the Android channel upfront so it exists before any notification.
     const channel = AndroidNotificationChannel(
       _androidChannelId,
       _androidChannelName,
@@ -55,34 +75,38 @@ class NotificationService {
         ?.createNotificationChannel(channel);
   }
 
+  // Capture the message that launched the app from a terminated state.
+  static Future<void> _captureTerminatedNotification() async {
+    final msg = await FirebaseMessaging.instance.getInitialMessage();
+    if (msg != null) {
+      _pendingRoute = _routeFor(msg.data);
+    }
+  }
+
   static void _setupFCMHandlers() {
-    // Foreground messages: FCM suppresses the system tray on iOS/Android when
-    // the app is open, so we show a local notification ourselves.
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    // Foreground: FCM suppresses system tray — show local notification instead.
+    FirebaseMessaging.onMessage.listen((message) {
       _NotificationHelper.showFromRemoteMessage(message);
     });
 
-    // App was in the background and user tapped the notification.
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint('[FCM] Opened from background: ${message.messageId}');
-      // Deep-link handling can be wired here via a global navigator key.
+    // Background tap: app was in background, user tapped notification.
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      navigateFromNotification(_routeFor(message.data));
     });
   }
 
   // ── Permission ──────────────────────────────────────────────────────────────
 
   static Future<bool> requestPermission() async {
-    // iOS / Android 13+: ask via firebase_messaging (handles APNs on iOS).
     final settings = await FirebaseMessaging.instance.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
-    final fcmGranted = settings.authorizationStatus ==
-            AuthorizationStatus.authorized ||
-        settings.authorizationStatus == AuthorizationStatus.provisional;
+    final fcmGranted =
+        settings.authorizationStatus == AuthorizationStatus.authorized ||
+            settings.authorizationStatus == AuthorizationStatus.provisional;
 
-    // Android < 13 falls through to permission_handler as a safety net.
     if (!fcmGranted && Platform.isAndroid) {
       final status = await Permission.notification.request();
       return status.isGranted;
@@ -93,12 +117,10 @@ class NotificationService {
 
   // ── FCM Token Registration ───────────────────────────────────────────────────
 
-  /// Call this after the user is authenticated.
   static Future<void> registerFCMToken() async {
     try {
       final messaging = FirebaseMessaging.instance;
 
-      // On iOS, APNs token must be available before FCM token is issued.
       if (Platform.isIOS) {
         await messaging.getAPNSToken();
       }
@@ -112,7 +134,6 @@ class NotificationService {
       debugPrint('[FCM] Token: $token');
       await _saveTokenToSupabase(token);
 
-      // Refresh handler: token can rotate, keep Supabase in sync.
       messaging.onTokenRefresh.listen(_saveTokenToSupabase);
     } catch (e, st) {
       debugPrint('[FCM] registerFCMToken error: $e\n$st');
@@ -169,6 +190,29 @@ class NotificationService {
     );
     return const NotificationDetails(android: androidDetails, iOS: iosDetails);
   }
+
+  // ── Route helper ─────────────────────────────────────────────────────────────
+
+  static String _routeFor(Map<String, dynamic> data) {
+    final tag = data['tag'] as String? ?? '';
+    switch (tag) {
+      case 'message':
+        final senderId = data['sender_user_id'] as String?;
+        return senderId != null ? '/chat/$senderId' : '/messages';
+      case 'friend_request':
+      case 'friend_accepted':
+        return '/friends';
+      case 'swarm_created':
+      case 'swarm_joined':
+        return '/swarms';
+      case 'gift':
+        return '/gifts';
+      case 'dd_tonight':
+        return '/home';
+      default:
+        return '/notifications';
+    }
+  }
 }
 
 // Internal helper used by both the foreground listener and the background isolate.
@@ -198,7 +242,8 @@ class _NotificationHelper {
       notification.title,
       notification.body,
       const NotificationDetails(android: androidDetails, iOS: iosDetails),
-      payload: message.data['type'] as String?,
+      // Encode the full data map so the tap handler can route correctly.
+      payload: jsonEncode(message.data),
     );
   }
 }

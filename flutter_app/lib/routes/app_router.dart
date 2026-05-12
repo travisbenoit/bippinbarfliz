@@ -40,6 +40,7 @@ import '../screens/room/the_room_screen.dart';
 import '../screens/music/music_shares_screen.dart';
 import '../screens/music/music_search_screen.dart';
 import '../screens/settings/blocked_users_screen.dart';
+import '../screens/auth/reset_password_screen.dart';
 
 final _analyticsObserver = AnalyticsNavigatorObserver();
 final _homeObserver = AnalyticsNavigatorObserver();
@@ -77,7 +78,8 @@ class _RouterNotifier extends ChangeNotifier {
     final isOnboarding = loc == '/onboarding';
     final isAuth = loc.startsWith('/signin') ||
         loc.startsWith('/signup') ||
-        loc.startsWith('/verify-email');
+        loc.startsWith('/verify-email') ||
+        loc == '/reset-password';
     final isSetupRoute = loc == '/profile-setup' || loc == '/permissions';
 
     if (!isAuthenticated && !isOnboarding && !isAuth && !isSetupRoute) {
@@ -111,9 +113,13 @@ final _routerNotifierProvider = Provider<_RouterNotifier>((ref) {
   return _RouterNotifier(ref);
 });
 
+// Used by NotificationService to navigate from outside the widget tree.
+GoRouter? _activeRouter;
+void navigateFromNotification(String location) => _activeRouter?.go(location);
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   final notifier = ref.watch(_routerNotifierProvider);
-  return GoRouter(
+  final router = GoRouter(
     observers: [_analyticsObserver],
     initialLocation: '/onboarding',
     refreshListenable: notifier,
@@ -123,6 +129,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: '/signin', builder: (_, __) => const SignInScreen()),
       GoRoute(path: '/signup', builder: (_, __) => const SignUpScreen()),
+      GoRoute(path: '/reset-password', builder: (_, __) => const ResetPasswordScreen()),
       GoRoute(path: '/profile-setup', builder: (_, __) => const ProfileSetupScreen()),
       GoRoute(path: '/permissions', builder: (_, __) => const PermissionsScreen()),
       GoRoute(
@@ -207,4 +214,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/blocked-users', builder: (_, __) => const BlockedUsersScreen()),
     ],
   );
+  _activeRouter = router;
+  return router;
 });

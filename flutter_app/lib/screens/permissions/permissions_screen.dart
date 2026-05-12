@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../extensions/localization_extension.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
+import '../../services/notification_service.dart';
 
 class PermissionsScreen extends ConsumerStatefulWidget {
   const PermissionsScreen({super.key});
@@ -35,7 +36,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
   }
 
   Future<void> _requestNotificationPermission() async {
-    await Permission.notification.request();
+    await NotificationService.requestPermission();
     _continue();
   }
 

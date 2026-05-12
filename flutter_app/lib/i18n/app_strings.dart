@@ -49,6 +49,9 @@ class AppStrings {
   static const signInForgotDesc = 'auth.sign_in_forgot_desc';
   static const signInResetEmailSent = 'auth.sign_in_reset_email_sent';
   static const signInSendResetLink = 'auth.sign_in_send_reset_link';
+  static const resetPasswordTitle = 'auth.reset_password_title';
+  static const resetPasswordSubtitle = 'auth.reset_password_subtitle';
+  static const resetPasswordButton = 'auth.reset_password_button';
   static const signUpAgreeTerms = 'auth.sign_up_agree_terms';
   static const fieldEmail = 'auth.field_email';
   static const fieldPassword = 'auth.field_password';
@@ -993,8 +996,11 @@ class AppStrings {
     signUpGoSignIn: 'Sign In',
     signInEnterEmail: 'Please enter an email',
     signInForgotDesc: "Enter your email address and we'll send you a link to reset your password.",
-    signInResetEmailSent: 'Password reset email sent!',
+    signInResetEmailSent: 'Password reset email sent! Check your inbox.',
     signInSendResetLink: 'Send Reset Link',
+    resetPasswordTitle: 'Set new password',
+    resetPasswordSubtitle: 'Choose a strong password for your account.',
+    resetPasswordButton: 'Update Password',
     signUpAgreeTerms: 'Please agree to the Terms of Service and Privacy Policy',
     fieldEmail: 'Email',
     fieldPassword: 'Password',

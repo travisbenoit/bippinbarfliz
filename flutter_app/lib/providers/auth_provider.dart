@@ -30,6 +30,12 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return supabase.authStateChanges.map((event) => event.session?.user);
 });
 
+// Exposes the raw auth event type so password-recovery deep links can be handled.
+final authChangeEventProvider = StreamProvider<AuthChangeEvent?>((ref) {
+  final supabase = ref.watch(supabaseServiceProvider);
+  return supabase.authStateChanges.map((s) => s.event);
+});
+
 // Watches authStateProvider so it re-evaluates whenever the signed-in user
 // changes — ensuring stale data from a previous account is never shown.
 final currentUserProfileProvider = StreamProvider<UserProfile?>((ref) async* {

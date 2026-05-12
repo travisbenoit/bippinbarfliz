@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +27,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _agreedToTerms = false;
+  int _cooldownSeconds = 0;
+  Timer? _cooldownTimer;
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
@@ -57,12 +60,31 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         context.go('/verify-email?email=${Uri.encodeComponent(email)}');
       }
     } catch (e, stackTrace) {
-      if (mounted) showErrorSnackBar(context, e, stackTrace: stackTrace, tag: 'SignUp');
-    } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        showErrorSnackBar(context, e, stackTrace: stackTrace, tag: 'SignUp');
+        final msg = e.toString().toLowerCase();
+        if (msg.contains('rate limit') || msg.contains('too many') || msg.contains('429')) {
+          _startCooldown();
+        }
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _startCooldown({int seconds = 60}) {
+    setState(() => _cooldownSeconds = seconds);
+    _cooldownTimer?.cancel();
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) { t.cancel(); return; }
+      setState(() {
+        if (_cooldownSeconds > 0) {
+          _cooldownSeconds--;
+        } else {
+          t.cancel();
+        }
+      });
+    });
   }
 
   void _openUrl(String url) async {
@@ -228,11 +250,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _signUp,
+                    onPressed: (_isLoading || _cooldownSeconds > 0) ? null : _signUp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE91E63),
                       disabledBackgroundColor:
-                          const Color(0xFFE91E63).withOpacity(0.4),
+                          const Color(0xFFE91E63).withValues(alpha: 0.4),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30)),
@@ -240,7 +262,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     child: _isLoading
                         ? const AppButtonLoader()
                         : Text(
-                            t(AppStrings.signUpButton),
+                            _cooldownSeconds > 0
+                                ? 'Try again in ${_cooldownSeconds}s'
+                                : t(AppStrings.signUpButton),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -276,6 +300,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   void dispose() {
+    _cooldownTimer?.cancel();
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();

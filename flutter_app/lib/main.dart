@@ -62,12 +62,27 @@ class _BarflizAppState extends ConsumerState<BarflizApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(localizationServiceProvider).initialize();
 
-      // Register FCM token whenever a user becomes authenticated.
+      // Register FCM token and consume any pending notification route
+      // whenever a user becomes authenticated.
       ref.listenManual(authStateProvider, (previous, next) {
         next.whenData((user) {
-          if (user != null) NotificationService.registerFCMToken();
+          if (user != null) {
+            NotificationService.registerFCMToken();
+            final pendingRoute = NotificationService.consumePendingRoute();
+            if (pendingRoute != null) navigateFromNotification(pendingRoute);
+          }
         });
       }, fireImmediately: true);
+
+      // Navigate to the reset-password screen when the user opens the app via
+      // a password-recovery deep link.
+      ref.listenManual(authChangeEventProvider, (_, next) {
+        next.whenData((event) {
+          if (event == AuthChangeEvent.passwordRecovery) {
+            navigateFromNotification('/reset-password');
+          }
+        });
+      }, fireImmediately: false);
     });
   }
 

@@ -57,6 +57,7 @@ class NotificationSender {
       body: swarmTitle,
       preferenceKey: _Pref.swarms,
       swarmId: swarmId,
+      extraData: {'swarm_id': swarmId},
     );
   }
 
@@ -76,6 +77,7 @@ class NotificationSender {
       body: swarmTitle,
       preferenceKey: _Pref.swarms,
       swarmId: swarmId,
+      extraData: {'swarm_id': swarmId},
     );
   }
 
@@ -139,6 +141,11 @@ class NotificationSender {
       title: senderName,
       body: messagePreview,
       preferenceKey: _Pref.messages,
+      // Sender ID lets the tap handler open the correct chat screen.
+      extraData: {'sender_user_id': me.id},
+      // Collapse key replaces earlier unread message notifications from the
+      // same sender so rapid messages don't stack up in the tray.
+      collapseKey: 'msg_${me.id}_$toUserId',
     );
   }
 
@@ -152,9 +159,33 @@ class NotificationSender {
     required String preferenceKey,
     String? swarmId,
     String? venueId,
+    Map<String, String>? extraData,
+    String? collapseKey,
   }) async {
     final me = _db.auth.currentUser;
     if (me == null || recipientIds.isEmpty) return;
+
+    // Deduplication: skip if an identical notification was already sent in
+    // the last 60 seconds (prevents double-fire from rapid UI events).
+    try {
+      final cutoff = DateTime.now()
+          .subtract(const Duration(seconds: 60))
+          .toIso8601String();
+      final recent = await _db
+          .from('notifications')
+          .select('id')
+          .eq('actor_user_id', me.id)
+          .eq('notification_type', type)
+          .inFilter('recipient_user_id', recipientIds)
+          .gte('created_at', cutoff)
+          .limit(1);
+      if ((recent as List).isNotEmpty) {
+        debugPrint('[NotificationSender] suppressed duplicate $type');
+        return;
+      }
+    } catch (e) {
+      debugPrint('[NotificationSender] dedup check failed: $e');
+    }
 
     // 1. Insert in-app notification rows (always — visible in notification centre)
     try {
@@ -185,6 +216,8 @@ class NotificationSender {
           'notification_body': body,
           'tag': type,
           'preference_key': preferenceKey,
+          if (extraData != null) 'extra_data': extraData,
+          if (collapseKey != null) 'collapse_key': collapseKey,
         },
       );
     } catch (e) {

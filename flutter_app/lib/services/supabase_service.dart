@@ -21,6 +21,7 @@ class SupabaseService {
       email: email,
       password: password,
       data: data,
+      emailRedirectTo: 'barfliz://login-callback',
     );
   }
 
@@ -39,11 +40,18 @@ class SupabaseService {
   }
 
   Future<void> resetPassword(String email) async {
-    await client.auth.resetPasswordForEmail(email);
+    await client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'barfliz://login-callback',
+    );
   }
 
   Future<void> resendVerificationEmail(String email) async {
-    await client.auth.resend(type: OtpType.signup, email: email);
+    await client.auth.resend(
+      type: OtpType.signup,
+      email: email,
+      emailRedirectTo: 'barfliz://login-callback',
+    );
   }
 
   Future<UserResponse> updateUser({

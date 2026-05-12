@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,6 +22,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  int _cooldownSeconds = 0;
+  Timer? _cooldownTimer;
 
   Future<void> _signIn() async {
     if (!_formKey.currentState!.validate()) return;
@@ -57,14 +60,37 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         context.go('/verify-email?email=${Uri.encodeComponent(email)}');
       } else {
         showErrorSnackBar(context, e, tag: 'SignIn');
+        if (e.statusCode == '429' || _isRateLimit(e)) _startCooldown();
       }
     } catch (e) {
       if (mounted) showErrorSnackBar(context, e, tag: 'SignIn');
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  bool _isRateLimit(AuthException e) {
+    final code = e.code ?? '';
+    final msg = e.message.toLowerCase();
+    return code == 'over_request_rate_limit' ||
+        code == 'over_email_send_rate_limit' ||
+        msg.contains('rate limit') ||
+        msg.contains('too many');
+  }
+
+  void _startCooldown({int seconds = 60}) {
+    setState(() => _cooldownSeconds = seconds);
+    _cooldownTimer?.cancel();
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) { t.cancel(); return; }
+      setState(() {
+        if (_cooldownSeconds > 0) {
+          _cooldownSeconds--;
+        } else {
+          t.cancel();
+        }
+      });
+    });
   }
 
   void _showForgotPasswordDialog() {
@@ -222,7 +248,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _signIn,
+                    onPressed: (_isLoading || _cooldownSeconds > 0) ? null : _signIn,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE91E63),
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -233,7 +259,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     child: _isLoading
                         ? const AppButtonLoader()
                         : Text(
-                            t(AppStrings.signInButton),
+                            _cooldownSeconds > 0
+                                ? 'Try again in ${_cooldownSeconds}s'
+                                : t(AppStrings.signInButton),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -271,6 +299,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   @override
   void dispose() {
+    _cooldownTimer?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();

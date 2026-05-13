@@ -20,10 +20,11 @@ const _approvedCities = ['Darwin', 'Miami', 'Fort Lauderdale'];
 final venuesMapProvider = FutureProvider<List<Venue>>((ref) async {
   final supabase = Supabase.instance.client;
   final response = await supabase
-      .from('venues')
-      .select('id, name, address, lat, lng, rating, user_ratings_total, photo_url, google_place_id, created_at, city, category, type')
+      .from('bars')
+      .select('bar_id, name, address, lat, lng, rating, review_count, photo_urls, google_place_id, created_at, city')
       .inFilter('city', _approvedCities)
-      .eq('is_active', true)
+      .not('lat', 'is', null)
+      .not('lng', 'is', null)
       .order('name')
       .limit(500);
 
@@ -47,6 +48,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   // Cached per-city pin bitmaps — only built once per city
   final Map<String, BitmapDescriptor> _pinCache = {};
+
+  Position? _currentPosition;
+  Venue? _nearbyVenue;
 
   Future<BitmapDescriptor> _buildPinIcon(String? city) async {
     final key = city ?? 'default';
@@ -157,20 +161,43 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      if (!mounted || _mapController == null) return;
+      if (!mounted) return;
+      _currentPosition = position;
 
-      await _mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(position.latitude, position.longitude),
-            zoom: 15.0,
+      if (_mapController != null) {
+        await _mapController!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(position.latitude, position.longitude),
+              zoom: 15.0,
+            ),
           ),
-        ),
-      );
+        );
+      }
+      _checkProximity();
     } catch (e, stackTrace) {
       debugPrint('[MapScreen] Error getting location: $e');
       debugPrint('[MapScreen] $stackTrace');
     }
+  }
+
+  void _checkProximity({List<Venue>? venues}) {
+    final pos = _currentPosition;
+    if (pos == null) return;
+    final list = venues ?? ref.read(venuesMapProvider).value ?? [];
+    const double threshold = 150.0;
+    Venue? closest;
+    double closestDist = double.infinity;
+    for (final venue in list) {
+      final dist = Geolocator.distanceBetween(
+        pos.latitude, pos.longitude, venue.lat, venue.lng,
+      );
+      if (dist < threshold && dist < closestDist) {
+        closestDist = dist;
+        closest = venue;
+      }
+    }
+    if (mounted) setState(() => _nearbyVenue = closest);
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -210,6 +237,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         _markers = Set<Marker>.from(markers);
         _isLoading = false;
       });
+      _checkProximity(venues: venues);
     } catch (e, stackTrace) {
       if (!mounted) return;
       setState(() {
@@ -227,14 +255,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   void _showVenueBottomSheet(Venue venue) {
+    final outerContext = context;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => _VenueBottomSheet(
+      builder: (ctx) => _VenueBottomSheet(
         venue: venue,
-        onClose: () => Navigator.pop(context),
+        onClose: () => Navigator.pop(ctx),
         onNavigate: () async {
-          Navigator.pop(context);
+          Navigator.pop(ctx);
           final uri = Uri.parse(
             'https://www.google.com/maps/dir/?api=1'
             '&destination=${venue.lat},${venue.lng}'
@@ -244,6 +273,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           if (await canLaunchUrl(uri)) {
             await launchUrl(uri, mode: LaunchMode.externalApplication);
           }
+        },
+        onCheckIn: () {
+          Navigator.pop(ctx);
+          outerContext.push(
+            '/room/${venue.id}?name=${Uri.encodeComponent(venue.name)}',
+          );
         },
       ),
     );
@@ -340,6 +375,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
               ),
             ),
+          if (_nearbyVenue != null)
+            Positioned(
+              bottom: 124,
+              left: 16,
+              right: 16,
+              child: _ProximityBanner(
+                venue: _nearbyVenue!,
+                onCheckIn: () => context.push(
+                  '/room/${_nearbyVenue!.id}?name=${Uri.encodeComponent(_nearbyVenue!.name)}',
+                ),
+                onDismiss: () => setState(() => _nearbyVenue = null),
+              ),
+            ),
           Positioned(
             bottom: 24,
             left: 16,
@@ -433,11 +481,13 @@ class _VenueBottomSheet extends StatelessWidget {
   final Venue venue;
   final VoidCallback onClose;
   final VoidCallback onNavigate;
+  final VoidCallback onCheckIn;
 
   const _VenueBottomSheet({
     required this.venue,
     required this.onClose,
     required this.onNavigate,
+    required this.onCheckIn,
   });
 
   @override
@@ -564,7 +614,7 @@ class _VenueBottomSheet extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: onCheckIn,
                         icon: const Icon(Icons.login),
                         label: Text(context.tr(AppStrings.mapCheckInVenue)),
                         style: ElevatedButton.styleFrom(
@@ -583,6 +633,87 @@ class _VenueBottomSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProximityBanner extends StatelessWidget {
+  final Venue venue;
+  final VoidCallback onCheckIn;
+  final VoidCallback onDismiss;
+
+  const _ProximityBanner({
+    required this.venue,
+    required this.onCheckIn,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE91E63),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.location_on, color: Colors.white, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "You're nearby!",
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+                Text(
+                  venue.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: onCheckIn,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFFE91E63),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              elevation: 0,
+            ),
+            child: const Text(
+              'Check In',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            ),
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: onDismiss,
+            child: const Icon(Icons.close, color: Colors.white70, size: 18),
+          ),
         ],
       ),
     );

@@ -9,7 +9,7 @@ import '../../utils/app_error.dart';
 import '../../widgets/app_loader.dart';
 
 class MusicShareScreen extends ConsumerStatefulWidget {
-  const MusicShareScreen({Key? key}) : super(key: key);
+  const MusicShareScreen({super.key});
 
   @override
   ConsumerState<MusicShareScreen> createState() => _MusicShareScreenState();
@@ -47,7 +47,8 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
       final results = await _musicService.searchTracks(query);
       setState(() => _searchResults = results);
     } catch (e, st) {
-      setState(() => _shareError = friendlyError(e, stackTrace: st, tag: 'Music.search'));
+      setState(() =>
+          _shareError = friendlyError(e, stackTrace: st, tag: 'Music.search'));
     } finally {
       setState(() => _isSearching = false);
     }
@@ -85,7 +86,8 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
         }
       }
     } catch (e, st) {
-      setState(() => _shareError = friendlyError(e, stackTrace: st, tag: 'Music.share'));
+      setState(() =>
+          _shareError = friendlyError(e, stackTrace: st, tag: 'Music.share'));
     } finally {
       setState(() => _isSharing = false);
     }
@@ -133,7 +135,8 @@ class _MusicShareScreenState extends ConsumerState<MusicShareScreen> {
                   style: TextStyle(color: Colors.red.shade900),
                 ),
               )
-            else if (_searchResults.isEmpty && _searchController.text.isNotEmpty)
+            else if (_searchResults.isEmpty &&
+                _searchController.text.isNotEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 32),

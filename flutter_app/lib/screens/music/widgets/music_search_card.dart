@@ -11,9 +11,9 @@ class MusicSearchCard extends ConsumerWidget {
   final MusicSearchResult track;
 
   const MusicSearchCard({
-    Key? key,
+    super.key,
     required this.track,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -65,7 +65,8 @@ class MusicSearchCard extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr(AppStrings.musicShare)),
-        content: Text('${track.trackName}\n${context.tr(AppStrings.musicBy)} ${track.artistName}'),
+        content: Text(
+            '${track.trackName}\n${context.tr(AppStrings.musicBy)} ${track.artistName}'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),

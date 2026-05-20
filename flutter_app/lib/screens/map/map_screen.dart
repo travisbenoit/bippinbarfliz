@@ -14,6 +14,7 @@ import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
 import '../../utils/app_error.dart';
 import '../../widgets/app_loader.dart';
+import '../../services/permission_service.dart';
 
 const _approvedCities = ['Darwin', 'Miami', 'Fort Lauderdale'];
 
@@ -144,19 +145,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   Future<void> _getCurrentLocation() async {
     try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (!mounted) return;
-
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (!mounted) return;
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        debugPrint('[MapScreen] Location permission denied');
-        return;
-      }
+      final granted = await PermissionService.instance
+          .request(AppPermission.locationWhenInUse, context);
+      if (!granted || !mounted) return;
 
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,

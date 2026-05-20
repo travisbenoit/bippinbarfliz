@@ -133,9 +133,9 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                     Expanded(
                       child: Text(
                         context.tr(AppStrings.permissionsLocationPrivacy),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 13,
-                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -170,7 +170,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 onPressed: _skipLocation,
                 child: Text(
                   context.tr(AppStrings.permissionsNotNow),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
@@ -343,7 +343,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 onPressed: _skipCamera,
                 child: Text(
                   context.tr(AppStrings.permissionsNotNow),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
@@ -436,7 +436,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
                 onPressed: _continue,
                 child: Text(
                   context.tr(AppStrings.permissionsNotNow),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),

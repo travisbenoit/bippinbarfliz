@@ -60,7 +60,8 @@ final currentUserProfileProvider = StreamProvider<UserProfile?>((ref) async* {
   } catch (e) {
     // Realtime WebSocket can time out on poor connections — fall back to a
     // one-shot REST fetch so the app stays usable.
-    debugPrint('[currentUserProfileProvider] stream error: $e — falling back to REST');
+    debugPrint(
+        '[currentUserProfileProvider] stream error: $e — falling back to REST');
     try {
       final data = await supabase.client
           .from('users')

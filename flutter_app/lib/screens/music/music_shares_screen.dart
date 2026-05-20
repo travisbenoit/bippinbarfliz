@@ -8,7 +8,7 @@ import '../../providers/localization_provider.dart';
 import '../../widgets/app_loader.dart';
 
 class MusicSharesScreen extends ConsumerWidget {
-  const MusicSharesScreen({Key? key}) : super(key: key);
+  const MusicSharesScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

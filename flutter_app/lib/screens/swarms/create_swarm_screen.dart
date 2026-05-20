@@ -131,6 +131,15 @@ class _CreateSwarmScreenState extends ConsumerState<CreateSwarmScreen> {
       }).select('id').single();
 
       final swarmId = result['id'] as String;
+
+      // Add the host as the first member so the count is always accurate.
+      await supabase.from('swarm_members').insert({
+        'swarm_id': swarmId,
+        'user_id': user.id,
+        'role': 'host',
+        'rsvp': 'going',
+      });
+
       final profile = await supabase.from('users').select('name').eq('id', user.id).single();
       final hostName = (profile['name'] as String?)?.trim();
       NotificationSender.swarmCreated(

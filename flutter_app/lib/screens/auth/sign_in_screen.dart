@@ -95,67 +95,17 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   void _showForgotPasswordDialog() {
     final t = ref.read(tProvider);
-    final resetEmailController = TextEditingController();
-    final forgotDesc = t(AppStrings.signInForgotDesc);
-    final enterEmailMsg = t(AppStrings.signInEnterEmail);
-    final resetSentMsg = t(AppStrings.signInResetEmailSent);
-    final sendResetLabel = t(AppStrings.signInSendResetLink);
+    // Pre-fill with whatever the user already typed on the sign-in screen.
+    final resetEmailController =
+        TextEditingController(text: _emailController.text.trim());
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t(AppStrings.signInForgot)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(forgotDesc),
-            const SizedBox(height: 16),
-            TextField(
-              controller: resetEmailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                labelText: t(AppStrings.fieldEmail),
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(t(AppStrings.cancel)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final email = resetEmailController.text.trim();
-              if (email.isEmpty) {
-                ScaffoldMessenger.of(ctx).showSnackBar(
-                  SnackBar(content: Text(enterEmailMsg)),
-                );
-                return;
-              }
-              final messenger = ScaffoldMessenger.of(ctx);
-              try {
-                await ref.read(authControllerProvider).resetPassword(email);
-                if (ctx.mounted) {
-                  Navigator.pop(ctx);
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(resetSentMsg),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (ctx.mounted) showErrorSnackBar(ctx, e, tag: 'SignIn.resetPassword');
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE91E63),
-            ),
-            child: Text(sendResetLabel),
-          ),
-        ],
+      builder: (ctx) => _ForgotPasswordDialog(
+        controller: resetEmailController,
+        onSend: (email) =>
+            ref.read(authControllerProvider).resetPassword(email),
+        t: t,
       ),
     );
   }
@@ -303,5 +253,110 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Forgot-password dialog — self-contained StatefulWidget so it can manage
+// its own loading state without rebuilding the parent screen.
+// ---------------------------------------------------------------------------
+
+class _ForgotPasswordDialog extends StatefulWidget {
+  final TextEditingController controller;
+  final Future<void> Function(String email) onSend;
+  final String Function(String) t;
+
+  const _ForgotPasswordDialog({
+    required this.controller,
+    required this.onSend,
+    required this.t,
+  });
+
+  @override
+  State<_ForgotPasswordDialog> createState() => _ForgotPasswordDialogState();
+}
+
+class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
+  bool _loading = false;
+
+  Future<void> _submit() async {
+    final email = widget.controller.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.t(AppStrings.signInEnterEmail))),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      await widget.onSend(email);
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${widget.t(AppStrings.signInResetEmailSent)}\nIf you don\'t see it, check your spam folder.',
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e, tag: 'SignIn.resetPassword');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(widget.t(AppStrings.signInForgot)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.t(AppStrings.signInForgotDesc)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: widget.controller,
+            keyboardType: TextInputType.emailAddress,
+            autofocus: widget.controller.text.isEmpty,
+            enabled: !_loading,
+            decoration: InputDecoration(
+              labelText: widget.t(AppStrings.fieldEmail),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.email_outlined),
+            ),
+            onSubmitted: (_) => _submit(),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _loading ? null : () => Navigator.pop(context),
+          child: Text(widget.t(AppStrings.cancel)),
+        ),
+        ElevatedButton(
+          onPressed: _loading ? null : _submit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFE91E63),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ),
+          child: _loading
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                )
+              : Text(widget.t(AppStrings.signInSendResetLink)),
+        ),
+      ],
+    );
   }
 }

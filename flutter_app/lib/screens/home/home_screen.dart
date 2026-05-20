@@ -35,8 +35,10 @@ class _ProfileCompletionBanner extends ConsumerWidget {
     if (user == null) return const SizedBox.shrink();
 
     final missing = <String>[];
-    if ((user['avatar_url'] as String?) == null) missing.add(t(AppStrings.homeProfileItemPhoto));
-    if ((user['bio'] as String?)?.isEmpty ?? true) missing.add(t(AppStrings.homeProfileItemBio));
+    if ((user['avatar_url'] as String?) == null)
+      missing.add(t(AppStrings.homeProfileItemPhoto));
+    if ((user['bio'] as String?)?.isEmpty ?? true)
+      missing.add(t(AppStrings.homeProfileItemBio));
     final tags = (user['vibe_tags'] as List?)?.cast<String>() ?? [];
     if (tags.isEmpty) missing.add(t(AppStrings.homeProfileItemVibeTags));
 
@@ -65,7 +67,8 @@ class _ProfileCompletionBanner extends ConsumerWidget {
                 color: _brandPink.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.person_add_outlined, color: _brandPink, size: 20),
+              child: const Icon(Icons.person_add_outlined,
+                  color: _brandPink, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -146,8 +149,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (currentUser == null) return;
       await supabase
           .from('users')
-          .update({'is_dd_tonight': value})
-          .eq('id', currentUser.id);
+          .update({'is_dd_tonight': value}).eq('id', currentUser.id);
 
       // Notify followers when turning DD mode ON
       if (value) {
@@ -225,78 +227,78 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Stack(
       children: [
         Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: _buildAppBar(),
-      body: RefreshIndicator(
-        color: _brandPink,
-        onRefresh: () async {
-          ref.invalidate(homeCurrentUserProfileProvider);
-          ref.invalidate(userStatsProvider);
-          ref.invalidate(nearbyUsersProvider);
-          ref.invalidate(nearbyVenuesProvider);
-          ref.invalidate(venueCountProvider);
-          ref.invalidate(activeSwarmsProvider);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. User Profile Card
-              _UserProfileCard(
-                userAsync: userAsync,
-                onEditStatus: _showStatusBottomSheet,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: _buildAppBar(),
+          body: RefreshIndicator(
+            color: _brandPink,
+            onRefresh: () async {
+              ref.invalidate(homeCurrentUserProfileProvider);
+              ref.invalidate(userStatsProvider);
+              ref.invalidate(nearbyUsersProvider);
+              ref.invalidate(nearbyVenuesProvider);
+              ref.invalidate(venueCountProvider);
+              ref.invalidate(activeSwarmsProvider);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. User Profile Card
+                  _UserProfileCard(
+                    userAsync: userAsync,
+                    onEditStatus: _showStatusBottomSheet,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Profile completion nudge
+                  _ProfileCompletionBanner(userAsync: userAsync),
+
+                  // 2. XP / Leaderboard Banner
+                  _XpBanner(statsAsync: statsAsync),
+                  const SizedBox(height: 16),
+
+                  // 3. Quick Actions
+                  const _QuickActionsGrid(),
+                  const SizedBox(height: 20),
+
+                  // 4. Social Stats
+                  _SocialStatsRow(
+                    usersAsync: usersAsync,
+                    venuesAsync: venuesAsync,
+                    venueCountAsync: venueCountAsync,
+                    swarmsAsync: swarmsAsync,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 5. Tonight's Scene
+                  _TonightsSceneSection(usersAsync: usersAsync),
+                  const SizedBox(height: 20),
+
+                  // 6. Popular Venues
+                  _PopularVenuesSection(venuesAsync: venuesAsync),
+                  const SizedBox(height: 20),
+
+                  // 7. Active Swarms
+                  _ActiveSwarmsSection(swarmsAsync: swarmsAsync),
+                  const SizedBox(height: 20),
+
+                  // 8. DD Mode Toggle
+                  _DdModeToggle(
+                    value: _isDdTonight,
+                    loading: _ddLoading,
+                    onChanged: _toggleDd,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 9. Safe Arrival Button
+                  _SafeArrivalButton(onTap: _checkInSafeArrival),
+                  const SizedBox(height: 8),
+                ],
               ),
-              const SizedBox(height: 16),
-
-              // Profile completion nudge
-              _ProfileCompletionBanner(userAsync: userAsync),
-
-              // 2. XP / Leaderboard Banner
-              _XpBanner(statsAsync: statsAsync),
-              const SizedBox(height: 16),
-
-              // 3. Quick Actions
-              _QuickActionsGrid(),
-              const SizedBox(height: 20),
-
-              // 4. Social Stats
-              _SocialStatsRow(
-                usersAsync: usersAsync,
-                venuesAsync: venuesAsync,
-                venueCountAsync: venueCountAsync,
-                swarmsAsync: swarmsAsync,
-              ),
-              const SizedBox(height: 20),
-
-              // 5. Tonight's Scene
-              _TonightsSceneSection(usersAsync: usersAsync),
-              const SizedBox(height: 20),
-
-              // 6. Popular Venues
-              _PopularVenuesSection(venuesAsync: venuesAsync),
-              const SizedBox(height: 20),
-
-              // 7. Active Swarms
-              _ActiveSwarmsSection(swarmsAsync: swarmsAsync),
-              const SizedBox(height: 20),
-
-              // 8. DD Mode Toggle
-              _DdModeToggle(
-                value: _isDdTonight,
-                loading: _ddLoading,
-                onChanged: _toggleDd,
-              ),
-              const SizedBox(height: 16),
-
-              // 9. Safe Arrival Button
-              _SafeArrivalButton(onTap: _checkInSafeArrival),
-              const SizedBox(height: 8),
-            ],
+            ),
           ),
-        ),
-      ),
         ),
         const FirstRunTour(),
       ],
@@ -341,7 +343,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Text(
                 context.tr(AppStrings.homeAppTagline),
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.45),
                   fontSize: 10,
                   fontWeight: FontWeight.w500,
                   letterSpacing: 0.2,
@@ -422,10 +427,14 @@ class _UserProfileCard extends StatelessWidget {
 
           final name = userData['name'] as String? ?? 'User';
           final avatarUrl = userData['avatar_url'] as String?;
-          final statusStr = userData['tonight_status'] as String? ?? 'staying_in';
+          final statusStr =
+              userData['tonight_status'] as String? ?? 'staying_in';
           final status = TonightStatus.fromString(statusStr);
-          final vibeTags = (userData['vibe_tags'] as List<dynamic>?)?.cast<String>() ?? [];
-          final favDrinks = (userData['favorite_drinks'] as List<dynamic>?)?.cast<String>() ?? [];
+          final vibeTags =
+              (userData['vibe_tags'] as List<dynamic>?)?.cast<String>() ?? [];
+          final favDrinks =
+              (userData['favorite_drinks'] as List<dynamic>?)?.cast<String>() ??
+                  [];
           final lushCoins = userData['lush_coin_balance'] as int? ?? 0;
           final isPremium = userData['is_premium'] as bool? ?? false;
 
@@ -454,9 +463,11 @@ class _UserProfileCard extends StatelessWidget {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                    backgroundImage:
+                        avatarUrl != null ? NetworkImage(avatarUrl) : null,
                     child: avatarUrl == null
-                        ? const Icon(Icons.person, color: Colors.white, size: 32)
+                        ? const Icon(Icons.person,
+                            color: Colors.white, size: 32)
                         : null,
                   ),
                   const SizedBox(width: 14),
@@ -477,7 +488,8 @@ class _UserProfileCard extends StatelessWidget {
                             if (isPremium) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.amber,
                                   borderRadius: BorderRadius.circular(8),
@@ -527,11 +539,13 @@ class _UserProfileCard extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
                     ),
                     child: Text(
                       context.tr(AppStrings.homeEditStatus),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -539,11 +553,17 @@ class _UserProfileCard extends StatelessWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _ProfileStat(label: context.tr(AppStrings.homeVibes), value: vibeTags.length.toString()),
+                  _ProfileStat(
+                      label: context.tr(AppStrings.homeVibes),
+                      value: vibeTags.length.toString()),
                   const SizedBox(width: 24),
-                  _ProfileStat(label: context.tr(AppStrings.homeDrinks), value: favDrinks.length.toString()),
+                  _ProfileStat(
+                      label: context.tr(AppStrings.homeDrinks),
+                      value: favDrinks.length.toString()),
                   const SizedBox(width: 24),
-                  _ProfileStat(label: context.tr(AppStrings.homeLushCoins), value: lushCoins.toString()),
+                  _ProfileStat(
+                      label: context.tr(AppStrings.homeLushCoins),
+                      value: lushCoins.toString()),
                 ],
               ),
             ],
@@ -610,7 +630,8 @@ class _XpBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: statsAsync.when(
           loading: () => const AppFullLoader(color: Colors.white),
-          error: (_, __) => _XpBannerContent(totalXp: 0, streak: 0, checkins: 0),
+          error: (_, __) =>
+              const _XpBannerContent(totalXp: 0, streak: 0, checkins: 0),
           data: (stats) => _XpBannerContent(
             totalXp: stats?['total_xp'] as int? ?? 0,
             streak: stats?['current_streak'] as int? ?? 0,
@@ -662,9 +683,15 @@ class _XpBannerContent extends StatelessWidget {
             ],
           ),
         ),
-        _XpStat(label: context.tr(AppStrings.homeStreak), value: '${streak}d', icon: Icons.local_fire_department),
+        _XpStat(
+            label: context.tr(AppStrings.homeStreak),
+            value: '${streak}d',
+            icon: Icons.local_fire_department),
         const SizedBox(width: 16),
-        _XpStat(label: context.tr(AppStrings.homeCheckins), value: '$checkins', icon: Icons.check_circle_outline),
+        _XpStat(
+            label: context.tr(AppStrings.homeCheckins),
+            value: '$checkins',
+            icon: Icons.check_circle_outline),
         const SizedBox(width: 8),
         const Icon(Icons.chevron_right, color: Colors.white54, size: 20),
       ],
@@ -712,12 +739,32 @@ class _QuickActionsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = [
-      _QuickAction(icon: Icons.groups_2, label: context.tr(AppStrings.homeQuickCreateSwarm), route: '/create-swarm'),
-      _QuickAction(icon: Icons.send, label: context.tr(AppStrings.homeQuickSendMessage), route: '/messages', isTab: true),
-      _QuickAction(icon: Icons.map_outlined, label: context.tr(AppStrings.homeQuickFindVenues), route: '/map', isTab: true),
-      _QuickAction(icon: Icons.people_outline, label: context.tr(AppStrings.homeQuickFindPeople), route: '/people-nearby'),
-      _QuickAction(icon: Icons.history, label: context.tr(AppStrings.homeQuickViewHistory), route: '/history'),
-      _QuickAction(icon: Icons.group_outlined, label: context.tr(AppStrings.homeQuickFriends), route: '/friends'),
+      _QuickAction(
+          icon: Icons.groups_2,
+          label: context.tr(AppStrings.homeQuickCreateSwarm),
+          route: '/create-swarm'),
+      _QuickAction(
+          icon: Icons.send,
+          label: context.tr(AppStrings.homeQuickSendMessage),
+          route: '/messages',
+          isTab: true),
+      _QuickAction(
+          icon: Icons.map_outlined,
+          label: context.tr(AppStrings.homeQuickFindVenues),
+          route: '/map',
+          isTab: true),
+      _QuickAction(
+          icon: Icons.people_outline,
+          label: context.tr(AppStrings.homeQuickFindPeople),
+          route: '/people-nearby'),
+      _QuickAction(
+          icon: Icons.history,
+          label: context.tr(AppStrings.homeQuickViewHistory),
+          route: '/history'),
+      _QuickAction(
+          icon: Icons.group_outlined,
+          label: context.tr(AppStrings.homeQuickFriends),
+          route: '/friends'),
     ];
 
     return Column(
@@ -770,7 +817,8 @@ class _QuickActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => action.isTab ? context.go(action.route) : context.push(action.route),
+      onTap: () =>
+          action.isTab ? context.go(action.route) : context.push(action.route),
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
@@ -831,12 +879,18 @@ class _SocialStatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final usersList = usersAsync.when(data: (v) => v, loading: () => <UserProfile>[], error: (_, __) => <UserProfile>[]);
-    final swarmsList = swarmsAsync.when(data: (v) => v, loading: () => <Swarm>[], error: (_, __) => <Swarm>[]);
+    final usersList = usersAsync.when(
+        data: (v) => v,
+        loading: () => <UserProfile>[],
+        error: (_, __) => <UserProfile>[]);
+    final swarmsList = swarmsAsync.when(
+        data: (v) => v, loading: () => <Swarm>[], error: (_, __) => <Swarm>[]);
 
     final totalPeople = usersList.length;
-    final outNow = usersList.where((u) => u.tonightStatus == TonightStatus.outNow).length;
-    final venues = venueCountAsync.when(data: (v) => v, loading: () => 0, error: (_, __) => 0);
+    final outNow =
+        usersList.where((u) => u.tonightStatus == TonightStatus.outNow).length;
+    final venues = venueCountAsync.when(
+        data: (v) => v, loading: () => 0, error: (_, __) => 0);
     final swarms = swarmsList.length;
 
     return Row(
@@ -959,7 +1013,10 @@ class _TonightsSceneSection extends StatelessWidget {
               onTap: () => context.push('/people-nearby'),
               child: Text(
                 context.tr(AppStrings.homeSeeAll),
-                style: const TextStyle(color: _brandPink, fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                    color: _brandPink,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -1015,7 +1072,8 @@ class _TonightsSceneSection extends StatelessWidget {
                               ? NetworkImage(user.avatarUrl!)
                               : null,
                           child: user.avatarUrl == null
-                              ? const Icon(Icons.person, color: _brandPink, size: 22)
+                              ? const Icon(Icons.person,
+                                  color: _brandPink, size: 22)
                               : null,
                         ),
                         title: Text(
@@ -1095,7 +1153,10 @@ class _PopularVenuesSection extends StatelessWidget {
               onTap: () => context.push('/map'),
               child: Text(
                 context.tr(AppStrings.homeSeeAll),
-                style: const TextStyle(color: _brandPink, fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                    color: _brandPink,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -1258,7 +1319,10 @@ class _ActiveSwarmsSection extends StatelessWidget {
               onTap: () => context.push('/swarms'),
               child: Text(
                 context.tr(AppStrings.homeSeeAll),
-                style: const TextStyle(color: _brandPink, fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                    color: _brandPink,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -1277,7 +1341,12 @@ class _ActiveSwarmsSection extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.groups_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
+                    Icon(Icons.groups_outlined,
+                        size: 48,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.3)),
                     const SizedBox(height: 12),
                     Text(
                       context.tr(AppStrings.homeNoActiveSwarmsLong),
@@ -1379,7 +1448,8 @@ class _SwarmTile extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               _formatTime(context, swarm.startTime),
-              style: const TextStyle(fontSize: 11, color: _brandPink, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                  fontSize: 11, color: _brandPink, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -1453,11 +1523,17 @@ class _DdModeToggle extends StatelessWidget {
               children: [
                 Text(
                   context.tr(AppStrings.homeDdToggleTitle),
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 14),
                 ),
                 Text(
                   context.tr(AppStrings.homeDdToggleSub),
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 11),
+                  style: TextStyle(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.5),
+                      fontSize: 11),
                 ),
               ],
             ),
@@ -1493,11 +1569,13 @@ class _SafeArrivalButton extends StatelessWidget {
         icon: const Icon(Icons.shield_outlined, color: _brandPink),
         label: Text(
           context.tr(AppStrings.homeCheckInSafeArrival),
-          style: const TextStyle(color: _brandPink, fontWeight: FontWeight.w600),
+          style:
+              const TextStyle(color: _brandPink, fontWeight: FontWeight.w600),
         ),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: _brandPink, width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
@@ -1539,7 +1617,8 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
         .maybeSingle();
     if (row != null && mounted) {
       setState(() {
-        _selected = TonightStatus.fromString(row['tonight_status'] as String? ?? 'staying_in');
+        _selected = TonightStatus.fromString(
+            row['tonight_status'] as String? ?? 'staying_in');
       });
     }
   }
@@ -1550,7 +1629,9 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
     final supabase = Supabase.instance.client;
     final uid = supabase.auth.currentUser?.id;
     if (uid == null) return;
-    await supabase.from('users').update({'tonight_status': _selected!.toDbString()}).eq('id', uid);
+    await supabase
+        .from('users')
+        .update({'tonight_status': _selected!.toDbString()}).eq('id', uid);
     widget.onStatusChanged();
     if (mounted) Navigator.of(context).pop();
   }
@@ -1559,9 +1640,24 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
   Widget build(BuildContext context) {
     final t = ref.watch(tProvider);
     final options = [
-      (TonightStatus.outNow, t(AppStrings.homeOutNow), Colors.green, Icons.local_bar),
-      (TonightStatus.goingOutSoon, t(AppStrings.homeGoingOut2), Colors.orange, Icons.schedule),
-      (TonightStatus.stayingIn, t(AppStrings.homeStayingIn), Colors.grey, Icons.home_outlined),
+      (
+        TonightStatus.outNow,
+        t(AppStrings.homeOutNow),
+        Colors.green,
+        Icons.local_bar
+      ),
+      (
+        TonightStatus.goingOutSoon,
+        t(AppStrings.homeGoingOut2),
+        Colors.orange,
+        Icons.schedule
+      ),
+      (
+        TonightStatus.stayingIn,
+        t(AppStrings.homeStayingIn),
+        Colors.grey,
+        Icons.home_outlined
+      ),
     ];
 
     return Padding(
@@ -1574,7 +1670,8 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
             children: [
               Text(
                 t(AppStrings.homeUpdateStatus),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
               const Spacer(),
               IconButton(
@@ -1591,9 +1688,12 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
               onTap: () => setState(() => _selected = status),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: selected ? color.withValues(alpha: 0.1) : Theme.of(context).colorScheme.surfaceContainerHighest,
+                  color: selected
+                      ? color.withValues(alpha: 0.1)
+                      : Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: selected ? color : Colors.transparent,
@@ -1602,13 +1702,23 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
                 ),
                 child: Row(
                   children: [
-                    Icon(icon, color: selected ? color : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4), size: 22),
+                    Icon(icon,
+                        color: selected
+                            ? color
+                            : Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.4),
+                        size: 22),
                     const SizedBox(width: 14),
                     Text(
                       label,
                       style: TextStyle(
-                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                        color: selected ? color : Theme.of(context).colorScheme.onSurface,
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w500,
+                        color: selected
+                            ? color
+                            : Theme.of(context).colorScheme.onSurface,
                         fontSize: 15,
                       ),
                     ),
@@ -1629,11 +1739,13 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
                 backgroundColor: _brandPink,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
               ),
               child: _saving
                   ? const AppButtonLoader()
-                  : Text(t(AppStrings.homeSaveStatus), style: const TextStyle(fontWeight: FontWeight.w700)),
+                  : Text(t(AppStrings.homeSaveStatus),
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
             ),
           ),
         ],
@@ -1641,4 +1753,3 @@ class _StatusBottomSheetState extends ConsumerState<_StatusBottomSheet> {
     );
   }
 }
-

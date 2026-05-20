@@ -41,7 +41,15 @@ class Swarm {
           ? DateTime.parse(json['start_time'] as String)
           : DateTime.now(),
       maxSize: (json['max_size'] as int?) ?? 50,
-      currentSize: (json['current_size'] as int?) ?? 1,
+      currentSize: () {
+        // Prefer the live count from the joined swarm_members relation.
+        final members = json['swarm_members'];
+        if (members is List && members.isNotEmpty) {
+          final count = members.first['count'];
+          if (count is int) return count;
+        }
+        return (json['current_size'] as int?) ?? 1;
+      }(),
       status: json['status'] as String? ?? 'active',
       vibeTags: (json['vibe_tags'] as List<dynamic>?)?.cast<String>() ?? [],
       createdAt: json['created_at'] != null

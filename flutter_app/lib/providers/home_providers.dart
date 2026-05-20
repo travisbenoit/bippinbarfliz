@@ -44,17 +44,19 @@ final venueCountProvider = FutureProvider<int>((ref) async {
       .eq('is_active', true);
 });
 
-final activeSwarmsProvider = FutureProvider<List<Swarm>>((ref) async {
+// StreamProvider so the home screen auto-updates whenever current_size
+// changes in the DB (e.g. when someone joins). Supabase Realtime must be
+// enabled on the swarms table, which it now is.
+final activeSwarmsProvider = StreamProvider<List<Swarm>>((ref) {
   final supabase = Supabase.instance.client;
 
-  final response = await supabase
+  return supabase
       .from('swarms')
-      .select()
+      .stream(primaryKey: ['id'])
       .eq('status', 'active')
       .order('start_time')
-      .limit(20);
-
-  return (response as List).map((json) => Swarm.fromJson(json)).toList();
+      .limit(20)
+      .map((rows) => rows.map((json) => Swarm.fromJson(json)).toList());
 });
 
 final homeCurrentUserProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {

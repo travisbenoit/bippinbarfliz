@@ -71,9 +71,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _loadOtherUser() async {
     final currentUser = _supabase.auth.currentUser;
     final (other, me) = await (
-      _supabase.from('users').select('name, avatar_url').eq('id', widget.userId).maybeSingle(),
+      _supabase
+          .from('users')
+          .select('name, avatar_url')
+          .eq('id', widget.userId)
+          .maybeSingle(),
       currentUser != null
-          ? _supabase.from('users').select('name').eq('id', currentUser.id).maybeSingle()
+          ? _supabase
+              .from('users')
+              .select('name')
+              .eq('id', currentUser.id)
+              .maybeSingle()
           : Future<Map<String, dynamic>?>.value(null),
     ).wait;
 
@@ -142,9 +150,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           senderName: msg['sender_user_id'] == currentUser.id
               ? ref.read(tProvider)(AppStrings.messagesYou)
               : _otherUserName,
-          senderAvatar: msg['sender_user_id'] == currentUser.id
-              ? null
-              : _otherUserAvatar,
+          senderAvatar:
+              msg['sender_user_id'] == currentUser.id ? null : _otherUserAvatar,
           body: msg['body'] ?? '',
           createdAt: DateTime.parse(msg['created_at']),
           isMe: msg['sender_user_id'] == currentUser.id,
@@ -177,7 +184,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final userB = userIds[1];
 
     _supabase
-        .channel('chat:${userA}:${userB}')
+        .channel('chat:$userA:$userB')
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
@@ -287,10 +294,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Expanded(
             child: _buildMessageList(),
           ),
-          if (_isBlocked)
-            _buildBlockedBanner()
-          else
-            _buildMessageInput(),
+          if (_isBlocked) _buildBlockedBanner() else _buildMessageInput(),
         ],
       ),
     );
@@ -376,7 +380,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
             offset: const Offset(0, -2),
             blurRadius: 8,
           ),
@@ -410,7 +415,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
             offset: const Offset(0, -2),
             blurRadius: 8,
           ),
@@ -429,7 +435,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  fillColor:
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 12,
@@ -495,7 +502,8 @@ class _MessageBubble extends StatelessWidget {
                         colors: [Color(0xFFE91E63), Color(0xFFFF6B6B)],
                       )
                     : null,
-                color: message.isMe ? null : Theme.of(context).colorScheme.surface,
+                color:
+                    message.isMe ? null : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
@@ -504,7 +512,10 @@ class _MessageBubble extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -516,7 +527,9 @@ class _MessageBubble extends StatelessWidget {
                   Text(
                     message.body,
                     style: TextStyle(
-                      color: message.isMe ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                      color: message.isMe
+                          ? Colors.white
+                          : Theme.of(context).colorScheme.onSurface,
                       fontSize: 15,
                     ),
                   ),
@@ -526,7 +539,10 @@ class _MessageBubble extends StatelessWidget {
                     style: TextStyle(
                       color: message.isMe
                           ? Colors.white.withValues(alpha: 0.7)
-                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.5),
                       fontSize: 11,
                     ),
                   ),

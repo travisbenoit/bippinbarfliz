@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/permission_service.dart';
 import '../../services/analytics_service.dart';
 import '../../i18n/app_strings.dart';
 import '../../providers/localization_provider.dart';
@@ -122,6 +123,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
   List<_RoomMessage> _messages = [];
   bool _chatLoading = true;
   StreamSubscription<List<Map<String, dynamic>>>? _chatSub;
+  Timer? _chatPollTimer;
 
   // Who's here state
   List<_PresenceUser> _presenceUsers = [];
@@ -131,6 +133,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
   // Photo wall state
   List<_WallPhoto> _wallPhotos = [];
   bool _photosLoading = true;
+  bool _uploadingPhoto = false;
 
   // Vibe state
   _VibePoll? _currentPoll;
@@ -140,6 +143,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
   final _momentController = TextEditingController();
   bool _postingMoment = false;
   List<_Moment> _moments = [];
+  final Set<String> _postingTags = {};
 
   int get _peopleCount => _presenceUsers.length;
 
@@ -161,6 +165,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     });
     _loadChat();
     _loadPresence();
+    _checkIn(silent: true);
   }
 
   @override
@@ -170,12 +175,52 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     _scrollController.dispose();
     _momentController.dispose();
     _chatSub?.cancel();
+    _chatPollTimer?.cancel();
     super.dispose();
   }
 
   // ---------------------------------------------------------------------------
   // Chat
   // ---------------------------------------------------------------------------
+
+  Future<List<_RoomMessage>> _fetchMessages() async {
+    final rows = await _supabase
+        .from('venue_room_messages')
+        .select()
+        .eq('venue_id', widget.venueId)
+        .order('created_at');
+
+    return Future.wait((rows as List).map((row) async {
+      String? userName;
+      try {
+        final user = await _supabase
+            .from('users')
+            .select('name')
+            .eq('id', row['user_id'] as String)
+            .maybeSingle();
+        userName = user?['name'] as String?;
+      } catch (_) {}
+      return _RoomMessage(
+        id: row['id'] as String,
+        userId: row['user_id'] as String,
+        content: row['body'] as String? ?? '',
+        messageType: row['message_type'] as String? ?? 'text',
+        createdAt: DateTime.parse(row['created_at'] as String),
+        userName: userName,
+      );
+    }));
+  }
+
+  void _startChatPolling() {
+    _chatPollTimer?.cancel();
+    _chatPollTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (!mounted) return;
+      try {
+        final msgs = await _fetchMessages();
+        if (mounted) setState(() => _messages = msgs);
+      } catch (_) {}
+    });
+  }
 
   void _loadChat() {
     setState(() => _chatLoading = true);
@@ -185,38 +230,57 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
         .stream(primaryKey: ['id']).eq('venue_id', widget.venueId);
 
     _chatSub = stream.listen((data) async {
-      final msgs = await Future.wait(data.map((row) async {
-        String? userName;
-        try {
-          final user = await _supabase
-              .from('users')
-              .select('name')
-              .eq('id', row['user_id'] as String)
-              .maybeSingle();
-          userName = user?['name'] as String?;
-        } catch (_) {}
+      try {
+        final msgs = await Future.wait(data.map((row) async {
+          String? userName;
+          try {
+            final user = await _supabase
+                .from('users')
+                .select('name')
+                .eq('id', row['user_id'] as String)
+                .maybeSingle();
+            userName = user?['name'] as String?;
+          } catch (_) {}
 
-        return _RoomMessage(
-          id: row['id'] as String,
-          userId: row['user_id'] as String,
-          content: row['content'] as String? ?? '',
-          messageType: row['message_type'] as String? ?? 'text',
-          createdAt: DateTime.parse(row['created_at'] as String),
-          userName: userName,
-        );
-      }));
+          return _RoomMessage(
+            id: row['id'] as String,
+            userId: row['user_id'] as String,
+            content: row['body'] as String? ?? '',
+            messageType: row['message_type'] as String? ?? 'text',
+            createdAt: DateTime.parse(row['created_at'] as String),
+            userName: userName,
+          );
+        }));
 
-      msgs.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        msgs.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-      if (mounted) {
-        setState(() {
-          _messages = msgs;
-          _chatLoading = false;
-        });
-        _scrollToBottom();
+        if (mounted) {
+          setState(() {
+            _messages = msgs;
+            _chatLoading = false;
+          });
+          _scrollToBottom();
+        }
+      } catch (e) {
+        if (mounted) setState(() => _chatLoading = false);
       }
-    }, onError: (_) {
-      if (mounted) setState(() => _chatLoading = false);
+    }, onError: (error, stackTrace) async {
+      // Realtime not enabled on this table — fall back to REST polling.
+      _chatSub?.cancel();
+      _chatSub = null;
+      try {
+        final msgs = await _fetchMessages();
+        if (mounted) {
+          setState(() {
+            _messages = msgs;
+            _chatLoading = false;
+          });
+          _scrollToBottom();
+        }
+      } catch (_) {
+        if (mounted) setState(() => _chatLoading = false);
+      }
+      _startChatPolling();
     });
   }
 
@@ -244,7 +308,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       await _supabase.from('venue_room_messages').insert({
         'venue_id': widget.venueId,
         'user_id': user.id,
-        'content': text,
+        'body': text,
         'message_type': 'text',
       });
     } catch (e) {
@@ -267,7 +331,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
           .from('venue_room_presence')
           .select('user_id')
           .eq('venue_id', widget.venueId)
-          .gt('last_seen_at', cutoff);
+          .gt('last_active_at', cutoff);
 
       final users = await Future.wait(
         (rows as List).map((row) async {
@@ -301,11 +365,11 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
     }
   }
 
-  Future<void> _checkIn() async {
+  Future<void> _checkIn({bool silent = false}) async {
     final user = _supabase.auth.currentUser;
     if (user == null) return;
 
-    setState(() => _checkingIn = true);
+    if (!silent) setState(() => _checkingIn = true);
     final messenger = ScaffoldMessenger.of(context);
     final successMsg = context.tr(AppStrings.roomCheckedIn);
     try {
@@ -315,14 +379,16 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
         'venue_id': widget.venueId,
         'user_id': user.id,
         'joined_at': now,
-        'last_seen_at': now,
+        'last_active_at': now,
       }, onConflict: 'venue_id,user_id');
 
       await _supabase.from('user_venue_presence').upsert({
         'user_id': user.id,
         'venue_id': widget.venueId,
-        'checked_in_at': now,
-        'status': 'checked_in',
+        'entered_at': now,
+        'status': 'IN_VENUE',
+        'left_at': null,       // reset so valid_dates CHECK (left_at >= entered_at) doesn't fire
+        'last_seen_at': now,
       }, onConflict: 'user_id,venue_id');
 
       await AnalyticsService.instance.venueCheckedIn(
@@ -331,15 +397,15 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       );
 
       if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text(successMsg)));
+        if (!silent) messenger.showSnackBar(SnackBar(content: Text(successMsg)));
         await _loadPresence();
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && !silent) {
         showErrorSnackBar(context, e, tag: 'Room.checkIn');
       }
     } finally {
-      if (mounted) setState(() => _checkingIn = false);
+      if (mounted && !silent) setState(() => _checkingIn = false);
     }
   }
 
@@ -377,14 +443,89 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
   }
 
   Future<void> _addPhoto() async {
-    final messenger = ScaffoldMessenger.of(context);
-    final msg = context.tr(AppStrings.roomPhotoComingSoon);
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
-    if (picked == null) return;
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
 
-    if (mounted) {
-      messenger.showSnackBar(SnackBar(content: Text(msg)));
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Take a photo'),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Choose from gallery'),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    final permType = source == ImageSource.camera
+        ? AppPermission.camera
+        : AppPermission.photos;
+    final allowed =
+        await PermissionService.instance.request(permType, context);
+    if (!allowed || !mounted) return;
+
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 75,
+      maxWidth: 1200,
+    );
+    if (picked == null || !mounted) return;
+
+    setState(() => _uploadingPhoto = true);
+    try {
+      final bytes = await picked.readAsBytes();
+      final ext = picked.name.split('.').last.toLowerCase();
+      final path =
+          '${widget.venueId}/${user.id}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+
+      await _supabase.storage.from('venue-photos').uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: 'image/$ext', upsert: false),
+          );
+
+      final url =
+          _supabase.storage.from('venue-photos').getPublicUrl(path);
+
+      await _supabase.from('venue_wall_photos').insert({
+        'venue_id': widget.venueId,
+        'user_id': user.id,
+        'photo_url': url,
+      });
+
+      await _loadWallPhotos();
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e, tag: 'Room.addPhoto');
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
     }
   }
 
@@ -491,6 +632,36 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
       if (mounted) showErrorSnackBar(context, e, tag: 'Room.postMoment');
     } finally {
       if (mounted) setState(() => _postingMoment = false);
+    }
+  }
+
+  Future<void> _postVibeTag(String tag) async {
+    if (_postingTags.contains(tag)) return;
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    setState(() => _postingTags.add(tag));
+    try {
+      await _supabase.from('venue_room_moments').insert({
+        'venue_id': widget.venueId,
+        'user_id': user.id,
+        'content': tag,
+        'type': 'vibe',
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Vibe "$tag" added!'),
+            backgroundColor: _brandColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        await _loadVibe();
+      }
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e, tag: 'Room.postVibe');
+    } finally {
+      if (mounted) setState(() => _postingTags.remove(tag));
     }
   }
 
@@ -794,9 +965,11 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
   Widget _buildPhotoWallTab() {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: _addPhoto,
+        onPressed: _uploadingPhoto ? null : _addPhoto,
         backgroundColor: _brandColor,
-        child: const Icon(Icons.add_a_photo, color: Colors.white),
+        child: _uploadingPhoto
+            ? const AppButtonLoader(size: 24)
+            : const Icon(Icons.add_a_photo, color: Colors.white),
       ),
       body: _photosLoading
           ? const AppFullLoader(color: _brandColor)
@@ -915,21 +1088,35 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                   spacing: 8,
                   runSpacing: 8,
                   children: _vibeTagsList.map((tag) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _brandColor.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: _brandColor.withValues(alpha: 0.3)),
-                      ),
-                      child: Text(
-                        tag,
-                        style: const TextStyle(
-                            fontSize: 12,
-                            color: _brandColor,
-                            fontWeight: FontWeight.w500),
+                    final isPosting = _postingTags.contains(tag);
+                    return GestureDetector(
+                      onTap: isPosting ? null : () => _postVibeTag(tag),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isPosting
+                              ? _brandColor.withValues(alpha: 0.25)
+                              : _brandColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: _brandColor.withValues(alpha: 0.3)),
+                        ),
+                        child: isPosting
+                            ? const SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 1.5, color: _brandColor),
+                              )
+                            : Text(
+                                tag,
+                                style: const TextStyle(
+                                    fontSize: 12,
+                                    color: _brandColor,
+                                    fontWeight: FontWeight.w500),
+                              ),
                       ),
                     );
                   }).toList(),
@@ -1028,7 +1215,7 @@ class _TheRoomScreenState extends ConsumerState<TheRoomScreen>
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(context.tr(AppStrings.roomPollLabel),
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: _brandColor)),

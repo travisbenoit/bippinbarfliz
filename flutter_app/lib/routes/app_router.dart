@@ -78,9 +78,12 @@ class _RouterNotifier extends ChangeNotifier {
     final isOnboarding = loc == '/onboarding';
     final isAuth = loc.startsWith('/signin') ||
         loc.startsWith('/signup') ||
-        loc.startsWith('/verify-email') ||
-        loc == '/reset-password';
+        loc.startsWith('/verify-email');
     final isSetupRoute = loc == '/profile-setup' || loc == '/permissions';
+
+    // Password recovery deep link creates an authenticated session, so we must
+    // never redirect away from this screen regardless of auth state.
+    if (loc == '/reset-password') return null;
 
     if (!isAuthenticated && !isOnboarding && !isAuth && !isSetupRoute) {
       return '/onboarding';

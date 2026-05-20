@@ -22,6 +22,8 @@ const _pink = Color(0xFFE91E63);
 
 enum PeopleFilter { all, outNow, goingOutSoon, ddTonight }
 
+enum _SortBy { recentlyActive, nameAZ, statusFirst }
+
 extension PeopleFilterX on PeopleFilter {
   String label(BuildContext context) {
     switch (this) {
@@ -95,6 +97,7 @@ class PeopleNearbyScreen extends ConsumerStatefulWidget {
 
 class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
   PeopleFilter _activeFilter = PeopleFilter.all;
+  _SortBy _sortBy = _SortBy.recentlyActive;
   final _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -124,37 +127,98 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
   List<UserProfile> _applyFilters(List<UserProfile> all) {
     var list = all;
 
-    // Apply status filter
     switch (_activeFilter) {
       case PeopleFilter.outNow:
-        list = list
-            .where((u) => u.tonightStatus == TonightStatus.outNow)
-            .toList();
+        list = list.where((u) => u.tonightStatus == TonightStatus.outNow).toList();
         break;
       case PeopleFilter.goingOutSoon:
-        list = list
-            .where((u) => u.tonightStatus == TonightStatus.goingOutSoon)
-            .toList();
+        list = list.where((u) => u.tonightStatus == TonightStatus.goingOutSoon).toList();
         break;
       case PeopleFilter.ddTonight:
-        // "DD Tonight" maps to stayingIn in the enum
-        list = list
-            .where((u) => u.tonightStatus == TonightStatus.stayingIn)
-            .toList();
+        list = list.where((u) => u.tonightStatus == TonightStatus.stayingIn).toList();
         break;
       case PeopleFilter.all:
         break;
     }
 
-    // Apply search
     if (_searchQuery.isNotEmpty) {
-      list = list
-          .where(
-              (u) => u.name.toLowerCase().contains(_searchQuery))
-          .toList();
+      list = list.where((u) => u.name.toLowerCase().contains(_searchQuery)).toList();
+    }
+
+    switch (_sortBy) {
+      case _SortBy.nameAZ:
+        list = [...list]..sort((a, b) => a.name.compareTo(b.name));
+        break;
+      case _SortBy.statusFirst:
+        list = [...list]..sort((a, b) {
+            int rank(TonightStatus s) => switch (s) {
+              TonightStatus.outNow => 0,
+              TonightStatus.goingOutSoon => 1,
+              TonightStatus.stayingIn => 2,
+            };
+            return rank(a.tonightStatus).compareTo(rank(b.tonightStatus));
+          });
+        break;
+      case _SortBy.recentlyActive:
+        break; // server already orders by last_active_at
     }
 
     return list;
+  }
+
+  void _showSortSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const Text('Sort by', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              ...[
+                (_SortBy.recentlyActive, Icons.access_time, 'Recently Active'),
+                (_SortBy.statusFirst,    Icons.local_bar,   'Status (Out Now first)'),
+                (_SortBy.nameAZ,         Icons.sort_by_alpha, 'Name A–Z'),
+              ].map((rec) {
+                final (sort, icon, label) = rec;
+                final selected = _sortBy == sort;
+                return ListTile(
+                  leading: Icon(icon, color: selected ? _pink : null),
+                  title: Text(label,
+                    style: TextStyle(
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                      color: selected ? _pink : null,
+                    ),
+                  ),
+                  trailing: selected ? const Icon(Icons.check, color: _pink) : null,
+                  onTap: () {
+                    setState(() => _sortBy = sort);
+                    Navigator.pop(ctx);
+                  },
+                );
+              }),
+              const SizedBox(height: 4),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   int _countOutTonight(List<UserProfile> all) => all
@@ -186,10 +250,8 @@ class _PeopleNearbyScreenState extends ConsumerState<PeopleNearbyScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.tune),
-            tooltip: t(AppStrings.search),
-            onPressed: () {
-              // The filter chips row is always visible; this is a visual cue.
-            },
+            tooltip: 'Sort',
+            onPressed: _showSortSheet,
           ),
         ],
       ),

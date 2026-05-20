@@ -11,6 +11,7 @@ import '../../utils/app_error.dart';
 import '../../providers/auth_provider.dart' show currentUserProfileProvider;
 import '../../providers/home_providers.dart';
 import '../../widgets/app_loader.dart';
+import '../../services/permission_service.dart';
 
 class _StatusOption {
   final TonightStatus status;
@@ -185,6 +186,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Future<void> _pickAndUploadAvatar(ImageSource source) async {
     if (_userId == null) return;
+
+    final permType = source == ImageSource.camera
+        ? AppPermission.camera
+        : AppPermission.photos;
+    final allowed =
+        await PermissionService.instance.request(permType, context);
+    if (!allowed || !mounted) return;
 
     final picked = await ImagePicker().pickImage(
       source: source,

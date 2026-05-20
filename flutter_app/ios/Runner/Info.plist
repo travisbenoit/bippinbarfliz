@@ -1,168 +1,154 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-
-    <!-- ─── App Identity ─────────────────────────────────────────────── -->
-    <key>CFBundleDevelopmentRegion</key>
-    <string>$(DEVELOPMENT_LANGUAGE)</string>
-    <key>CFBundleDisplayName</key>
-    <string>Barfliz</string>
-    <key>CFBundleExecutable</key>
-    <string>$(EXECUTABLE_NAME)</string>
-    <key>CFBundleIdentifier</key>
-    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleName</key>
-    <string>barfliz</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleShortVersionString</key>
-    <string>$(FLUTTER_BUILD_NAME)</string>
-    <key>CFBundleSignature</key>
-    <string>????</string>
-    <key>CFBundleVersion</key>
-    <string>$(FLUTTER_BUILD_NUMBER)</string>
-
-    <!-- ─── iOS Deployment ───────────────────────────────────────────── -->
-    <key>MinimumOSVersion</key>
-    <string>14.0</string>
-    <key>LSRequiresIPhoneOS</key>
-    <true/>
-
-    <!-- ─── Orientation ──────────────────────────────────────────────── -->
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-
-    <!-- ─── Launch Screen ────────────────────────────────────────────── -->
-    <key>UILaunchStoryboardName</key>
-    <string>LaunchScreen</string>
-    <key>UIMainStoryboardFile</key>
-    <string>Main</string>
-
-    <!-- ─── Status Bar ───────────────────────────────────────────────── -->
-    <key>UIStatusBarStyle</key>
-    <string>UIStatusBarStyleLightContent</string>
-    <key>UIViewControllerBasedStatusBarAppearance</key>
-    <false/>
-
-    <!-- ─── Location Permissions ─────────────────────────────────────── -->
-    <!-- "When In Use" is shown first; users can upgrade to Always in Settings -->
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Barfliz uses your location to show nearby bars and connect you with friends who are out tonight.</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Barfliz uses your location in the background to notify you when friends check into nearby venues and to power geofencing features.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>Barfliz uses your location in the background to notify you when friends check into nearby venues and to power geofencing features.</string>
-    <!-- Precise vs approximate location — we require precise for venue matching -->
-    <key>NSLocationTemporaryUsageDescriptionDictionary</key>
-    <dict>
-        <key>PreciseLocation</key>
-        <string>Barfliz needs your precise location to accurately match you with people at the same venue.</string>
-    </dict>
-
-    <!-- ─── Camera & Photo Library ───────────────────────────────────── -->
-    <!-- Used by image_picker for profile photos, and mobile_scanner for QR codes -->
-    <key>NSCameraUsageDescription</key>
-    <string>Barfliz uses your camera to take a profile photo and to scan friend QR codes.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>Barfliz accesses your photo library so you can choose a profile picture.</string>
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>Barfliz saves photos to your library when you share moments from a night out.</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>Barfliz uses the microphone when recording video clips from nights out.</string>
-
-    <!-- ─── Contacts ─────────────────────────────────────────────────── -->
-    <key>NSContactsUsageDescription</key>
-    <string>Barfliz can find friends already on the app using your contacts — no data is stored on our servers.</string>
-
-    <!-- ─── Face ID / Biometrics (future-proofing for payment auth) ───── -->
-    <key>NSFaceIDUsageDescription</key>
-    <string>Barfliz uses Face ID to securely authenticate payment actions.</string>
-
-    <!-- ─── Notifications ────────────────────────────────────────────── -->
-    <!-- iOS 14+ requires this key for provisional notifications -->
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>fetch</string>
-        <string>remote-notification</string>
-        <!-- Required for Radar foreground-service equivalent on iOS -->
-        <string>location</string>
-    </array>
-
-    <!-- ─── Google Maps SDK ──────────────────────────────────────────── -->
-    <!--
+	<dict>
+		<!-- ─── App Identity ─────────────────────────────────────────────── -->
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleDisplayName</key>
+		<string>Barfliz</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>barfliz</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<!-- ─── iOS Deployment ───────────────────────────────────────────── -->
+		<key>MinimumOSVersion</key>
+		<string>14.0</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<!-- ─── Orientation ──────────────────────────────────────────────── -->
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<!-- ─── Launch Screen ────────────────────────────────────────────── -->
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<!-- ─── Status Bar ───────────────────────────────────────────────── -->
+		<key>UIStatusBarStyle</key>
+		<string>UIStatusBarStyleLightContent</string>
+		<key>UIViewControllerBasedStatusBarAppearance</key>
+		<false/>
+		<!-- ─── Location Permissions ─────────────────────────────────────── -->
+		<!-- "When In Use" is shown first; users can upgrade to Always in Settings -->
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Barfliz uses your location to show nearby bars and connect you with friends who are out tonight.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Barfliz uses your location in the background to notify you when friends check into nearby venues and to power geofencing features.</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>Barfliz uses your location in the background to notify you when friends check into nearby venues and to power geofencing features.</string>
+		<!-- Precise vs approximate location — we require precise for venue matching -->
+		<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+		<dict>
+			<key>PreciseLocation</key>
+			<string>Barfliz needs your precise location to accurately match you with people at the same venue.</string>
+		</dict>
+		<!-- ─── Camera & Photo Library ───────────────────────────────────── -->
+		<!-- Used by image_picker for profile photos, and mobile_scanner for QR codes -->
+		<key>NSCameraUsageDescription</key>
+		<string>Barfliz uses your camera to take a profile photo and to scan friend QR codes.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Barfliz accesses your photo library so you can choose a profile picture.</string>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>Barfliz saves photos to your library when you share moments from a night out.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Barfliz uses the microphone when recording video clips from nights out.</string>
+		<!-- ─── Contacts ─────────────────────────────────────────────────── -->
+		<key>NSContactsUsageDescription</key>
+		<string>Barfliz can find friends already on the app using your contacts — no data is stored on our servers.</string>
+		<!-- ─── Face ID / Biometrics (future-proofing for payment auth) ───── -->
+		<key>NSFaceIDUsageDescription</key>
+		<string>Barfliz uses Face ID to securely authenticate payment actions.</string>
+		<!-- ─── Notifications ────────────────────────────────────────────── -->
+		<!-- iOS 14+ requires this key for provisional notifications -->
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>fetch</string>
+			<string>remote-notification</string>
+			<!-- Required for Radar foreground-service equivalent on iOS -->
+			<string>location</string>
+		</array>
+		<!-- ─── Google Maps SDK ──────────────────────────────────────────── -->
+		<!--
         Set your Google Maps API key here.
         IMPORTANT: Restrict the key to iOS apps in the Google Cloud Console.
         Key should be stored in an xcconfig file rather than committed directly.
         See: ios/Flutter/Debug.xcconfig and ios/Flutter/Release.xcconfig
     -->
-    <key>GMSApiKey</key>
-    <string>$(GOOGLE_MAPS_API_KEY)</string>
-
-    <!-- ─── App Transport Security ───────────────────────────────────── -->
-    <!-- All Barfliz APIs run over HTTPS — no arbitrary loads needed -->
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <false/>
-    </dict>
-
-    <!-- ─── Deep Links (barfliz://) ─────────────────────────────────── -->
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLName</key>
-            <string>barfliz</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>barfliz</string>
-            </array>
-        </dict>
-        <!-- Stripe returns to app after 3DS authentication -->
-        <dict>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-            <key>CFBundleURLName</key>
-            <string>stripe-redirect</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>barfliz-stripe</string>
-            </array>
-        </dict>
-    </array>
-
-    <!-- ─── Queried URL Schemes (url_launcher) ──────────────────────── -->
-    <key>LSApplicationQueriesSchemes</key>
-    <array>
-        <!-- Venmo deep link -->
-        <string>venmo</string>
-        <!-- Uber deep link -->
-        <string>uber</string>
-        <!-- Generic HTTP/HTTPS for url_launcher -->
-        <string>https</string>
-        <string>http</string>
-    </array>
-
-    <!-- ─── Flutter ──────────────────────────────────────────────────── -->
-    <key>CADisableMinimumFrameDurationOnPhone</key>
-    <true/>
-    <key>UIApplicationSupportsIndirectInputEvents</key>
-    <true/>
-
-</dict>
+		<key>GMSApiKey</key>
+		<string>$(GOOGLE_MAPS_API_KEY)</string>
+		<!-- ─── App Transport Security ───────────────────────────────────── -->
+		<!-- All Barfliz APIs run over HTTPS — no arbitrary loads needed -->
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<false/>
+		</dict>
+		<!-- ─── Deep Links (barfliz://) ─────────────────────────────────── -->
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>barfliz</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>barfliz</string>
+				</array>
+			</dict>
+			<!-- Stripe returns to app after 3DS authentication -->
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>stripe-redirect</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>barfliz-stripe</string>
+				</array>
+			</dict>
+		</array>
+		<!-- ─── Queried URL Schemes (url_launcher) ──────────────────────── -->
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<!-- Venmo deep link -->
+			<string>venmo</string>
+			<!-- Uber deep link -->
+			<string>uber</string>
+			<!-- Generic HTTP/HTTPS for url_launcher -->
+			<string>https</string>
+			<string>http</string>
+		</array>
+		<!-- ─── Flutter ──────────────────────────────────────────────────── -->
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
+		<key>UIStatusBarHidden</key>
+		<false/>
+	</dict>
 </plist>

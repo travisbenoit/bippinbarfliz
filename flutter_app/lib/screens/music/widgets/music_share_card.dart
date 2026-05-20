@@ -1,20 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../models/music_track.dart';
 import '../../../extensions/localization_extension.dart';
 import '../../../i18n/app_strings.dart';
 
-class MusicShareCard extends StatelessWidget {
+class MusicShareCard extends StatefulWidget {
   final MusicTrack share;
   final VoidCallback? onPlay;
   final bool isOwn;
 
   const MusicShareCard({
-    Key? key,
+    super.key,
     required this.share,
     this.onPlay,
     this.isOwn = false,
-  }) : super(key: key);
+  });
+
+  @override
+  State<MusicShareCard> createState() => _MusicShareCardState();
+}
+
+class _MusicShareCardState extends State<MusicShareCard> {
+  bool _liked = false;
+
+  void _toggleLike() => setState(() => _liked = !_liked);
+
+  void _share() {
+    final track = widget.share;
+    final text = StringBuffer('🎵 ${track.trackName} by ${track.artistName}');
+    if (track.collectionName != null) text.write(' — ${track.collectionName}');
+    if (track.previewUrl != null) text.write('\n${track.previewUrl}');
+    text.write('\n\nShared via Barfliz 🍸');
+    SharePlus.instance.share(ShareParams(text: text.toString()));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +42,9 @@ class MusicShareCard extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            leading: share.artworkUrl != null
+            leading: widget.share.artworkUrl != null
                 ? CachedNetworkImage(
-                    imageUrl: share.artworkUrl!,
+                    imageUrl: widget.share.artworkUrl!,
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
@@ -45,27 +64,27 @@ class MusicShareCard extends StatelessWidget {
                     child: const Icon(Icons.music_note),
                   ),
             title: Text(
-              share.trackName,
+              widget.share.trackName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text(
-              share.artistName,
+              widget.share.artistName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: share.previewUrl != null
+            trailing: widget.share.previewUrl != null
                 ? IconButton(
                     icon: const Icon(Icons.play_circle_outline),
-                    onPressed: onPlay,
+                    onPressed: widget.onPlay,
                   )
                 : null,
           ),
-          if (share.collectionName != null)
+          if (widget.share.collectionName != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                share.collectionName!,
+                widget.share.collectionName!,
                 style: Theme.of(context).textTheme.labelSmall,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -76,18 +95,22 @@ class MusicShareCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                if (!isOwn)
+                if (!widget.isOwn)
                   TextButton.icon(
-                    onPressed: () {
-                      // Implement like/favorite functionality
-                    },
-                    icon: const Icon(Icons.favorite_border),
-                    label: Text(context.tr(AppStrings.musicLike)),
+                    onPressed: _toggleLike,
+                    icon: Icon(
+                      _liked ? Icons.favorite : Icons.favorite_border,
+                      color: _liked ? const Color(0xFFE91E63) : null,
+                    ),
+                    label: Text(
+                      context.tr(AppStrings.musicLike),
+                      style: TextStyle(
+                        color: _liked ? const Color(0xFFE91E63) : null,
+                      ),
+                    ),
                   ),
                 TextButton.icon(
-                  onPressed: () {
-                    // Implement share functionality
-                  },
+                  onPressed: _share,
                   icon: const Icon(Icons.share),
                   label: Text(context.tr(AppStrings.musicShare)),
                 ),
